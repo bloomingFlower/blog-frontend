@@ -30,15 +30,6 @@ function App() {
 
   // 외부 클릭 감지
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/data")
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error!", error);
-      });
-
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsSearchOpen(false);
@@ -50,7 +41,16 @@ function App() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [searchRef]);
-
+  useEffect(() => {
+    axios
+      .get("http://localhost:8008/api/data") // Go Fiber 백엔드의 API 엔드포인트
+      .then((response) => {
+        setData(response.data);
+      })
+      .catch((error) => {
+        console.error("There was an error!", error);
+      });
+  }, []);
   return (
     <Router>
       <div>

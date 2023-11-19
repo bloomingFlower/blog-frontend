@@ -1,5 +1,6 @@
 // PostUpload.jsx
 import React, { useState, useEffect } from "react";
+import Modal from "react-modal";
 
 function PostUpload({ setIsUploadModalOpen }) {
   const [title, setTitle] = useState("");
@@ -7,6 +8,7 @@ function PostUpload({ setIsUploadModalOpen }) {
   const [image, setImage] = useState(null);
   const [tags, setTags] = useState("");
   const [isModified, setIsModified] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const handleUpload = () => {
     // 여기에 업로드 기능을 구현합니다.
@@ -19,17 +21,15 @@ function PostUpload({ setIsUploadModalOpen }) {
 
   const handleClose = () => {
     if (isModified) {
-      if (
-        window.confirm(
-          "You have unsaved changes. Are you sure you want to close?"
-        )
-      ) {
-        setIsUploadModalOpen(false);
-      }
+      setIsConfirmModalOpen(true);
     } else {
       setIsUploadModalOpen(false);
     }
   };
+
+  useEffect(() => {
+    Modal.setAppElement("#root");
+  }, []);
 
   return (
     <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
@@ -74,6 +74,62 @@ function PostUpload({ setIsUploadModalOpen }) {
             Close
           </button>
         </div>
+        <Modal
+          isOpen={isConfirmModalOpen}
+          onRequestClose={() => setIsConfirmModalOpen(false)}
+          style={{
+            overlay: {
+              backgroundColor: "rgba(0, 0, 0, 0.75)",
+            },
+            content: {
+              top: "50%",
+              left: "50%",
+              right: "auto",
+              bottom: "auto",
+              marginRight: "-50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "#fff",
+              borderRadius: "4px",
+              padding: "20px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            },
+          }}
+        >
+          <h2 style={{ marginBottom: "20px" }}>
+            Are you sure you want to close?
+          </h2>
+          <div>
+            <button
+              style={{
+                marginRight: "10px",
+                padding: "10px 20px",
+                backgroundColor: "green",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+              }}
+              onClick={() => setIsUploadModalOpen(false)}
+            >
+              Yes
+            </button>
+            <button
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "red",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+              }}
+              onClick={() => setIsConfirmModalOpen(false)}
+            >
+              No
+            </button>
+          </div>
+        </Modal>
+        ;
       </div>
     </div>
   );
