@@ -129,7 +129,6 @@ function PostUpload({ setIsUploadModalOpen }) {
             </button>
           </div>
         </Modal>
-        ;
       </div>
     </div>
   );

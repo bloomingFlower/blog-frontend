@@ -33,7 +33,7 @@ function HamburgerButton() {
       onMouseOver={handleMouseOver}
       style={{ display: "flex", alignItems: "center" }}
     >
-      <button onClick={handleHamburgerClick}>
+      <button onClick={handleHamburgerClick} className="hover:rotate-180 transform transition-transform duration-200">
         <svg
           className="w-6 h-6"
           fill="none"

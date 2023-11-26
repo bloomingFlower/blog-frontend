@@ -30,7 +30,7 @@ function About() {
         <h1 className="text-4xl text-gray-800 mb-5">About Me</h1>
         <Section title="Study">
           I am passionate about learning new things. Here, I share my study
-          notes and experiences.
+          notes and experiences!
         </Section>
         <Section title="Travel">
           I love to travel and explore new places. Check out my travel diaries.
