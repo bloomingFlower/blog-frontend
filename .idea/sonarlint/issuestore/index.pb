@@ -13,3 +13,9 @@ A
 webpack.config.js,d/5/d5595158cc48f9bf3e51b06f6e6805a8fd2d6262
 <
 package.json,7/0/7030d0b2f71b999ff89a343de08c414af32fc93a
+=
+src/index.jsx,8/0/803a01c593b21a1ddcd457e52bebd714950f99f4
+A
+package-lock.json,f/a/fa288d1472d29beccb489a676f68739ad365fc47
+A
+public/index.html,f/4/f43ecdf8d666ee908aacce037b4cd72159e4741b
