@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet";
 import "tailwindcss/tailwind.css";
 import backgroundImage from "@img/background2.png";
 
@@ -28,6 +29,10 @@ function About() {
         backgroundImage: `url(${backgroundImage})`,
       }}
     >
+      <Helmet>
+        <title>About Me</title>
+        <meta name="description" content="About me page of my website" />
+      </Helmet>
       <div className="p-5 bg-white bg-opacity-50 rounded-lg">
         <h1 className="text-4xl text-gray-800 mb-5">About Me</h1>
         <Section title="Education">
