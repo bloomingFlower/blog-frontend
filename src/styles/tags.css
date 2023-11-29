@@ -1,0 +1,7 @@
+.tagClass {
+    @apply bg-blue-500 text-white rounded;
+}
+
+.removeClass {
+    @apply bg-red-500 hover:bg-red-700;
+}
