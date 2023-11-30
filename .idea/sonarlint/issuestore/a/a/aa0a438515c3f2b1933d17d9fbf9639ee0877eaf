@@ -1,5 +1,12 @@
 
-Wjavascript:S1128"/Remove this unused import of 'backgroundImage'.(ÿÅ»£ÿÿÿÿÿ8Å¾†Â1
-]javascript:S6774	"5'setIsUploadModalOpen' is missing in props validation(¨¸×åûÿÿÿÿ8Å¾†Â1
-Yjavascript:S1481"6Remove the declaration of the unused 'image' variable.(²õü8Â›Á†Â1
-Vjavascript:S1854"3Remove this useless assignment to variable "image".(²õü8Â›Á†Â1
+Wjavascript:S1128"/Remove this unused import of 'backgroundImage'.(ÿÅ»£ÿÿÿÿÿ8·ëòĞÂ1
+]javascript:S6774
+"5'setIsUploadModalOpen' is missing in props validation(¨¸×åûÿÿÿÿ8·ëòĞÂ1
+Yjavascript:S1481"6Remove the declaration of the unused 'image' variable.(²õü8·ëòĞÂ1
+Vjavascript:S1854"3Remove this useless assignment to variable "image".(²õü8·ëòĞÂ1
+`javascript:S1481"=Remove the declaration of the unused 'handleDelete' variable.(ÅˆÙ÷8·ëòĞÂ1
+]javascript:S1854":Remove this useless assignment to variable "handleDelete".(ÅˆÙ÷8¸ëòĞÂ1
+bjavascript:S1481"?Remove the declaration of the unused 'handleAddition' variable.(ìÃç½8¸ëòĞÂ1
+_javascript:S1854"<Remove this useless assignment to variable "handleAddition".(ìÃç½8¸ëòĞÂ1
+^javascript:S1481 ";Remove the declaration of the unused 'handleDrag' variable.(½ÎêÛ8¸ëòĞÂ1
+[javascript:S1854 "8Remove this useless assignment to variable "handleDrag".(½ÎêÛ8¸ëòĞÂ1

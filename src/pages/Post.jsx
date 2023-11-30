@@ -38,12 +38,16 @@ function Post() {
         backgroundImage: `url(${backgroundImage})`,
       }}
     >
+      {isUploadModalOpen && (
+          <PostUpload setIsUploadModalOpen={setIsUploadModalOpen} />
+      )}
       <div
         className="container mx-auto px-4"
         style={{
           fontFamily: "PlayfairDisplay, serif",
         }}
       >
+
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold">Posts</h1>
           <button
@@ -53,16 +57,7 @@ function Post() {
             <UploadIcon className="mr-2 h-5 w-5" />
             Upload
           </button>
-          {isUploadModalOpen && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white p-8 rounded shadow-md max-w-3xl m-4">
-                <PostUpload setIsUploadModalOpen={setIsUploadModalOpen} />
-                <button onClick={() => setIsUploadModalOpen(false)}>
-                  Close
-                </button>
-              </div>
-            </div>
-          )}
+
         </div>
         <div className="grid grid-cols-1 gap-8">
           {posts.map((post, index) => (

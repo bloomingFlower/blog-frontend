@@ -24,5 +24,7 @@ A
 .gitignore,a/5/a5cc2925ca8258af241be7e5b0381edf30266302
 9
 	server.js,d/c/dc60ea9ee1ff6246bf342463277d5b914db2883d
-Q
-!src/pages/components/MyEditor.jsx,1/b/1b15b6f21e7939d68bfe069108ac5c36d39787d7
+B
+src/pages/Post.jsx,2/3/236138ba5a92d1cbd4abc3a55e1ca493ea82b53b
+C
+src/styles/tags.css,0/8/08f916ad2683f5e056e4eb4659791235a3b650cb
