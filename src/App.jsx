@@ -16,6 +16,8 @@ import PostUpload from "./pages/PostUpload";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import HamburgerButton from "./pages/components/HamburgerButton";
+import { AuthProvider } from './pages/components/AuthContext';
+
 import favicon from "@img/logo.png";
 
 import "tailwindcss/tailwind.css";
@@ -52,7 +54,8 @@ function App() {
       });
   }, []);
   return (
-    <Router>
+      <AuthProvider>
+      <Router>
       <div>
         <nav
           className="flex items-center justify-between p-5"
@@ -113,6 +116,8 @@ function App() {
         </div>
       </div>
     </Router>
+      </AuthProvider>
+
   );
 }
 

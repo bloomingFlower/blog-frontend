@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.png";
+import { AuthContext } from './components/AuthContext';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState(null);
+  const [username, setUsername] = useState("");
   const [storedUsername, setStoredUsername] = useState(null);
+  const { isLoggedIn } = useContext(AuthContext); // isLoggedIn 상태 가져오기
+
 
   useEffect(() => {
     const storedUsername = sessionStorage.getItem("username");
@@ -50,7 +53,7 @@ const AdminLogin = () => {
       toast.success("Welcome Master");
       setTimeout(() => {
         navigate("/");
-      }, 2000);
+      }, 1500);
     } else {
       toast.error("Failed to log in");
     }
@@ -64,7 +67,7 @@ const AdminLogin = () => {
       <ToastContainer />
       <div className="max-w-md w-full space-y-8 bg-white p-6 rounded-lg">
         <div>
-          {storedUsername ? (
+          {isLoggedIn ? (
             <h1>무엇을 도와드릴까요, {storedUsername}님?</h1>
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleLogin}>

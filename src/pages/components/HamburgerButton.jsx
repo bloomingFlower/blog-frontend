@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { AuthContext } from './AuthContext';
+
 
 function HamburgerButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +13,11 @@ function HamburgerButton() {
 
   const handleMouseOut = () => {
     setIsOpen(false);
+  };
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
   };
 
   useEffect(() => {
@@ -85,6 +92,16 @@ function HamburgerButton() {
           >
             Post
           </Link>
+          {isLoggedIn && (
+              <Link
+                  className="block px-5 py-3 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
+                  style={{ fontSize: "20px" }} // 글씨 크기를 더 크게 변경
+                  to="/logout"
+                  onClick={handleLogout}
+              >
+                Logout
+              </Link>
+          )}
         </div>
       )}
     </div>

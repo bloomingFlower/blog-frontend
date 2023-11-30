@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import backgroundImage from "@img/background2.png";
 import PostUpload from "./PostUpload";
+
 function Post() {
   const [search, setSearch] = useState("");
   const posts = [
