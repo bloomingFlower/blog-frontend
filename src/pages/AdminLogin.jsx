@@ -10,7 +10,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [storedUsername, setStoredUsername] = useState(null);
-  const { isLoggedIn } = useContext(AuthContext); // isLoggedIn 상태 가져오기
+  const { isLoggedIn } = useContext(AuthContext); // get setIsLoggedIn function
 
 
   useEffect(() => {
@@ -23,7 +23,7 @@ const AdminLogin = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate("/");
-    }, 15000);
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
@@ -41,13 +41,13 @@ const AdminLogin = () => {
         password: password,
       }),
     });
-
     if (response.ok) {
       const data = await response.json(); // 응답 본문을 JSON으로 파싱
 
       // 세션 생성
       sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("username", data.username);
+      sessionStorage.setItem('isLoggedIn', true); // 세션 스토리지에 isLoggedIn 상태 저장
 
       // 토스트 메시지 출력
       toast.success("Welcome Master");
@@ -68,7 +68,7 @@ const AdminLogin = () => {
       <div className="max-w-md w-full space-y-8 bg-white p-6 rounded-lg">
         <div>
           {isLoggedIn ? (
-            <h1>무엇을 도와드릴까요, {storedUsername}님?</h1>
+            <h1>무엇을 도와드릴까요? {storedUsername}님?</h1>
           ) : (
             <form className="mt-8 space-y-6" onSubmit={handleLogin}>
               <input type="hidden" name="remember" value="true" />
