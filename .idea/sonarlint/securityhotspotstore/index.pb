@@ -46,3 +46,5 @@ V
 &src/pages/components/PasswordInput.jsx,2/6/26775f54405c9eff871ae185d3fcd837b8c6ee9b
 O
 src/pages/components/Footer.jsx,e/6/e6ee7de9b4ae07052383ce08b696f732012548d9
+C
+src/pages/Scrap.jsx,f/1/f1b24aabecbd657b292e7f268628e1fc6183281c

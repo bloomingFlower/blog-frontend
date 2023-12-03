@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import backgroundImage from "@img/background2.png";
 import PostUpload from "./PostUpload";
 
-function Post() {
+function Scrap() {
   const [search, setSearch] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(sessionStorage.getItem('isLoggedIn') === 'true');
   const posts = [
@@ -51,16 +51,7 @@ function Post() {
       >
 
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Posts</h1>
-          {isLoggedIn && ( // 로그인 상태일 때만 "Upload" 버튼 렌더링
-              <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
-            onClick={handleUploadClick}
-          >
-            <UploadIcon className="mr-2 h-5 w-5" />
-            Upload
-          </button>
-          )}
+          <h1 className="text-4xl font-bold">Scrap</h1>
         </div>
         <div className="grid grid-cols-1 gap-8">
           {posts.map((post, index) => (
@@ -88,4 +79,4 @@ function Post() {
   );
 }
 
-export default Post;
+export default Scrap;

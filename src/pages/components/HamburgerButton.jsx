@@ -93,14 +93,24 @@ function HamburgerButton() {
             Post
           </Link>
           {isLoggedIn && (
-              <Link
-                  className="block px-5 py-3 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
-                  style={{ fontSize: "20px" }} // 글씨 크기를 더 크게 변경
-                  to="/logout"
-                  onClick={handleLogout}
-              >
-                Logout
-              </Link>
+              <>
+                <Link
+                    className="block px-5 py-3 text-black hover:text-blue-500"
+                    style={{ fontSize: "20px" }}
+                    to="/scrap"
+                    onClick={handleLogout}
+                >
+                  Scrap
+                </Link>
+                <Link
+                    className="block px-5 py-3 text-black hover:text-blue-500"
+                    style={{ fontSize: "20px" }}
+                    to="/logout"
+                    onClick={handleLogout}
+                >
+                  Logout
+                </Link>
+              </>
           )}
         </div>
       )}

@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Link,
-  useNavigate,
 } from "react-router-dom";
 import axios from "axios";
 
@@ -12,17 +11,15 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Post from "./pages/Post";
 import PostUpload from "./pages/PostUpload";
+import Scrap from "./pages/Scrap";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import Logout from './pages/components/Logout';
 import Signup from './pages/Signup';
 import Footer from "./pages/components/Footer";
 
-
 import HamburgerButton from "./pages/components/HamburgerButton";
 import { AuthContext, AuthProvider } from './pages/components/AuthContext';
-
-import favicon from "@img/logo.png";
 
 import "tailwindcss/tailwind.css";
 
@@ -56,9 +53,7 @@ function App() {
           console.error("There was an error!", error);
         });
   }, []);
-  // useEffect(() => {
-  //   console.log(`isLoggedIn is now: ${isLoggedIn}`);
-  // }, [isLoggedIn]);
+
   return (
       <AuthProvider>
         <Router>
@@ -113,6 +108,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/post" element={<Post />} />
               <Route path="/post/upload" element={<PostUpload />} />
+              <Route path="/scrap" element={<Scrap />} />
               <Route path="/about" element={<About />} />
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/logout" element={<Logout />} />
