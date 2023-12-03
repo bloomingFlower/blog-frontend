@@ -44,3 +44,5 @@ D
 src/pages/Signup.jsx,c/5/c5f9030d762353966e40a1acf251fc2557517eaf
 V
 &src/pages/components/PasswordInput.jsx,2/6/26775f54405c9eff871ae185d3fcd837b8c6ee9b
+O
+src/pages/components/Footer.jsx,e/6/e6ee7de9b4ae07052383ce08b696f732012548d9

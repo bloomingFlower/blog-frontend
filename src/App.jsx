@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import Logout from './pages/components/Logout';
 import Signup from './pages/Signup';
+import Footer from "./pages/components/Footer";
 
 
 import HamburgerButton from "./pages/components/HamburgerButton";
@@ -118,9 +119,7 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="*" element={<NotFound />} /> {/* 일치하는 경로가 없을 때 404 페이지 렌더링 */}
             </Routes>
-            <div className="text-center py-4">
-              © {new Date().getFullYear()} JaeyoungYun
-            </div>
+            <Footer/>
           </div>
         </Router>
       </AuthProvider>
