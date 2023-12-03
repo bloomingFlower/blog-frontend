@@ -5,6 +5,7 @@ import PostUpload from "./PostUpload";
 
 function Post() {
   const [search, setSearch] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(sessionStorage.getItem('isLoggedIn') === 'true');
   const posts = [
     { title: "Post 1", content: "This is the first post." },
     { title: "Post 2", content: "This is the second post." },
@@ -51,14 +52,15 @@ function Post() {
 
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold">Posts</h1>
-          <button
+          {isLoggedIn && ( // 로그인 상태일 때만 "Upload" 버튼 렌더링
+              <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
             onClick={handleUploadClick}
           >
             <UploadIcon className="mr-2 h-5 w-5" />
             Upload
           </button>
-
+          )}
         </div>
         <div className="grid grid-cols-1 gap-8">
           {posts.map((post, index) => (

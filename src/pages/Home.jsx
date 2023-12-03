@@ -4,12 +4,23 @@ import backgroundImage from "@img/background2.png";
 
 function Home() {
     const [text, setText] = useState("");
-    const fullText = "Welcome to Our Website :)";
+    const [username, setUsername] = useState(""); // 로그인한 사용자의 아이디를 저장할 상태 생성
 
     useEffect(() => {
+        const storedUsername = sessionStorage.getItem('username');
+        if (storedUsername) {
+            setUsername(storedUsername);
+        }
+
         let index = 0;
         const intervalId = { id: null };
 
+        let fullText;
+        if (storedUsername) {
+            fullText = `Welcome to Our Website, ${storedUsername} :)`; // 로그인한 사용자의 아이디를 fullText에 추가
+        } else {
+            fullText = `Welcome to Our Website :)`;
+        }
         const startInterval = () => {
             intervalId.id = setInterval(() => {
                 if (index < fullText.length) {

@@ -22,6 +22,12 @@ function Section({ title, children }) {
 }
 
 function About() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleTitleClick = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div
       className="flex flex-col items-center justify-center h-screen text-center bg-cover bg-no-repeat"
@@ -34,7 +40,7 @@ function About() {
         <meta name="description" content="About me page of my website" />
       </Helmet>
       <div className="p-5 bg-white bg-opacity-50 rounded-lg">
-        <h1 className="text-4xl text-gray-800 mb-5">About Me</h1>
+        <h1 className="text-4xl text-gray-800 mb-5 cursor-pointer" onClick={handleTitleClick}>About Me</h1>
         <Section title="Education">
           <p>Computer Engineering, University of XYZ, 2015-2019</p>
         </Section>

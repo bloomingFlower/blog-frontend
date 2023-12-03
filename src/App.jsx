@@ -14,6 +14,10 @@ import Post from "./pages/Post";
 import PostUpload from "./pages/PostUpload";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
+import Logout from './pages/components/Logout';
+import Signup from './pages/Signup';
+
+
 import HamburgerButton from "./pages/components/HamburgerButton";
 import { AuthContext, AuthProvider } from './pages/components/AuthContext';
 
@@ -109,8 +113,10 @@ function App() {
               <Route path="/post" element={<Post />} />
               <Route path="/post/upload" element={<PostUpload />} />
               <Route path="/about" element={<About />} />
-              <Route component={NotFound} />
               <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/logout" element={<Logout />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="*" element={<NotFound />} /> {/* 일치하는 경로가 없을 때 404 페이지 렌더링 */}
             </Routes>
             <div className="text-center py-4">
               © {new Date().getFullYear()} JaeyoungYun

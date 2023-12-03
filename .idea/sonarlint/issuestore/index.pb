@@ -38,3 +38,9 @@ $src/pages/components/AuthContext.jsx,0/a/0a5431bdbd6829425a7a1246780993fb3cc62
 src/App.jsx,c/0/c0e9e59a467e1546695bfa22746b302540797a4e
 B
 src/styles/App.css,d/1/d187110b5cde7cd6a9bd9e151043dffa9924a5fe
+O
+src/pages/components/Logout.jsx,b/b/bb3b59c6ba1d7fc3f3f73d57748786185952063d
+D
+src/pages/Signup.jsx,c/5/c5f9030d762353966e40a1acf251fc2557517eaf
+V
+&src/pages/components/PasswordInput.jsx,2/6/26775f54405c9eff871ae185d3fcd837b8c6ee9b
