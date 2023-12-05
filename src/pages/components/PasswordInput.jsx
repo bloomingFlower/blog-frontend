@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function PasswordInput() {
+function PasswordInput({ onChange, ...props }) {
     const [password, setPassword] = useState("");
     const [passwordStrength, setPasswordStrength] = useState(0);
 
@@ -12,14 +12,19 @@ function PasswordInput() {
         if (password.match(/[0-9]/)) strength++; // 숫자가 있으면
         setPasswordStrength(strength);
     }, [password]);
-
+    const handlePasswordChange = (e) => {
+        const newPassword = e.target.value;
+        setPassword(newPassword);
+        onChange(newPassword); // 부모 컴포넌트에 상태 변경 알림
+    };
     return (
         <div>
             <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                {...props}
             />
             <div className="h-2 w-full border">
                 <div

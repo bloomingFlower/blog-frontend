@@ -55,7 +55,7 @@ function Scrap() {
         </div>
         <div className="grid grid-cols-1 gap-8">
           {posts.map((post, index) => (
-              <Link to={`/post/${index}`} key={index}> {/* 포스트를 클릭 가능한 링크로 만듭니다 */}
+              <Link to={`/post/${index}`} key={index}> {/* 클릭 시 오리지널 링크 */}
                 <div className="bg-white rounded-lg shadow-lg overflow-hidden">
                   <div className="p-4">
                     <h2 className="text-2xl font-bold">{post.title}</h2>

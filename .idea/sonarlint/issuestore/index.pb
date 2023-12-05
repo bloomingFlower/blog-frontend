@@ -48,3 +48,7 @@ O
 src/pages/components/Footer.jsx,e/6/e6ee7de9b4ae07052383ce08b696f732012548d9
 C
 src/pages/Scrap.jsx,f/1/f1b24aabecbd657b292e7f268628e1fc6183281c
+C
+src/styles/Home.css,1/b/1be2e564e4922cb7aa714c85a86407b98ff6b0a8
+B
+tailwind.config.js,0/9/0918cbb76f2c44f223706cec9d31a32cd1177ce4
