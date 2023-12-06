@@ -57,7 +57,7 @@ const Signup = () => {
                 phone: phone
             });
 
-            if (response.status === 200) {
+            if (response.status === 201) {
                 // 회원가입 성공 후 홈페이지로 이동
                 navigate("/");
             } else {
@@ -65,7 +65,6 @@ const Signup = () => {
                 alert(response.data.message);
             }
         } catch (error) {
-            console.log(error);
             if (error.response && error.response.data.message === "Email already exists") {
                 setEmailExists(true); // 이메일이 이미 존재하면 상태를 true로 설정
             } else {

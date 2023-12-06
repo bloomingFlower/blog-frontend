@@ -6,7 +6,8 @@ import {
   Link,
 } from "react-router-dom";
 import axios from "axios";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Post from "./pages/Post";
@@ -115,6 +116,7 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="*" element={<NotFound />} /> {/* 일치하는 경로가 없을 때 404 페이지 렌더링 */}
             </Routes>
+            <ToastContainer />
             <Footer/>
           </div>
         </Router>
