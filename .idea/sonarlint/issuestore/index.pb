@@ -52,3 +52,5 @@ C
 src/styles/Home.css,1/b/1be2e564e4922cb7aa714c85a86407b98ff6b0a8
 B
 tailwind.config.js,0/9/0918cbb76f2c44f223706cec9d31a32cd1177ce4
+\
+,src/pages/components/DeleteAccountButton.jsx,7/3/73ec807a04526005c194e58f1860b465abc76a02

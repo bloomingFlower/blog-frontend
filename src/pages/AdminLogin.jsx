@@ -4,6 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.png";
 import { AuthContext } from './components/AuthContext';
+import DeleteAccountButton from "./components/DeleteAccountButton";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -47,33 +48,41 @@ const AdminLogin = () => {
       toast.error("Invalid email format");
       return;
     }
+    try {
+      const response = await fetch("http://localhost:8008/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: username,
+          password: password,
+        }),
+        credentials: 'include', // 쿠키를 요청에 포함
 
-    const response = await fetch("http://localhost:8008/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: username,
-        password: password,
-      }),
-    });
-    if (response.ok) {
-      const data = await response.json(); // 응답 본문을 JSON으로 파싱
+      });
 
-      // 세션 생성
-      sessionStorage.setItem("token", data.user.email);
-      sessionStorage.setItem("username", data.user.first_name);
-      setUsername(data.user.first_name); // username 상태 설정
-      setIsLoggedIn(true); // set isLoggedIn state to true
-      sessionStorage.setItem('isLoggedIn', true); // 세션 스토리지에 isLoggedIn 상태 저장
+      if (response.ok) {
+        const data = await response.json(); // 응답 본문을 JSON으로 파싱
+        // 세션 생성
+        const jwt = data.jwt;
+        sessionStorage.setItem('jwt', jwt); // JWT를 세션 스토리지에 저장
+        sessionStorage.setItem("email", data.user.email);
+        sessionStorage.setItem("username", data.user.first_name);
+        setUsername(data.user.first_name); // username 상태 설정
+        setIsLoggedIn(true); // set isLoggedIn state to true
+        sessionStorage.setItem('isLoggedIn', true); // 세션 스토리지에 isLoggedIn 상태 저장
 
 
-      // 토스트 메시지 출력
-      //toast.success("Welcome" + {storedUsername});
-      navigate(-1);
-    } else {
-      toast.error("Failed to log in");
+        // 토스트 메시지 출력
+        //toast.success("Welcome" + {storedUsername});
+        navigate(-1);
+      } else {
+        toast.error("Failed to log in: " + response.status);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred");
     }
   };
 
@@ -103,6 +112,8 @@ const AdminLogin = () => {
             <div className="flex justify-center space-x-4">
               <a href="/edit-profile" className="text-indigo-600 hover:text-indigo-500">회원정보 수정</a>
               <button onClick={handleLogout} className="text-indigo-600 hover:text-indigo-500">로그아웃</button>
+              <DeleteAccountButton/>
+
             </div>
           </>
 
