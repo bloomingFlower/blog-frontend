@@ -5,7 +5,8 @@ import CreatableSelect from 'react-select/creatable';
 import 'react-quill/dist/quill.snow.css';
 import Modal from "react-modal";
 import "tailwindcss/tailwind.css";
-import backgroundImage from "@img/background2.png";
+import api from "./components/api";
+import {trackPromise} from "react-promise-tracker";
 
 function PostUpload({ setIsUploadModalOpen }) {
     const [title, setTitle] = useState("");
@@ -14,28 +15,6 @@ function PostUpload({ setIsUploadModalOpen }) {
     const [tags, setTags] = useState([]);
     const [isModified, setIsModified] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-
-    const handleDelete = (i) => {
-        setTags(tags.filter((tag, index) => index !== i));
-    }
-
-    const handleAddition = (tag) => {
-        // '#' 문자로 태그를 구분하는 로직
-        const inputTags = tag.text.split('#').filter(inputTag => inputTag.trim() !== '');
-        inputTags.forEach(inputTag => {
-            const newTag = { id: inputTag, text: '#' + inputTag }; // 각 태그 문자 앞에 '#' 문자를 붙임
-            if (!tags.find(t => t.id === newTag.id)) {
-                setTags([...tags, newTag]);
-            }
-        });
-    }
-    const handleDrag = (tag, currPos, newPos) => {
-        const newTags = [...tags];
-        newTags.splice(currPos, 1);
-        newTags.splice(newPos, 0, tag);
-
-        setTags(newTags);
-    };
 
     const modules = {
         toolbar: [
@@ -49,8 +28,29 @@ function PostUpload({ setIsUploadModalOpen }) {
         ],
     };
 
-    const handleUpload = () => {
-        // 여기에 업로드 기능을 구현합니다.
+    const handleUpload = async () => {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('content', editorState);
+        formData.append('image', image);
+        formData.append('tags', JSON.stringify(tags.map(tag => tag.value)));
+        try {
+            const response = await trackPromise(api.post('/api/posts', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true, // 쿠키 전송 설정
+            }));
+
+            if (response.status === 200) {
+                alert('Post uploaded successfully');
+                // ... 나머지 코드 ...
+            } else {
+                alert('Failed to upload post');
+            }
+        } catch (error) {
+            console.error('Failed to upload post:', error);
+        }
     };
 
     const handleInputChange = (content) => {

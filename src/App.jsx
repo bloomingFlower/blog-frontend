@@ -17,13 +17,16 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import Logout from './pages/components/Logout';
 import Signup from './pages/Signup';
+import EditProfile from "./pages/EditProfile";
 import Footer from "./pages/components/Footer";
+import LoadingIndicator from './pages/components/LoadingIndicator';
 
 import HamburgerButton from "./pages/components/HamburgerButton";
 import { AuthContext, AuthProvider } from './pages/components/AuthContext';
+import API_SERVER_URL from './apiConfig';
 
 import "tailwindcss/tailwind.css";
-
+import "./styles/loading.css";
 function App() {
   const [data, setData] = useState(null);
 
@@ -44,9 +47,10 @@ function App() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [searchRef]);
+
   useEffect(() => {
     axios
-        .get("http://localhost:8008/api/data") // Go Fiber 백엔드의 API 엔드포인트
+        .get(`${API_SERVER_URL}/api/data`) // Go Fiber 백엔드의 API 엔드포인트
         .then((response) => {
           setData(response.data);
         })
@@ -114,12 +118,15 @@ function App() {
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/logout" element={<Logout />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/edit-profile" element={<EditProfile />} />
               <Route path="*" element={<NotFound />} /> {/* 일치하는 경로가 없을 때 404 페이지 렌더링 */}
             </Routes>
             <ToastContainer />
             <Footer/>
           </div>
         </Router>
+        <LoadingIndicator />
+
       </AuthProvider>
   );
 }

@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.png";
 import PasswordInput from "./components/PasswordInput";
+import API_SERVER_URL from '../apiConfig';
 
 const Signup = () => {
     const [firstName, setFirstName] = useState("");
@@ -49,7 +50,7 @@ const Signup = () => {
 
         // 회원가입 로직 구현
         try {
-            const response = await axios.post("http://localhost:8008/api/register", {
+            const response = await axios.post(`${API_SERVER_URL}/api/register`, {
                 first_name: firstName,
                 last_name: lastName,
                 email: email,

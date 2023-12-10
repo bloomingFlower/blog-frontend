@@ -5,10 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.png";
 import { AuthContext } from './components/AuthContext';
 import DeleteAccountButton from "./components/DeleteAccountButton";
+import { trackPromise } from 'react-promise-tracker';
+import api from './components/api';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -49,40 +50,57 @@ const AdminLogin = () => {
       return;
     }
     try {
-      const response = await fetch("http://localhost:8008/api/login", {
-        method: "POST",
+      const response = await trackPromise(api.post("/api/login", {
+        email: username,
+        password: password,
+      }, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: username,
-          password: password,
-        }),
-        credentials: 'include', // 쿠키를 요청에 포함
+        withCredentials: true,
+      }));
+      if (response.status === 200) {
+        const data = response.data; // 응답 본문을 data 변수에 저장
+        const jwtCookie = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('jwt='));
 
-      });
-
-      if (response.ok) {
-        const data = await response.json(); // 응답 본문을 JSON으로 파싱
+        if (jwtCookie) {
+          const jwt = jwtCookie.split('=')[1];
+          // 이후 jwt를 사용하는 코드
+        } else {
+          console.error('JWT 쿠키가 없습니다.');
+        }
         // 세션 생성
-        const jwt = data.jwt;
+        const jwt = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('jwt='))
+            .split('=')[1];
+        if (jwt === undefined) {
+            toast.error("jwt is undefined");
+            return;
+        }
         sessionStorage.setItem('jwt', jwt); // JWT를 세션 스토리지에 저장
-        sessionStorage.setItem("email", data.user.email);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
         sessionStorage.setItem("username", data.user.first_name);
+
         setUsername(data.user.first_name); // username 상태 설정
         setIsLoggedIn(true); // set isLoggedIn state to true
         sessionStorage.setItem('isLoggedIn', true); // 세션 스토리지에 isLoggedIn 상태 저장
 
-
-        // 토스트 메시지 출력
-        //toast.success("Welcome" + {storedUsername});
         navigate(-1);
       } else {
         toast.error("Failed to log in: " + response.status);
       }
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred");
+      if (error.status === 404) {
+        toast.error("User not found");
+      } else if (error.status === 401) {
+        toast.error("Incorrect password");
+      } else {
+        console.error(error);
+        toast.error("An error occurred");
+      }
     }
   };
 
@@ -113,10 +131,8 @@ const AdminLogin = () => {
               <a href="/edit-profile" className="text-indigo-600 hover:text-indigo-500">회원정보 수정</a>
               <button onClick={handleLogout} className="text-indigo-600 hover:text-indigo-500">로그아웃</button>
               <DeleteAccountButton/>
-
             </div>
           </>
-
         ) : (
             <form className="mt-8 space-y-6" onSubmit={handleLogin}>
               <input type="hidden" name="remember" value="true" />

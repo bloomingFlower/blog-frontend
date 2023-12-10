@@ -1,3 +1,5 @@
 
+ëjavascript:S6848'"ÂAvoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.(¯ƒúÁøÿÿÿÿ8ÅèºçÄ1
 ejavascript:S1082'"=onMouseOver must be accompanied by onFocus for accessibility.(¯ƒúÁøÿÿÿÿ8±Š›ÿÃ1
+ëjavascript:S6848<"ÂAvoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.(¯ƒúÁøÿÿÿÿ8ÅèºçÄ1
 cjavascript:S1082<";onMouseOut must be accompanied by onBlur for accessibility.(¯ƒúÁøÿÿÿÿ8±Š›ÿÃ1
