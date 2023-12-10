@@ -7,6 +7,7 @@ import Modal from "react-modal";
 import "tailwindcss/tailwind.css";
 import api from "./components/api";
 import {trackPromise} from "react-promise-tracker";
+import sanitizeHtml from 'sanitize-html';
 
 function PostUpload({ setIsUploadModalOpen }) {
     const [title, setTitle] = useState("");
@@ -28,12 +29,23 @@ function PostUpload({ setIsUploadModalOpen }) {
         ],
     };
 
-    const handleUpload = async () => {
+    const handleUpload = async (e) => {
+        e.preventDefault();
+
+        // HTML Sanitization
+        const cleanContent = sanitizeHtml(editorState, {
+            allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'p', 'b', 'i', 'u', 's', 'a', 'br']),
+            allowedAttributes: {
+                a: ['href', 'target'],
+                img: ['src', 'alt']
+            }
+        });
+
         const formData = new FormData();
-        formData.append('title', title);
-        formData.append('content', editorState);
+        formData.append('title', sanitizeHtml(title));
+        formData.append('content', cleanContent);
         formData.append('image', image);
-        formData.append('tags', JSON.stringify(tags.map(tag => tag.value)));
+        formData.append('tags', JSON.stringify(tags.map(tag => sanitizeHtml(tag.value))));
         try {
             const response = await trackPromise(api.post('/api/posts', formData, {
                 headers: {
