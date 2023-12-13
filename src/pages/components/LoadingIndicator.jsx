@@ -3,7 +3,6 @@ import React from "react";
 
 const LoadingIndicator = props => {
     const { promiseInProgress } = usePromiseTracker();
-    console.log("promiseInProgress", promiseInProgress)
     return (
         promiseInProgress &&
         <div style={{

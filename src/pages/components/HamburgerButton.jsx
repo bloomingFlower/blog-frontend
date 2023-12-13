@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from './AuthContext';
 
-
 function HamburgerButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [clickTimes, setClickTimes] = useState([]);
@@ -98,7 +97,7 @@ function HamburgerButton() {
                     className="block px-5 py-3 text-black hover:text-blue-500"
                     style={{ fontSize: "20px" }}
                     to="/scrap"
-                    onClick={handleLogout}
+                    onClick={() => setIsOpen(false)}
                 >
                   Scrap
                 </Link>

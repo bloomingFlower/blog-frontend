@@ -1,6 +1,8 @@
 // PostUpload.jsx
-import React, { useEffect, useState, useRef } from "react";
-import ReactQuill from 'react-quill';
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import ReactQuill, { Quill } from 'react-quill';
+import ImageUploader from 'react-quill-image-uploader';
+
 import CreatableSelect from 'react-select/creatable';
 import 'react-quill/dist/quill.snow.css';
 import Modal from "react-modal";
@@ -9,42 +11,90 @@ import api from "./components/api";
 import {trackPromise} from "react-promise-tracker";
 import sanitizeHtml from 'sanitize-html';
 
+Quill.register('modules/imageUploader', ImageUploader);
+
+
 function PostUpload({ setIsUploadModalOpen }) {
     const [title, setTitle] = useState("");
     const [editorState, setEditorState] = useState("");
-    const [image, setImage] = useState(null);
+    const [file, setFile] = useState(null);
     const [tags, setTags] = useState([]);
     const [isModified, setIsModified] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const quillRef = useRef(); // Quill 인스턴스에 접근하기 위한 ref
 
-    const modules = {
+    const modules = useMemo(() => {
+        return {
         toolbar: [
             [{ 'header': [1, 2, 3, 4, 5, 6, false] }, { 'font': [] }],
             [{ size: ['small', false, 'large', 'huge'] }],  // custom dropdown
             ['bold', 'italic', 'underline', 'strike', 'blockquote'],
             [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],          // outdent/indent
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }], // outdent/indent
             ['link', 'image', 'video'],
             ['clean']
         ],
-    };
+        imageUploader: {
+            upload: file => {
+                try {
+                    console.log("imageUploader function is called"); // 이 메시지가 출력되면 imageUploader 함수가 호출된 것입니다.
+                    return new Promise((resolve, reject) => {
+                        if (!file) {
+                            console.log("No file selected");
+                            return;
+                        }
+                        const formData = new FormData();
+                        formData.append("image", file);
+                        console.log("formData", formData)
+                        fetch(
+                            "http://localhost:8008",
+                            {
+                                method: "POST",
+                                body: formData
+                            }
+                        )
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(result => {
+                                resolve(result.path);
+                                console.log("path: ", result.path);
+                            })
+                            .catch(error => {
+                                reject("Upload failed");
+                                console.error("Error:", error);
+                            });
+                    });
+                } catch (error) {
+                    console.error("Error in imageUploader:", error);
+                }
+            }
+        }
+        }
+
+    }, []);
 
     const handleUpload = async (e) => {
         e.preventDefault();
+        console.log("editorState", editorState)
 
         // HTML Sanitization
         const cleanContent = sanitizeHtml(editorState, {
-            allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'p', 'b', 'i', 'u', 's', 'a', 'br']),
+            allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'p', 'b', 'i', 'u', 's', 'a', 'br', 'video']),
             allowedAttributes: {
                 a: ['href', 'target'],
-                img: ['src', 'alt']
+                img: ['src', 'alt'],
+                video: ['src', 'controls', 'autoplay', 'muted', 'loop', 'width', 'height'],
             }
         });
-
+        console.log("cleanContent", cleanContent)
         const formData = new FormData();
         formData.append('title', sanitizeHtml(title));
         formData.append('content', cleanContent);
-        formData.append('image', image);
+        formData.append('file', file);
         formData.append('tags', JSON.stringify(tags.map(tag => sanitizeHtml(tag.value))));
         try {
             const response = await trackPromise(api.post('/api/posts', formData, {
@@ -68,7 +118,6 @@ function PostUpload({ setIsUploadModalOpen }) {
     const handleInputChange = (content) => {
         setIsModified(true);
         setEditorState(content);
-
     };
 
     const handleInputTag = (newValue, actionMeta) => {
@@ -94,6 +143,19 @@ function PostUpload({ setIsUploadModalOpen }) {
 
     }, []);
 
+    // useEffect(() => {
+    //     if (quillRef.current) {
+    //         const quill = quillRef.current.getEditor();
+    //         const length = quill.getLength();
+    //         const index = length - 1;
+    //
+    //         // 인덱스가 에디터의 콘텐츠 범위 내에 있는지 확인
+    //         if (index <= length) {
+    //             quill.setSelection(index);
+    //         }
+    //     }
+    // }, [quillRef]);
+
     return (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-gray-100 p-8 rounded shadow-md max-w-[97%] max-h-[98%] m-4 overflow-auto">
@@ -107,14 +169,19 @@ function PostUpload({ setIsUploadModalOpen }) {
                     placeholder="Title"
                 />
                 <div>
-                    <ReactQuill className="w-full h-full" value={editorState} onChange={handleInputChange} modules={modules} />
+                    <ReactQuill
+                        ref={quillRef}
+                        value={editorState}
+                        onChange={setEditorState || handleInputChange}
+                        modules={modules}
+                    />
                 </div>
-            <div>
+                <div>
 
-            <input
-                    className="border border-gray-300 p-2 w-full mb-4"
+                    <input
+                        className="border border-gray-300 p-2 w-full mb-4"
                     type="file"
-                    onChange={(e) => setImage(e.target.files[0])}
+                    onChange={(e) => setFile(e.target.files[0])}
                 />
             </div>
                 <CreatableSelect
