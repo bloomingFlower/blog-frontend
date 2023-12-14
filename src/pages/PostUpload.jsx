@@ -74,7 +74,6 @@ function PostUpload({ setIsUploadModalOpen }) {
             }
         }
         }
-
     }, []);
 
     const handleUpload = async (e) => {
@@ -174,6 +173,8 @@ function PostUpload({ setIsUploadModalOpen }) {
                         value={editorState}
                         onChange={setEditorState || handleInputChange}
                         modules={modules}
+                        theme = "snow"
+                        placeholder = "내용을 입력해주세요"
                     />
                 </div>
                 <div>
