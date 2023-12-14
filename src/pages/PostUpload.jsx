@@ -1,8 +1,9 @@
 // PostUpload.jsx
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import ReactQuill, { Quill } from 'react-quill';
-import ImageUploader from 'react-quill-image-uploader';
-
+import ImageUploader from "quill-image-uploader";
+//import 'quill-image-uploader/dist/quill.imageUploader.min.css';
 import CreatableSelect from 'react-select/creatable';
 import 'react-quill/dist/quill.snow.css';
 import Modal from "react-modal";
@@ -10,11 +11,13 @@ import "tailwindcss/tailwind.css";
 import api from "./components/api";
 import {trackPromise} from "react-promise-tracker";
 import sanitizeHtml from 'sanitize-html';
+import {toast} from "react-toastify";
 
 Quill.register('modules/imageUploader', ImageUploader);
 
-
 function PostUpload({ setIsUploadModalOpen }) {
+    const navigate = useNavigate();
+
     const [title, setTitle] = useState("");
     const [editorState, setEditorState] = useState("");
     const [file, setFile] = useState(null);
@@ -37,39 +40,28 @@ function PostUpload({ setIsUploadModalOpen }) {
         imageUploader: {
             upload: file => {
                 try {
-                    console.log("imageUploader function is called"); // 이 메시지가 출력되면 imageUploader 함수가 호출된 것입니다.
                     return new Promise((resolve, reject) => {
                         if (!file) {
-                            console.log("No file selected");
+                            toast.error("No file selected");
                             return;
                         }
                         const formData = new FormData();
                         formData.append("image", file);
-                        console.log("formData", formData)
-                        fetch(
-                            "http://localhost:8008",
-                            {
-                                method: "POST",
-                                body: formData
-                            }
-                        )
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error(`HTTP error! status: ${response.status}`);
-                                }
-                                return response.json();
-                            })
-                            .then(result => {
-                                resolve(result.path);
-                                console.log("path: ", result.path);
-                            })
-                            .catch(error => {
-                                reject("Upload failed");
-                                console.error("Error:", error);
-                            });
+                        api({
+                            url: "http://localhost:8008/api/upload-img",
+                            method: "POST",
+                            data: formData,
+                            withCredentials: true,
+                        })
+                        .then(response => {
+                            resolve(response.data.url);
+                        })
+                        .catch(error => {
+                            reject("Upload failed");
+                        });
                     });
                 } catch (error) {
-                    console.error("Error in imageUploader:", error);
+                    toast("Error in imageUploader:", error);
                 }
             }
         }
@@ -78,8 +70,6 @@ function PostUpload({ setIsUploadModalOpen }) {
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        console.log("editorState", editorState)
-
         // HTML Sanitization
         const cleanContent = sanitizeHtml(editorState, {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'p', 'b', 'i', 'u', 's', 'a', 'br', 'video']),
@@ -89,7 +79,6 @@ function PostUpload({ setIsUploadModalOpen }) {
                 video: ['src', 'controls', 'autoplay', 'muted', 'loop', 'width', 'height'],
             }
         });
-        console.log("cleanContent", cleanContent)
         const formData = new FormData();
         formData.append('title', sanitizeHtml(title));
         formData.append('content', cleanContent);
@@ -105,7 +94,8 @@ function PostUpload({ setIsUploadModalOpen }) {
 
             if (response.status === 200) {
                 alert('Post uploaded successfully');
-                // ... 나머지 코드 ...
+                setIsUploadModalOpen(false);
+                navigate(-1);
             } else {
                 alert('Failed to upload post');
             }
@@ -142,19 +132,6 @@ function PostUpload({ setIsUploadModalOpen }) {
 
     }, []);
 
-    // useEffect(() => {
-    //     if (quillRef.current) {
-    //         const quill = quillRef.current.getEditor();
-    //         const length = quill.getLength();
-    //         const index = length - 1;
-    //
-    //         // 인덱스가 에디터의 콘텐츠 범위 내에 있는지 확인
-    //         if (index <= length) {
-    //             quill.setSelection(index);
-    //         }
-    //     }
-    // }, [quillRef]);
-
     return (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-gray-100 p-8 rounded shadow-md max-w-[97%] max-h-[98%] m-4 overflow-auto">
@@ -165,7 +142,7 @@ function PostUpload({ setIsUploadModalOpen }) {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Title"
+                    placeholder="제목을 입력해주세요"
                 />
                 <div>
                     <ReactQuill
