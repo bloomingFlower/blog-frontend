@@ -35,6 +35,7 @@ function SearchComponent({ setSearchResults }) {
     return (
         <form onSubmit={handleSearch} className="flex space-x-4 w-1/2 mx-auto">
             <input
+                id="searchInput"
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

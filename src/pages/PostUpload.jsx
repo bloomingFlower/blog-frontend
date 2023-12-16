@@ -22,7 +22,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     const [isModified, setIsModified] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const quillRef = useRef(); // Quill 인스턴스에 접근하기 위한 ref
-
+    // TODO : 이미지 리사이즈, 압축 기능 구현
     const modules = useMemo(() => {
         return {
         toolbar: [

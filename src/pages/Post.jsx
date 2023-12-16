@@ -59,6 +59,45 @@ function Post() {
     fetchPosts();
   }, [page]);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      switch (event.key) {
+        case 'ArrowLeft':
+          handlePrevPage();
+          break;
+        case 'ArrowRight':
+          handleNextPage();
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [page, lastPage]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === '/') {
+        event.preventDefault();
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   const handlePrevPage = () => {
     if (page > 1) {
       setPage(page - 1);
