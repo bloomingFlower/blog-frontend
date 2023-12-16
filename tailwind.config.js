@@ -11,6 +11,7 @@ module.exports = {
         "fade-in-right": "fade-in-right 0.5s ease-out both",
         "slide-out-right": "slide-out-right 0.5s ease-out both",
         "fade-out-right": "fade-out-right 0.5s ease-out both",
+        "blink": 'blink 1s infinite',
       },
       keyframes: {
         slideDown: {
@@ -36,6 +37,10 @@ module.exports = {
         "fade-out-right": {
           "0%": { transform: "translateX(0)", opacity: "1" },
           "100%": { transform: "translateX(100%)", opacity: "0" },
+        },
+        "blink": {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
         },
       },
     },

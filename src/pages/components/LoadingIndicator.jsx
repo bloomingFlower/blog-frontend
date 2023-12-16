@@ -14,7 +14,7 @@ const LoadingIndicator = props => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)'
+            // backgroundColor: 'rgba(0, 0, 0, 0.5)'
         }}>
             <div className="loading-spinner">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">

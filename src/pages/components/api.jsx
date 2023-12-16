@@ -5,50 +5,42 @@ import API_SERVER_URL from '../../apiConfig';
 
 const api = axios.create({
     baseURL: API_SERVER_URL, // API 서버의 기본 URL
+    withCredentials: true, // 자격 증명을 포함하는 옵션
 });
 
 api.interceptors.request.use(async (config) => {
+    config.metadata = { startTime: new Date() }; // 요청 시작 시간 기록
     config.cancelToken = new axios.CancelToken(cancel => config.canceller = cancel);
-    // 요청 정보를 로그로 저장
-    console.log(`Request: ${config.method.toUpperCase()} ${config.url}`);
-    if (config.params) {
-        console.log(`Params: ${JSON.stringify(config.params)}`);
-    }
-    if (config.data) {
-        console.log(`Data: ${JSON.stringify(config.data)}`);
-    }
-    // 요청 정보를 로그로 저장
-    const logData = {
-        method: config.method.toUpperCase(),
-        url: config.url,
-        params: config.params ? JSON.stringify(config.params) : null,
-        data: config.data ? JSON.stringify(config.data) : null,
-    };
-    // 로그 데이터를 서버에 보냄
-    try {
-        await axios.post(`${API_SERVER_URL}/api/logs`, logData);
-    } catch (error) {
-        console.error('Failed to send log data:', error);
-    }
-    // 요청 헤더에 인증 토큰 추가
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //     config.headers['Authorization'] = `Bearer ${token}`;
-    // }
     return config;
 });
 
 api.interceptors.response.use(
     async (response) => {
+        const { config, status } = response;
+        const endTime = new Date(); // 요청 종료 시간 기록
+        const responseTime = endTime - config.metadata.startTime; // 응답 시간 계산
+
+        // 로그 데이터 생성
+        const logData = {
+            method: config.method.toUpperCase(),
+            url: config.url,
+            ip: '', // IP 주소는 클라이언트 측에서 알 수 없으므로 빈 문자열로 설정
+            statusCode: status,
+            responseTime,
+        };
+
+        // 로그 데이터를 서버에 보냄
+        try {
+            await axios.post(`${API_SERVER_URL}/api/log`, logData, {withCredentials: true});
+        } catch (error) {
+            console.error('Failed to send log data:', error);
+        }
+
         await trackPromise(Promise.resolve(response));
-        // 응답 데이터 처리
-        // const data = response.data;
-        // return data;
         return response;
     },
     async (error) => {
         // 에러 처리
-        // console.error('An error occurred:', error);
         await trackPromise(Promise.reject(error));
         return Promise.reject(error);
     }

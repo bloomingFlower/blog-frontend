@@ -74,3 +74,9 @@ V
 &src/pages/components/GgLoginButton.jsx,5/c/5c7fd1dd560a1ed68484af52203ee472e65b22b1
 D
 src/styles/index.css,7/a/7a1236ac068ce98163901ea7ee08ea9af61a024a
+F
+src/pages/PostView.jsx,5/c/5c5ee675c66b154985c65e1dec11aa382434a2fb
+V
+&src/pages/components/WelcomMessage.jsx,f/5/f5ec56e99efad0a2e894cc8d5a04ff5877f2c405
+S
+#src/pages/components/SearchPost.jsx,a/4/a454c566dd9fbb047bd30cbf1e3d53132be4501c

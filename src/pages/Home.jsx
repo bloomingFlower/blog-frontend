@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "tailwindcss/tailwind.css";
 import backgroundImage from "@img/background2.png";
+import WelcomeMessage from "./components/WelcomMessage";
 
 function Home() {
     const [text, setText] = useState("");
@@ -48,7 +49,7 @@ function Home() {
                 fontFamily: "PlayfairDisplay, serif",
             }}
         >
-            <h1 className="text-4xl">{text}</h1>
+            <WelcomeMessage username={username} />
             <p className="text-xl">
                 Hello, my name is Jaeyoung Yun. I am a computer engineer.
             </p>

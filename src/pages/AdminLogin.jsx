@@ -98,7 +98,6 @@ const AdminLogin = () => {
       } else if (error.status === 401) {
         toast.error("Incorrect password");
       } else {
-        console.error(error);
         toast.error("An error occurred");
       }
     }

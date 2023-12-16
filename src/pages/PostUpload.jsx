@@ -1,9 +1,8 @@
 // PostUpload.jsx
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import ReactQuill, { Quill } from 'react-quill';
 import ImageUploader from "quill-image-uploader";
-//import 'quill-image-uploader/dist/quill.imageUploader.min.css';
+import 'quill-image-uploader/dist/quill.imageUploader.min.css';
 import CreatableSelect from 'react-select/creatable';
 import 'react-quill/dist/quill.snow.css';
 import Modal from "react-modal";
@@ -15,9 +14,7 @@ import {toast} from "react-toastify";
 
 Quill.register('modules/imageUploader', ImageUploader);
 
-function PostUpload({ setIsUploadModalOpen }) {
-    const navigate = useNavigate();
-
+function PostUpload({ setIsUploadModalOpen, postId }) {
     const [title, setTitle] = useState("");
     const [editorState, setEditorState] = useState("");
     const [file, setFile] = useState(null);
@@ -68,8 +65,36 @@ function PostUpload({ setIsUploadModalOpen }) {
         }
     }, []);
 
+    useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                const response = await trackPromise(api.get(`/api/post/${postId}`));
+                if (response.data.data) {
+                    setTitle(response.data.data.title);
+                    setEditorState(response.data.data.content);
+                    setTags(response.data.data.tags.split(',').map(tag => ({value: tag, label: tag})) || []);
+                    setFile(response.data.data.file);
+                } else {
+                    throw new Error('Post not found');
+                }
+            } catch (error) {
+                console.error('Failed to fetch post:', error);
+            }
+        };
+
+        if (postId) {
+            fetchPost();
+        }
+    }, [postId]);
+
     const handleUpload = async (e) => {
         e.preventDefault();
+        // title과 content가 비어있는지 확인
+        if (!title.trim() || !editorState.trim()) {
+            toast.error('Title or content cannot be empty');
+            return;
+        }
+
         // HTML Sanitization
         const cleanContent = sanitizeHtml(editorState, {
             allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'p', 'b', 'i', 'u', 's', 'a', 'br', 'video']),
@@ -80,27 +105,45 @@ function PostUpload({ setIsUploadModalOpen }) {
             }
         });
         const formData = new FormData();
-        formData.append('title', sanitizeHtml(title));
+        formData.append('title', title);
         formData.append('content', cleanContent);
-        formData.append('file', file);
-        formData.append('tags', JSON.stringify(tags.map(tag => sanitizeHtml(tag.value))));
+        const tagValues = tags.map(tag => tag.value).join(',');        console.log('tags', tagValues);
+        formData.append('tags', tagValues);
+        if (file) {
+            formData.append('file', file);
+        }
         try {
-            const response = await trackPromise(api.post('/api/posts', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                withCredentials: true, // 쿠키 전송 설정
-            }));
-
-            if (response.status === 200) {
-                alert('Post uploaded successfully');
-                setIsUploadModalOpen(false);
-                navigate(-1);
+            if (postId) {
+                // If postId is provided, update the existing post
+                const response = await trackPromise(api.put(`/api/post/${postId}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }));
+                if (response.status === 200) {
+                    toast.success('Post updated successfully');
+                    setIsUploadModalOpen(false);
+                    window.location.reload();
+                } else {
+                    alert('Failed to upload post');
+                }
             } else {
-                alert('Failed to upload post');
+                const response = await trackPromise(api.post('/api/posts', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }));
+
+                if (response.status === 200) {
+                    toast.success('Post uploaded successfully');
+                    setIsUploadModalOpen(false);
+                    window.location.reload();
+                } else {
+                    alert('Failed to upload post');
+                }
             }
         } catch (error) {
-            console.error('Failed to upload post:', error);
+            toast.error('Failed to upload post:', error);
         }
     };
 
@@ -110,7 +153,9 @@ function PostUpload({ setIsUploadModalOpen }) {
     };
 
     const handleInputTag = (newValue, actionMeta) => {
-        if (actionMeta.action === 'create-option') {
+        if (actionMeta.action === 'remove-value') {
+            setTags(newValue);
+        } else if (actionMeta.action === 'create-option') {
             setTags([...tags, newValue[newValue.length - 1]]);
         }
     };
@@ -133,7 +178,19 @@ function PostUpload({ setIsUploadModalOpen }) {
     }, []);
 
     return (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+        <Modal
+            isOpen={true}
+            onRequestClose={() => setIsUploadModalOpen(false)}
+            contentLabel="Post Upload"
+            className="max-w-5xl mx-auto mt-20 mb-20 bg-white rounded-lg overflow-hidden"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            style={{
+                content: {
+                    width: '80%', // 원하는 너비로 설정
+                    margin: 'auto', // 모달을 화면 중앙에 배치
+                }
+            }}
+        >
             <div className="bg-gray-100 p-8 rounded shadow-md max-w-[97%] max-h-[98%] m-4 overflow-auto">
                 <h2 className="text-2xl font-bold mb-4 text-center">Upload a Post</h2>
                 <input
@@ -167,8 +224,8 @@ function PostUpload({ setIsUploadModalOpen }) {
                     isMulti
                     placeholder={'#태그를 입력하세요'}
                     onChange={handleInputTag}
-                    options={tags}
-                    value={tags}
+                    options={tags.map((tag) => ({ value: tag.value, label: tag.label }))}
+                    value={tags.map((tag) => ({ value: tag.value, label: tag.label }))}
                     styles={{
                         dropdownIndicator: base => ({
                             ...base,
@@ -250,7 +307,7 @@ function PostUpload({ setIsUploadModalOpen }) {
                   </div>
                 </Modal>
       </div>
-    </div>
+    </Modal>
   );
 }
 
