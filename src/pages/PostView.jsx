@@ -8,6 +8,7 @@ import Modal from 'react-modal';
 import {trackPromise} from "react-promise-tracker";
 import LoadingIndicator from "./components/LoadingIndicator";
 import {toast} from "react-toastify";
+import axios from "axios";
 
 Modal.setAppElement('#root'); // Add this line
 
@@ -35,33 +36,31 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
 
     useEffect(() => {
         const fetchToken = async () => {
-
-            const response = await fetch('/api/token');
-            const data = await response.json();
-            const token = data.token;
+            const response = await api.get('/api/token');
+            const token = response.data.token;
 
             if (post) {
                 const script1 = document.createElement('script');
                 script1.text = `
-                var remark_config = {
-                    host: 'http://129.154.213.18:8088',
-                    site_id: '${postId}',
-                    components: ['embed'],
-                    token: '${token}'
-                }
-            `;
+                    var remark_config = {
+                        host: 'http://129.154.213.18:8088',
+                        site_id: '${postId}',
+                        components: ['embed'],
+                        token: '${token}'
+                    }
+                `;
                 document.body.appendChild(script1);
 
                 const script2 = document.createElement('script');
                 script2.text = `
-            !function(e,n){
-                for(var o=0;o<e.length;o++){
-                    var r=n.createElement("script"),c=".js",d=n.head||n.body;
-                    "noModule"in r?(r.type="module",c=".mjs"):r.async=!0;
-                    r.defer=!0,r.src=remark_config.host+"/web/"+e[o]+c,d.appendChild(r)
-                }
-            }(remark_config.components||["embed"],document);
-        `;
+                    !function(e,n){
+                        for(var o=0;o<e.length;o++){
+                            var r=n.createElement("script"),c=".js",d=n.head||n.body;
+                            "noModule"in r?(r.type="module",c=".mjs"):r.async=!0;
+                            r.defer=!0,r.src=remark_config.host+"/web/"+e[o]+c,d.appendChild(r)
+                        }
+                    }(remark_config.components||["embed"],document);
+                `;
                 script2.async = true;
                 document.body.appendChild(script2);
 
