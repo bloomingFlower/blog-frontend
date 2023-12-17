@@ -58,7 +58,7 @@ function App() {
           console.error("There was an error!", error);
         });
   }, []);
-
+  // TODO: 스크랩 기능 추가
   return (
       <AuthProvider>
         <Router>

@@ -33,6 +33,49 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
         fetchPost();
     }, [postId, navigate]);
 
+    useEffect(() => {
+        const fetchToken = async () => {
+
+            const response = await fetch('/api/token');
+            const data = await response.json();
+            const token = data.token;
+
+            if (post) {
+                const script1 = document.createElement('script');
+                script1.text = `
+                var remark_config = {
+                    host: 'http://129.154.213.18:8088',
+                    site_id: '${postId}',
+                    components: ['embed'],
+                    token: '${token}'
+                }
+            `;
+                document.body.appendChild(script1);
+
+                const script2 = document.createElement('script');
+                script2.text = `
+            !function(e,n){
+                for(var o=0;o<e.length;o++){
+                    var r=n.createElement("script"),c=".js",d=n.head||n.body;
+                    "noModule"in r?(r.type="module",c=".mjs"):r.async=!0;
+                    r.defer=!0,r.src=remark_config.host+"/web/"+e[o]+c,d.appendChild(r)
+                }
+            }(remark_config.components||["embed"],document);
+        `;
+                script2.async = true;
+                document.body.appendChild(script2);
+
+                return () => {
+                    document.body.removeChild(script1);
+                    document.body.removeChild(script2);
+                };
+            }
+        };
+
+        fetchToken()
+    }, [postId, post]);
+
+
     if (!post) {
         return <LoadingIndicator/>;
     }
@@ -91,6 +134,7 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
                         {post.file.split('/').pop()}
                     </a>
                 )}
+                <div id="remark42"></div>
                 <div className="flex justify-between space-x-4">
                     <button className="w-1/2 mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                             onClick={handleEditClick}>Edit Post
