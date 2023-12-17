@@ -1,4 +1,5 @@
 const path = require("path");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: "./src/index.jsx",
@@ -10,6 +11,11 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './public/index.html' // 기본 HTML 파일 경로
+    })
+  ],
   module: {
     rules: [
       {
