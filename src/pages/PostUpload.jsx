@@ -45,7 +45,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
                         const formData = new FormData();
                         formData.append("image", file);
                         api({
-                            url: "http://localhost:8008/api/upload-img",
+                            url: `${process.env.REACT_APP_API_URL}/api/upload-img`,
                             method: "POST",
                             data: formData,
                             withCredentials: true,

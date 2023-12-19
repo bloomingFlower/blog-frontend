@@ -30,9 +30,10 @@ function DeleteAccountButton() {
     };
 
     return (
-        <div>
-            <button className="text-indigo-600 hover:text-indigo-500" onClick={handleDeleteAccount}>회원탈퇴 </button>
+        <div className="flex items-center">
+            <button className="text-gray-400 text-sm hover:text-indigo-500" onClick={handleDeleteAccount}>회원탈퇴</button>
         </div>
-    );}
+    );
+}
 
 export default DeleteAccountButton;

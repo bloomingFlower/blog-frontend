@@ -50,10 +50,10 @@ function Home() {
             }}
         >
             <WelcomeMessage username={username} />
-            <p className="text-xl">
+            <p className="text-base">
                 Hello, my name is Jaeyoung Yun. I am a computer engineer.
             </p>
-            <p className="text-xl">
+            <p className="text-base">
                 Welcome to my website where I showcase my latest work and share about my
                 life.
             </p>

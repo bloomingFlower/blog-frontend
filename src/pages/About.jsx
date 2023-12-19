@@ -9,12 +9,12 @@ function Section({ title, children }) {
   return (
       <section className="mb-5">
         <h2
-            className="text-3xl text-blue-600 mb-2 cursor-pointer"
+            className="text-base text-blue-600 mb-2 cursor-pointer"
             onClick={() => setIsOpen(!isOpen)}
         >
           {title}
         </h2>
-        <div className={`text-lg mb-5 ${isOpen ? "text-gray-500 bg-gray-500" : "text-gray-700"}`}>
+        <div className={`text-sm mb-5 ${isOpen ? "text-gray-500 bg-gray-500" : "text-gray-700"}`}>
           {children}
         </div>
       </section>

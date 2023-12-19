@@ -111,7 +111,7 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
             }}
         >
             <div className="p-8 bg-white rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold mb-4 text-center">{post.title}</h2>
+                <h2 className="text-xl font-bold mb-4 text-center">{post.title}</h2>
                 <ReactQuill
                     value={post.content}
                     readOnly={true}

@@ -68,24 +68,24 @@ function HamburgerButton() {
           onMouseOut={handleMouseOut}
         >
           <Link
-            className="block px-5 py-3 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
-            style={{ fontSize: "20px" }} // 글씨 크기를 더 크게 변경
+            className="block px-5 py-2 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
+            style={{ fontSize: "15px" }} // 글씨 크기를 더 크게 변경
             to="/"
             onClick={() => setIsOpen(false)}
           >
             Home
           </Link>
           <Link
-            className="block px-5 py-3 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
-            style={{ fontSize: "20px" }} // 글씨 크기를 더 크게 변경
+            className="block px-5 py-2 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
+            style={{ fontSize: "15px" }} // 글씨 크기를 더 크게 변경
             to="/about"
             onClick={() => setIsOpen(false)}
           >
             About
           </Link>
           <Link
-            className="block px-5 py-3 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
-            style={{ fontSize: "20px" }} // 글씨 크기를 더 크게 변경
+            className="block px-5 py-2 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
+            style={{ fontSize: "15px" }} // 글씨 크기를 더 크게 변경
             to="/post"
             onClick={() => setIsOpen(false)}
           >
@@ -94,16 +94,16 @@ function HamburgerButton() {
           {isLoggedIn && (
               <>
                 <Link
-                    className="block px-5 py-3 text-black hover:text-blue-500"
-                    style={{ fontSize: "20px" }}
+                    className="block px-5 py-2 text-black hover:text-blue-500"
+                    style={{ fontSize: "15px" }}
                     to="/scrap"
                     onClick={() => setIsOpen(false)}
                 >
                   Scrap
                 </Link>
                 <Link
-                    className="block px-5 py-3 text-black hover:text-blue-500"
-                    style={{ fontSize: "20px" }}
+                    className="block px-5 py-2 text-black hover:text-blue-500"
+                    style={{ fontSize: "15px" }}
                     to="/logout"
                     onClick={handleLogout}
                 >

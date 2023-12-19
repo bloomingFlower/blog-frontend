@@ -33,22 +33,22 @@ function SearchComponent({ setSearchResults }) {
     };
 
     return (
-        <form onSubmit={handleSearch} className="flex space-x-4 w-1/2 mx-auto">
+        <form onSubmit={handleSearch} className="flex space-x-1 w-1/2 mx-auto">
             <input
                 id="searchInput"
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search..."
-                className="hover:bg-gray-200 flex-grow rounded border-gray-300 p-2"
+                className="hover:bg-gray-200 flex-grow rounded border-gray-300 p-2 text-sm"
             />
-            <select value={searchType} onChange={(e) => setSearchType(e.target.value)} className="hover:bg-gray-200 rounded border-gray-300 p-2">
+            <select value={searchType} onChange={(e) => setSearchType(e.target.value)} className="text-sm hover:bg-gray-200 rounded border-gray-300 p-2">
                 <option value="all">All</option>
                 <option value="title">Title</option>
                 <option value="content">Content</option>
                 <option value="tags">Tags</option>
             </select>
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Search</button>
+            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded">Search</button>
         </form>
     );
 }

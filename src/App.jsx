@@ -30,7 +30,6 @@ import "./styles/loading.css";
 function App() {
   const [data, setData] = useState(null);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false); // 검색창 상태 추가
   const searchRef = useRef(); // 검색창 참조 생성
 
@@ -64,16 +63,16 @@ function App() {
         <Router>
           <div>
             <nav
-                className="flex items-center justify-between p-5"
+                className="flex items-center justify-between p-3"
                 style={{
                   backgroundColor: "white",
                   color: "black",
-                  height: "80%",
+                  height: "60%",
                   fontFamily: "PlayfairDisplay, serif",
                   position: "relative",
                 }}
             >
-              <Link to="/" className="text-3xl">
+              <Link to="/" className="text-xl">
                 Our Journey
               </Link>
               <div className="flex items-center">
@@ -82,7 +81,7 @@ function App() {
                     className={`${isSearchOpen ? "animate-slide-in-right" : ""} mr-4`}
                 >
                   <svg
-                      className="w-6 h-6"
+                      className="w-4 h-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -102,11 +101,11 @@ function App() {
                           type="text"
                           placeholder="Search..."
                           style={{ backgroundColor: "#f8f8f8" }}
-                          className="bg-gray-200"
+                          className="bg-gray-200 text-xs"
                       />
                     </div>
                 )}
-                <HamburgerButton style={{ width: "50px", height: "50px" }} />
+                <HamburgerButton style={{ width: "40px", height: "40px" }} />
               </div>
             </nav>
             <Routes>

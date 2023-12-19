@@ -5,8 +5,8 @@ function Footer() {
     const [isClicked, setIsClicked] = useState(false);
     const [isSuperMode, setIsSuperMode] = useState(false);
     const [bgColor, setBgColor] = useState("bg-yellow-500");
-    const [fontSize, setFontSize] = useState(16); // 글자 크기 상태 추가
-    let originalFontSize = 16; // handleClick 함수 바깥에 선언
+    const [fontSize, setFontSize] = useState(12); // 글자 크기 상태 추가
+    let originalFontSize = 12; // handleClick 함수 바깥에 선언
 
     const colors = ["bg-red-500", "bg-yellow-500", "bg-green-500", "bg-blue-500", "bg-indigo-500", "bg-purple-500", "bg-pink-500"];
 
@@ -45,7 +45,7 @@ function Footer() {
     }, [isSuperMode, colors]);
 
     return (
-        <div className={`text-center py-4 ${isSuperMode ? bgColor + " text-white" : ""}`}>
+        <div className={`text-center py-1 ${isSuperMode ? bgColor + " text-white" : ""}`}>
       <span
           onClick={handleClick}
           className={`transition-all duration-1000 ${isClicked ? "text-red-500 scale-150 rotate-180" : ""}`}

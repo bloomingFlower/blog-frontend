@@ -6,7 +6,7 @@ function WelcomeMessage({ username }) {
 
     let fullMessage = 'Welcome to Our Website :)'; // 원래 메시지 입니다.
     if (username) {
-        fullMessage = `Welcome to Our Website, ${username} :)`; // 로그인한 사용자의 아이디를 fullText에 추가
+        fullMessage = `Welcome to Our World, ${username} :)`; // 로그인한 사용자의 아이디를 fullMessage에 추가
     }
     useEffect(() => {
         if (message.length < fullMessage.length) {
@@ -19,7 +19,7 @@ function WelcomeMessage({ username }) {
     }, [message]);
 
     return (
-        <h1 className="flex text-3xl">
+        <h1 className="flex text-2xl">
             <div>{message}</div>
             <div className={`w-0.5 h-8 bg-black animate-blink duration-200 `}></div>        </h1>
     );

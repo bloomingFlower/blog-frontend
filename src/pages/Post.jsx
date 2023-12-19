@@ -115,7 +115,7 @@ function Post() {
   };
   return (
     <div
-      className="flex flex-col items-start h-screen text-center bg-cover bg-no-repeat pt-20"
+      className="flex flex-col items-start h-screen text-center bg-cover bg-no-repeat pt-10"
       style={{
         backgroundImage: `url(${backgroundImage})`,
       }}
@@ -138,28 +138,28 @@ function Post() {
           }}
       >
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold cursor-pointer"
+          <h1 className="text-2xl font-bold cursor-pointer"
               onClick={() => window.location.reload()}>Posts</h1>
           {isLoggedIn && ( // 로그인 상태일 때만 "Upload" 버튼 렌더링
               <button
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
                   onClick={handleUploadClick}
               >
-                <UploadIcon className="mr-2 h-5 w-5"/>
+                <UploadIcon className="text-2xl mr-2 h-4 w-4"/>
                 Upload
               </button>
           )}
         </div>
-        <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 gap-3">
           {(searchResults.length > 0 ? searchResults : posts).length > 0 ? (
               (searchResults.length > 0 ? searchResults : posts).map((post) => (
                   <div
-                      className={`rounded-lg shadow-lg overflow-hidden cursor-pointer h-54 flex flex-col justify-between ${post.hidden ? 'bg-gray-400 hover:bg-gray-600' : 'bg-white hover:bg-amber-100'}`}
+                      className={`rounded-lg shadow-lg overflow-hidden cursor-pointer h-34 flex flex-col justify-between ${post.hidden ? 'bg-gray-400 hover:bg-gray-600' : 'bg-white hover:bg-amber-100'}`}
                       onClick={() => handlePostClick(post.id)}
                       key={post.id}
                   >
                     <div className="p-4">
-                      <h2 className="text-2xl font-bold">{post.title}</h2>
+                      <h2 className="text-base font-bold">{post.title}</h2> {/* 글씨 크기를 줄입니다. */}
                       <div
                           className="text-gray-700 overflow-hidden overflow-ellipsis h-12"
                           dangerouslySetInnerHTML={{__html: post.content}}
@@ -169,30 +169,31 @@ function Post() {
                       <div className="flex flex-wrap">
                         {post.tags.split(',').map((tag, index) => (
                             <span
-                                className="inline-block bg-blue-500 text-white rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2"
+                                className="inline-block bg-blue-500 text-white rounded-full px-3 py-1 text-xs font-semibold mr-2 mb-2"
                                 key={index}
                             >
                               #{tag.trim()}
                             </span>
                         ))}
                       </div>
-                      <p>
+                      <p className="text-xs">
                         {post.created_at === "0001-01-01T00:00:00Z" || post.updated_at && post.updated_at !== post.created_at
                             ? `Updated at ${new Date(post.updated_at).toLocaleString()}`
                             : `Created at ${new Date(post.created_at).toLocaleString()}`
                         }
-                      </p></div>
+                      </p>
+                    </div>
                   </div>
               ))
           ) : (
-              <p className="text-2xl text-pink-400 py-4 text-center">검색 결과가 없습니다.</p>
+              <p className="text-xl text-pink-400 py-4 text-center">...</p>
           )}
         </div>
         <div className="mt-8 flex justify-between">
-        <button
+          <button
               onClick={handlePrevPage}
               disabled={page === 1}
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${page === 1 ? 'invisible' : ''}`}
+              className={`bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded ${page === 1 ? 'invisible' : ''}`}
           >
             Previous Page
           </button>
@@ -207,7 +208,7 @@ function Post() {
                     <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`py-2 px-4 rounded ${p === page ? 'bg-blue-500 hover:bg-blue-700 text-white' : 'bg-white hover:bg-gray-200 text-blue-500'}`}
+                        className={`py-1 px-3 rounded ${p === page ? 'bg-blue-500 hover:bg-blue-700 text-white text-xs' : 'bg-white hover:bg-gray-200 text-blue-500'}`}
                     >
                       {p}
                     </button>
@@ -216,7 +217,7 @@ function Post() {
           <button
               onClick={handleNextPage}
               disabled={page === lastPage}
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${page === lastPage ? 'invisible' : ''}`}
+              className={`bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded ${page === lastPage ? 'invisible' : ''}`}
           >
             Next Page
           </button>

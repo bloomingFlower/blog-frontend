@@ -124,21 +124,21 @@ const AdminLogin = () => {
       <div className="max-w-md w-full space-y-8 bg-white bg-opacity-50 p-6 rounded-lg">
         <div>
           {isLoggedIn ? (
-          <>
-            <h1>무엇을 도와드릴까요? {storedUsername}님?</h1>
-            <div className="flex justify-center space-x-4">
-              <a href="/edit-profile" className="text-indigo-600 hover:text-indigo-500">회원정보 수정</a>
-              <button onClick={handleLogout} className="text-indigo-600 hover:text-indigo-500">로그아웃</button>
-              <DeleteAccountButton/>
-            </div>
-          </>
-        ) : (
-            <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-              <input type="hidden" name="remember" value="true" />
-              <div>
-                <label htmlFor="username" className="sr-only">
-                  Username
-                </label>
+              <>
+                <h1 className="text-base">무엇을 도와드릴까요? {storedUsername}님?</h1>
+                <div className="flex items-center space-x-4">
+                  <a href="/edit-profile" className="text-indigo-600 text-sm hover:text-indigo-500">회원정보 수정</a>
+                  <button onClick={handleLogout} className="text-indigo-600 text-sm hover:text-indigo-500">로그아웃</button>
+                  <DeleteAccountButton/>
+                </div>
+              </>
+          ) : (
+              <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+                <input type="hidden" name="remember" value="true"/>
+                <div>
+                  <label htmlFor="username" className="sr-only">
+                    Username
+                  </label>
                 <input
                     id="username"
                     name="username"
