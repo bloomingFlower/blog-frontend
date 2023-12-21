@@ -23,10 +23,9 @@ import LoadingIndicator from './pages/components/LoadingIndicator';
 
 import HamburgerButton from "./pages/components/HamburgerButton";
 import { AuthContext, AuthProvider } from './pages/components/AuthContext';
-import API_SERVER_URL from './apiConfig';
-
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";
+
 function App() {
   const [data, setData] = useState(null);
 
@@ -49,7 +48,7 @@ function App() {
 
   useEffect(() => {
     axios
-        .get(`${API_SERVER_URL}/api/data`) // Go Fiber 백엔드의 API 엔드포인트
+        .get(`${process.env.REACT_APP_API_URL}/api/data`) // Go Fiber 백엔드의 API 엔드포인트
         .then((response) => {
           setData(response.data);
         })

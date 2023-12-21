@@ -8,13 +8,30 @@ import Modal from 'react-modal';
 import {trackPromise} from "react-promise-tracker";
 import LoadingIndicator from "./components/LoadingIndicator";
 import {toast} from "react-toastify";
-import axios from "axios";
 
 Modal.setAppElement('#root'); // Add this line
 
 function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploadModalOpen }) {
     const [post, setPost] = useState(null);
     const navigate = useNavigate();
+    const jwtCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('jwt='));
+
+    if (jwtCookie) {
+        const jwt = jwtCookie.split('=')[1];
+        // 이후 jwt를 사용하는 코드
+    } else {
+        console.error('JWT 쿠키가 없습니다.');
+    }
+    // 세션 생성
+    const jwt = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('jwt='))
+        .split('=')[1];
+    if (jwt === undefined) {
+        toast.error("jwt is undefined");
+    }
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -31,23 +48,22 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
             }
         };
 
-        fetchPost();
+        fetchPost().then(r => console.log("r: " + r));
     }, [postId, navigate]);
 
     useEffect(() => {
         const fetchToken = async () => {
-            const response = await api.get('/api/token');
-            const token = response.data.token;
-
             if (post) {
+                console.log("jwt: " + jwt);
                 const script1 = document.createElement('script');
+                // TODO https 설정 필요(nginx) https://www.devbitsandbytes.com/setting-up-remark42-from-scratch/ 참고
                 script1.text = `
                     var remark_config = {
                         host: 'http://129.154.213.18:8088',
                         site_id: '${postId}',
                         components: ['embed'],
-                        token: '${token}'
-                    }
+                        token: 'Bearer ${jwt}'
+                    };
                 `;
                 document.body.appendChild(script1);
 
@@ -71,8 +87,9 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
             }
         };
 
-        fetchToken()
-    }, [postId, post]);
+        fetchToken().then(r =>  console.log("r: " + r));
+
+    }, [postId, post, jwt]);
 
 
     if (!post) {

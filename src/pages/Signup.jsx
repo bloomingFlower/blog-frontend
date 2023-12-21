@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.png";
 import PasswordInput from "./components/PasswordInput";
-import API_SERVER_URL from '../apiConfig';
+import {trackPromise} from "react-promise-tracker";
+import api from "./components/api";
 
 const Signup = () => {
     const [firstName, setFirstName] = useState("");
@@ -50,13 +51,13 @@ const Signup = () => {
 
         // 회원가입 로직 구현
         try {
-            const response = await axios.post(`${API_SERVER_URL}/api/register`, {
+            const response = await trackPromise(api.post("/api/register", {
                 first_name: firstName,
                 last_name: lastName,
                 email: email,
                 password: password,
                 phone: phone
-            });
+            }));
 
             if (response.status === 201) {
                 // 회원가입 성공 후 홈페이지로 이동

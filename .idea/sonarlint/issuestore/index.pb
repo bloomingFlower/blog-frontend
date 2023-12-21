@@ -47,8 +47,6 @@ V
 O
 src/pages/components/Footer.jsx,e/6/e6ee7de9b4ae07052383ce08b696f732012548d9
 C
-src/pages/Scrap.jsx,f/1/f1b24aabecbd657b292e7f268628e1fc6183281c
-C
 src/styles/Home.css,1/b/1be2e564e4922cb7aa714c85a86407b98ff6b0a8
 B
 tailwind.config.js,0/9/0918cbb76f2c44f223706cec9d31a32cd1177ce4
@@ -56,8 +54,6 @@ B
 ,src/pages/components/DeleteAccountButton.jsx,7/3/73ec807a04526005c194e58f1860b465abc76a02
 I
 src/pages/EditProfile.jsx,1/d/1dc93ef9642001039b0fa0c6bb3162e68fa3f1ac
-@
-src/apiConfig.js,d/6/d60fcd1bce7b0f3dff41c7d27badc5764e4a3525
 @
 src/App.test.jsx,2/b/2b322568461919c69ce71c5022f651abc0bedc7a
 B
@@ -80,10 +76,6 @@ V
 &src/pages/components/WelcomMessage.jsx,f/5/f5ec56e99efad0a2e894cc8d5a04ff5877f2c405
 S
 #src/pages/components/SearchPost.jsx,a/4/a454c566dd9fbb047bd30cbf1e3d53132be4501c
-9
-	Dockefile,6/a/6a0dbfc1b0e067632161070b3b44194372eed688
-4
-.env,3/c/3c84dcdc6bbe3d7817c49dcdc327b926fea1808a
 @
 .env.development,0/2/02250351aed90f62d344991ecf72bb885eca5946
 ?
@@ -104,5 +96,9 @@ D
 .babelrc,b/c/bcac7464521b8c19a2372c739f6dc9e9ab7dfc80
 G
 src/reportWebVitals.jsx,b/5/b5fed5277e41f13175c81a871d2c9d44e447edca
+C
+src/pages/Scrap.tsx,0/c/0c8fd6c9d73889f5d83309d51232fd6da45217f2
+=
+tsconfig.json,6/1/61ebb9fd6e8cf9082658121d5d81e297791dacd0
 <
-src/logo.svg,6/d/6d3a8cd532ece5b4ddbd4b3b6a678ba686d300bc
+typings.d.ts,3/5/3501955cd638386fc907b53ba0338687adbd9682
