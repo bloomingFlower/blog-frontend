@@ -23,6 +23,8 @@ import LoadingIndicator from './pages/components/LoadingIndicator';
 
 import HamburgerButton from "./pages/components/HamburgerButton";
 import { AuthContext, AuthProvider } from './pages/components/AuthContext';
+import { GoogleOAuth } from '@react-oauth/google';
+
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";
 
@@ -31,7 +33,9 @@ function App() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false); // 검색창 상태 추가
   const searchRef = useRef(); // 검색창 참조 생성
-
+  const responseGoogle = (response) => {
+    console.log(response);
+  }
   // 외부 클릭 감지
   useEffect(() => {
     function handleClickOutside(event) {
@@ -56,7 +60,6 @@ function App() {
           console.error("There was an error!", error);
         });
   }, []);
-  // TODO: 스크랩 기능 추가
   return (
       <AuthProvider>
         <Router>
@@ -74,6 +77,13 @@ function App() {
               <Link to="/" className="text-xl">
                 Our Journey
               </Link>
+              <GoogleOAuth
+                    clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+                    buttonText="Login with Google"
+                    onSuccess={responseGoogle}
+                    onFailure={responseGoogle}
+                    cookiePolicy={'single_host_origin'}
+                    />
               <div className="flex items-center">
                 <button
                     onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -124,7 +134,6 @@ function App() {
           </div>
         </Router>
         <LoadingIndicator />
-
       </AuthProvider>
   );
 }

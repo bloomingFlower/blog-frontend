@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {trackPromise} from "react-promise-tracker";
 import api from "./components/api";
-
+// protoc -I=./proto --js_out=import_style=commonjs,binary:./src --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src ./proto/your_service.proto
 const Scrap: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [data, setData] = useState<any>(null);
