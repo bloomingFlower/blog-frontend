@@ -104,3 +104,5 @@ C
 typings.d.ts,3/5/3501955cd638386fc907b53ba0338687adbd9682
 D
 src/protos/api.proto,7/f/7f2918517cdc3086d87ed8f49cc08bc68731f3c5
+;
+.travis.yml,d/e/dea01dd89a3b602828e630677fde5d77c06441c8
