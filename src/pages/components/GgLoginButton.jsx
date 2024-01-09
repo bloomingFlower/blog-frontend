@@ -2,12 +2,13 @@ import React from 'react';
 import axios from 'axios';
 import {trackPromise} from "react-promise-tracker";
 import api from "./api";
-
+//https://developers.google.com/identity/sign-in/web/sign-in?hl=ko
 function GgLoginButton() {
     const handleLogin = async () => {
         // 1. 사용자를 제공자의 로그인 페이지로 리다이렉트
+        //const GITHUB_LOGIN_URL = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}`;
         window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=profile';
-
+        https://www.googleapis.com/oauth2/v3/userinfo
         // 2. 사용자가 로그인하면 제공자는 사용자를 앱으로 다시 리다이렉트하고, 이때 URL에 인증 코드가 포함됩니다.
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
@@ -17,9 +18,9 @@ function GgLoginButton() {
                 // 3. 앱은 이 인증 코드를 사용하여 제공자에게 액세스 토큰을 요청합니다.
                 const response = await trackPromise(api.post('https://oauth2.googleapis.com/token', {
                     code: code,
-                    client_id: 'YOUR_CLIENT_ID',
-                    client_secret: 'YOUR_CLIENT_SECRET',
-                    redirect_uri: 'YOUR_REDIRECT_URI',
+                    client_id: process.env.,
+                    client_secret: process.env.REACT_APP_CLIENT_SECRET,
+                    redirect_uri: process.env.REACT_APP_REDIRECT_URI,
                     grant_type: 'authorization_code',
                 }));
 

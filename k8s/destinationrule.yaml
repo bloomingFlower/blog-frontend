@@ -1,0 +1,10 @@
+# destinationrule.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: blog-frontend
+spec:
+  host: blog-frontend
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

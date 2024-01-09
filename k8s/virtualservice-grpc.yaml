@@ -1,0 +1,18 @@
+# virtualservice-grpc.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: blog-grpc-service
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - blog-gateway
+  http:
+    - match:
+        - port: 443
+          gateways:
+            - blog-gateway
+      route:
+        - destination:
+            host: blog-grpc-service

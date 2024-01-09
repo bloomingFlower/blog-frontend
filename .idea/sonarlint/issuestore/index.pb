@@ -106,3 +106,17 @@ D
 src/protos/api.proto,7/f/7f2918517cdc3086d87ed8f49cc08bc68731f3c5
 ;
 .travis.yml,d/e/dea01dd89a3b602828e630677fde5d77c06441c8
+C
+k8s/deployment.yaml,3/1/31545e6b341be644312efd00ee44417ee587a7cc
+G
+k8s/virtualservice.yaml,c/c/cc5ea0a4d7de3c0c64a3fd96ce8b98dfb82ab478
+H
+k8s/destinationrule.yaml,4/c/4c022dbe342302e53582c1d65ae7ee0a7173bb65
+C
+k8s/argocd-app.yaml,d/c/dc52c4d3a4fc77cd7b671a76ef780f9133178491
+@
+k8s/gateway.yaml,1/0/10a41433661212fd5af7067bddfc2bc84e8e8a5c
+L
+k8s/virtualservice-grpc.yaml,5/0/50c4690e260f63cafb3671a3fcc4475f7262f67f
+L
+k8s/virtualservice-rest.yaml,9/d/9d87082488bcc0a3fb76e1947666314266c17cc4

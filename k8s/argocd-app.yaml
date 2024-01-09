@@ -1,0 +1,17 @@
+# argocd-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: blog-frontend
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/bloomingFlower/blog-frontend.git
+    targetRevision: HEAD
+    path: kubernetes-manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: blog-frontend
+  syncPolicy:
+    automated: {}
