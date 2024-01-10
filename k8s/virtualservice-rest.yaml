@@ -5,7 +5,7 @@ metadata:
   name: blog-frontend
 spec:
   hosts:
-    - "*"
+    - "yourrubber.duckdns.org"
   gateways:
     - blog-gateway
   http:
