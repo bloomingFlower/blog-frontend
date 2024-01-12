@@ -23,7 +23,7 @@ import LoadingIndicator from './pages/components/LoadingIndicator';
 
 import HamburgerButton from "./pages/components/HamburgerButton";
 import { AuthContext, AuthProvider } from './pages/components/AuthContext';
-import { GoogleOAuth } from '@react-oauth/google';
+// import { GoogleOAuth } from '@react-oauth/google';
 
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";
@@ -77,13 +77,13 @@ function App() {
               <Link to="/" className="text-xl">
                 Our Journey
               </Link>
-              <GoogleOAuth
-                    clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
-                    buttonText="Login with Google"
-                    onSuccess={responseGoogle}
-                    onFailure={responseGoogle}
-                    cookiePolicy={'single_host_origin'}
-                    />
+              {/*<GoogleOAuth*/}
+              {/*      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}*/}
+              {/*      buttonText="Login with Google"*/}
+              {/*      onSuccess={responseGoogle}*/}
+              {/*      onFailure={responseGoogle}*/}
+              {/*      cookiePolicy={'single_host_origin'}*/}
+              {/*      />*/}
               <div className="flex items-center">
                 <button
                     onClick={() => setIsSearchOpen(!isSearchOpen)}

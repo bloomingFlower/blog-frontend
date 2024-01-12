@@ -108,8 +108,6 @@ D
 .travis.yml,d/e/dea01dd89a3b602828e630677fde5d77c06441c8
 C
 k8s/deployment.yaml,3/1/31545e6b341be644312efd00ee44417ee587a7cc
-G
-k8s/virtualservice.yaml,c/c/cc5ea0a4d7de3c0c64a3fd96ce8b98dfb82ab478
 H
 k8s/destinationrule.yaml,4/c/4c022dbe342302e53582c1d65ae7ee0a7173bb65
 C
