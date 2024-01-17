@@ -41,13 +41,19 @@
   "scripts": {
     "start": "webpack serve --open --hot --mode development",
     "build": "webpack --mode production",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ."
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
     ]
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   },
   "browserslist": {
     "production": [
