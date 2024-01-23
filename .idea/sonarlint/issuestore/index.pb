@@ -118,3 +118,5 @@ L
 k8s/virtualservice-grpc.yaml,5/0/50c4690e260f63cafb3671a3fcc4475f7262f67f
 L
 k8s/virtualservice-rest.yaml,9/d/9d87082488bcc0a3fb76e1947666314266c17cc4
+>
+jest.config.js,8/8/881d5d47bdc17ef8facebef59b68b5fc099a0293
