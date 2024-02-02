@@ -15,6 +15,6 @@ script:
 - npm run build
 - tar -czf package.tgz dist/
 after_success:
-- scp -i id_rsa package.tgz $DEPLOY_USER@$DEPLOY_SERVER:~
-- ssh -i id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'tar xzf package.tgz && docker build -t
+- scp -i ../id_rsa package.tgz $DEPLOY_USER@$DEPLOY_SERVER:~
+- ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'tar xzf package.tgz && docker build -t
   my-app . && docker run -d -p 80:80 my-app'
