@@ -13,9 +13,7 @@ install:
 - npm install
 script:
 - npm run build
-- cp Dockerfile dist/
-- tar -czf blog-frontend.tgz dist/
 after_success:
-  - scp -i ../id_rsa blog-frontend.tgz $DEPLOY_USER@$DEPLOY_SERVER:~
-  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'mkdir -p blog-frontend && tar xzf blog-frontend.tgz -C blog_frontend && cd blog_frontend && docker build -t blog-frontend .
+  - scp -i ../id_rsa -r . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
+  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'cd blog-frontend && npm install && npm run build && docker build -t blog-frontend .'
   #&& kind load docker-image blog-frontend && kubectl apply -f kubernetes-manifests/ && rm -rf blog-frontend.tgz && rm -rf dist && rm -rf Dockerfile'
