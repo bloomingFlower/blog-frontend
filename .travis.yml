@@ -14,6 +14,6 @@ install:
 script:
 - npm run build
 after_success:
-  - scp -i ../id_rsa -r . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
-  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'cd blog-frontend && npm install && npm run build && docker build -t blog-frontend .'
+  - rsync -rave "ssh -i ../id_rsa" --exclude=node_modules --exclude=dist . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
+  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'mkdir -p blog-frontend && cd blog-frontend && npm install && npm run build && docker build -t blog-frontend .'
   #&& kind load docker-image blog-frontend && kubectl apply -f kubernetes-manifests/ && rm -rf blog-frontend.tgz && rm -rf dist && rm -rf Dockerfile'
