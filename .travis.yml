@@ -3,7 +3,7 @@ cache:
   directories:
   - "~/.npm"
 node_js:
-- 17.9.1
+- 17.9.1 # Ubuntu 16.x version issue
 before_install:
 - openssl aes-256-cbc -K $encrypted_2d8c63ef40a5_key -iv $encrypted_2d8c63ef40a5_iv
   -in id_rsa.enc -out ../id_rsa -d
@@ -17,3 +17,4 @@ after_success:
   - rsync -rave "ssh -i ../id_rsa" --exclude=node_modules --exclude=dist . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
   - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'mkdir -p blog-frontend && cd blog-frontend && npm install && npm run build && docker build -t blog-frontend .'
   #&& kind load docker-image blog-frontend && kubectl apply -f kubernetes-manifests/ && rm -rf blog-frontend.tgz && rm -rf dist && rm -rf Dockerfile'
+  #travis encrypt-file ../id_rsa --add --com
