@@ -38,7 +38,7 @@ after_success:
     docker build --build-arg VERSION=$VERSION -t $DOCKER_USERNAME/blog-frontend . &&
     docker push $DOCKER_USERNAME/blog-frontend:$VERSION &&
     
-    # 쿠버네티스 매니페스트 적용
+    # 쿠버네티스 매니페스트 적용 
     #kubectl apply -f ../k8s-manifests/blog/frontend/k8s-manifest.yaml &&
     
     # Argo CD 애플리케이션 동기화
