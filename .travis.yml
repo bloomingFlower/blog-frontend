@@ -2,6 +2,7 @@ language: node_js
 cache:
   directories:
   - "~/.npm"
+  - "node_modules"
 node_js:
 - 17.9.1 # Ubuntu 16.x version issue
 before_install:
@@ -9,12 +10,39 @@ before_install:
   -in id_rsa.enc -out ../id_rsa -d
 - chmod 600 ../id_rsa
 - echo -e "Host $DEPLOY_SERVER\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 install:
 - npm install
 script:
 - npm run build
 after_success:
+  - export VERSION=$(git rev-parse --short HEAD) # Git 커밋 해시
   - rsync -rave "ssh -i ../id_rsa" --exclude=node_modules --exclude=dist . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
-  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER 'mkdir -p blog-frontend && cd blog-frontend && npm install && npm run build && docker build -t blog-frontend .'
-  #&& kind load docker-image blog-frontend && kubectl apply -f kubernetes-manifests/ && rm -rf blog-frontend.tgz && rm -rf dist && rm -rf Dockerfile'
-  #travis encrypt-file ../id_rsa --add --com
+  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER '
+    # blog-frontend 디렉토리 생성
+    nohup mkdir -p blog-frontend &&
+    
+    # blog-frontend 디렉토리로 이동
+    cd blog-frontend &&
+    
+    # npm 패키지 설치
+    npm install &&
+    
+    # 프로젝트 빌드
+    npm run build &&
+    
+    # 버전 환경 변수 설정
+    export VERSION='$VERSION' &&
+    
+    # Docker 이미지 빌드 및 푸시
+    docker build --build-arg VERSION=$VERSION -t $DOCKER_USERNAME/blog-frontend . &&
+    docker push $DOCKER_USERNAME/blog-frontend:$VERSION &&
+    
+    # 쿠버네티스 매니페스트 적용
+    #kubectl apply -f ../k8s-manifests/blog/frontend/k8s-manifest.yaml &&
+    
+    # Argo CD 애플리케이션 동기화
+    # argocd app sync blog-frontend &&
+    
+    # 불필요한 파일 제거
+    rm -rf dist > /dev/null 2>&1 &'  #travis encrypt-file ../id_rsa --add --com
