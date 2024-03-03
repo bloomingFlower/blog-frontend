@@ -19,16 +19,16 @@ after_success:
   - export VERSION=$(git rev-parse --short HEAD) # Git 커밋 해시
   - rsync -rave "ssh -i ../id_rsa" --exclude=node_modules --exclude=dist . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
   - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER <<EOF
-    set -e  # 에러 발생 시 스크립트 종료
-    mkdir -p blog-frontend
-    cd blog-frontend
-    npm install
-    npm run build
-    export VERSION='$VERSION'
-    docker build --build-arg VERSION=$VERSION -t $DOCKER_USERNAME/blog-frontend .
-    docker push $DOCKER_USERNAME/blog-frontend:$VERSION
-    # kubectl apply -f ../k8s-manifests/blog/frontend/k8s-manifest.yaml
-    # argocd app sync blog-frontend
-    rm -rf dist
-  EOF
+      set -e  # 에러 발생 시 스크립트 종료
+      mkdir -p blog-frontend
+      cd blog-frontend
+      npm install
+      npm run build
+      export VERSION='$VERSION'
+      docker build --build-arg VERSION=$VERSION -t $DOCKER_USERNAME/blog-frontend .
+      docker push $DOCKER_USERNAME/blog-frontend:$VERSION
+      # kubectl apply -f ../k8s-manifests/blog/frontend/k8s-manifest.yaml
+      # argocd app sync blog-frontend
+      rm -rf dist
+    EOF
     #travis encrypt-file ../id_rsa --add --com
