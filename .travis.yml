@@ -18,31 +18,17 @@ script:
 after_success:
   - export VERSION=$(git rev-parse --short HEAD) # Git 커밋 해시
   - rsync -rave "ssh -i ../id_rsa" --exclude=node_modules --exclude=dist . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
-  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER '
-    # blog-frontend 디렉토리 생성
-    nohup mkdir -p blog-frontend &&
-    
-    # blog-frontend 디렉토리로 이동
-    cd blog-frontend &&
-    
-    # npm 패키지 설치
-    npm install &&
-    
-    # 프로젝트 빌드
-    npm run build &&
-    
-    # 버전 환경 변수 설정
-    export VERSION='$VERSION' &&
-    
-    # Docker 이미지 빌드 및 푸시
-    docker build --build-arg VERSION=$VERSION -t $DOCKER_USERNAME/blog-frontend . &&
-    docker push $DOCKER_USERNAME/blog-frontend:$VERSION &&
-    
-    # 쿠버네티스 매니페스트 적용 
-    #kubectl apply -f ../k8s-manifests/blog/frontend/k8s-manifest.yaml &&
-    
-    # Argo CD 애플리케이션 동기화
-    # argocd app sync blog-frontend &&
-    
-    # 불필요한 파일 제거
-    rm -rf dist > /dev/null 2>&1 &'  #travis encrypt-file ../id_rsa --add --com
+  - ssh -i ../id_rsa $DEPLOY_USER@$DEPLOY_SERVER <<EOF
+    set -e  # 에러 발생 시 스크립트 종료
+    mkdir -p blog-frontend
+    cd blog-frontend
+    npm install
+    npm run build
+    export VERSION='$VERSION'
+    docker build --build-arg VERSION=$VERSION -t $DOCKER_USERNAME/blog-frontend .
+    docker push $DOCKER_USERNAME/blog-frontend:$VERSION
+    # kubectl apply -f ../k8s-manifests/blog/frontend/k8s-manifest.yaml
+    # argocd app sync blog-frontend
+    rm -rf dist
+    EOF
+  #travis encrypt-file ../id_rsa --add --com
