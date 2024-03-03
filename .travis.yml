@@ -30,5 +30,5 @@ after_success:
     # kubectl apply -f ../k8s-manifests/blog/frontend/k8s-manifest.yaml
     # argocd app sync blog-frontend
     rm -rf dist
-    EOF
-  #travis encrypt-file ../id_rsa --add --com
+  EOF
+    #travis encrypt-file ../id_rsa --add --com
