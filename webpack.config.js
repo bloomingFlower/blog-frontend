@@ -26,7 +26,6 @@ module.exports = {
             }
             return true;
           }},
-        // { from: 'src/static/img', to: 'dist/static/img' },
       ],
     }),
     new Dotenv({
@@ -71,8 +70,8 @@ module.exports = {
   resolve: {
     extensions: [".js", ".jsx", ".tsx", ".ts"],
     alias: {
-      "@styles": path.resolve(__dirname, "src/styles/"), // CSS 파일이 있는 경로
-      "@img": path.resolve(__dirname, "src/static/img/"), // 이미지 파일이 있는 경로
+      "@styles": path.resolve(__dirname, "/src/styles/"), // CSS 파일이 있는 경로
+      "@img": path.resolve(__dirname, "/src/static/img/"), // 이미지 파일이 있는 경로
     },
   },
 };

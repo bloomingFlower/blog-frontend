@@ -29,8 +29,38 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script src="/dist/bundle.js" type="text/javascript"></script>
-    <!--
+    <script>
+      function loadScript(url, callback) {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+
+        script.onload = function() {
+          callback(false);
+        };
+
+        script.onerror = function() {
+          callback(true);
+        };
+
+        script.src = url;
+        document.getElementsByTagName("head")[0].appendChild(script);
+      }
+
+      loadScript("/bundle.js", function(error) {
+        if (error) {
+          // /bundle.js 로드 실패, /dist/bundle.js 로드 시도
+          loadScript("/dist/bundle.js", function(error) {
+            if (error) {
+              console.log("두 번째 스크립트 로드 실패");
+            } else {
+              console.log("/dist/bundle.js 로드 성공");
+            }
+          });
+        } else {
+          console.log("/bundle.js 로드 성공");
+        }
+      });
+    </script>    <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
 
