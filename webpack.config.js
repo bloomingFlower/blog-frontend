@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const path = require("path");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 
 module.exports = {
@@ -16,6 +17,12 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html' // 기본 HTML 파일 경로
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'public', to: 'dist' },
+        { from: 'src/static/img', to: 'dist/static/img' },
+      ],
     }),
     new Dotenv({
       path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development',

@@ -16,7 +16,9 @@ RUN npm run build
 
 # 최종 실행 이미지
 FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html/dist
+COPY --from=builder /app/dist/* /usr/share/nginx/html/dist
+COPY --from=builder /app/dist/src /usr/share/nginx/html/
+COPY --from=builder /app/dist/index.html /usr/share/nginx/html/
 COPY .env.production /root/.env
 
 # Nginx 설정 파일 복사
