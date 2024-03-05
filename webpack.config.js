@@ -20,8 +20,13 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'public', to: 'dist' },
-        { from: 'src/static/img', to: 'dist/static/img' },
+        { from: 'public', to: '.', filter: async (resourcePath) => {
+            if (resourcePath.endsWith('index.html')) {
+              return false;
+            }
+            return true;
+          }},
+        // { from: 'src/static/img', to: 'dist/static/img' },
       ],
     }),
     new Dotenv({
