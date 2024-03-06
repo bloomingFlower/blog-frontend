@@ -20,7 +20,6 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
 
     if (jwtCookie) {
         const jwt = jwtCookie.split('=')[1];
-        // 이후 jwt를 사용하는 코드
     } else {
         console.error('JWT 쿠키가 없습니다.');
     }
@@ -53,7 +52,7 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
 
     useEffect(() => {
         const fetchToken = async () => {
-            if (post) {
+            if (post && post.hidden) {
                 console.log("jwt: " + jwt);
                 const script1 = document.createElement('script');
                 // TODO https 설정 필요(nginx) https://www.devbitsandbytes.com/setting-up-remark42-from-scratch/ 참고
