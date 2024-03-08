@@ -14,24 +14,25 @@ Modal.setAppElement('#root'); // Add this line
 function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploadModalOpen }) {
     const [post, setPost] = useState(null);
     const navigate = useNavigate();
-    const jwtCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('jwt='));
+    // const jwtCookie = document.cookie
+    //     .split('; ')
+    //     .find(row => row.startsWith('jwt='));
+    //
+    // if (jwtCookie) {
+    //     const jwt = jwtCookie.split('=')[1];
+    // } else {
+    //     console.error('JWT 쿠키가 없습니다.');
+    // }
+    // // 세션 생성
+    // const jwt = document.cookie
+    //     .split('; ')
+    //     .find(row => row.startsWith('jwt='))
+    //     .split('=')[1];
+    // if (jwt === undefined) {
+    //     toast.error("jwt is undefined");
+    // }
 
-    if (jwtCookie) {
-        const jwt = jwtCookie.split('=')[1];
-    } else {
-        console.error('JWT 쿠키가 없습니다.');
-    }
-    // 세션 생성
-    const jwt = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('jwt='))
-        .split('=')[1];
-    if (jwt === undefined) {
-        toast.error("jwt is undefined");
-    }
-
+    const jwt = "";
     useEffect(() => {
         const fetchPost = async () => {
             try {
@@ -52,8 +53,7 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
 
     useEffect(() => {
         const fetchToken = async () => {
-            if (post && post.hidden) {
-                console.log("jwt: " + jwt);
+            if (post) {
                 const script1 = document.createElement('script');
                 // TODO https 설정 필요(nginx) https://www.devbitsandbytes.com/setting-up-remark42-from-scratch/ 참고
                 script1.text = `
