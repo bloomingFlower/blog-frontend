@@ -10,6 +10,11 @@ WORKDIR /app
 # 의존성 파일 복사 및 설치
 COPY package.json package-lock.json ./
 RUN npm install
+RUN apt-get update && apt-get install -y protobuf-compiler
+
+# 프로토콜 버퍼 파일 복사 및 컴파일
+COPY api.proto /app/
+RUN protoc --js_out=import_style=commonjs,binary:/app/protos /app/api.proto
 
 # 소스 코드 복사
 COPY . .

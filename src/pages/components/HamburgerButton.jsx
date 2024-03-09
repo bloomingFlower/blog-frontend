@@ -108,16 +108,17 @@ function HamburgerButton() {
               >
                 Post
               </Link>
+              <Link
+                  className="block px-5 py-2 text-black hover:text-blue-500"
+                  style={{fontSize: "15px"}}
+                  to="/scrap"
+                  onClick={() => setIsOpen(false)}
+              >
+                Scrap
+              </Link>
               {isLoggedIn && (
                   <>
-                    <Link
-                        className="block px-5 py-2 text-black hover:text-blue-500"
-                        style={{fontSize: "15px"}}
-                        to="/scrap"
-                        onClick={() => setIsOpen(false)}
-                    >
-                      Scrap
-                    </Link>
+
                     <Link
                         className="block px-5 py-2 text-black hover:text-blue-500"
                         style={{fontSize: "15px"}}
