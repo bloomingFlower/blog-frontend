@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y protobuf-compiler
 
 # 프로토콜 버퍼 파일 복사 및 컴파일
 COPY api.proto /app/
-RUN protoc --js_out=import_style=commonjs,binary:/app/protos /app/api.proto
+RUN mkdir /app/protos
+RUN protoc --proto_path=/app --js_out=import_style=commonjs,binary:/app/protos api.proto
 
 # 소스 코드 복사
 COPY . .
@@ -24,6 +25,7 @@ RUN npm run build
 
 # 최종 실행 이미지
 FROM nginx:alpine
+COPY --from=builder /app/protos /usr/share/nginx/html/protos
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY .env.production /root/.env
 
