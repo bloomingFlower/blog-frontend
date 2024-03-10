@@ -40,7 +40,7 @@ function About() {
         <meta name="description" content="About me page of my website" />
       </Helmet>
       <div className="p-5 bg-white bg-opacity-50 rounded-lg">
-        <h1 className="text-4xl text-gray-800 mb-5 cursor-pointer" onClick={handleTitleClick}>About Me</h1>
+        <h1 className="text-4xl text-gray-800 mb-5 cursor-pointer" onClick={handleTitleClick}>About Me(Draft-Template)</h1>
         <Section title="Education">
           <p>Computer Engineering, University of XYZ, 2015-2019</p>
         </Section>

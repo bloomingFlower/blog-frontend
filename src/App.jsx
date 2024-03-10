@@ -27,6 +27,7 @@ import { AuthContext, AuthProvider } from './pages/components/AuthContext';
 
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";
+import SystemStack from "./pages/SystemStack";
 
 function App() {
   const [data, setData] = useState(null);
@@ -127,6 +128,7 @@ function App() {
               <Route path="/logout" element={<Logout />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/edit-profile" element={<EditProfile />} />
+              <Route path="/system-stack" element={<SystemStack />} />
               <Route path="*" element={<NotFound />} /> {/* 일치하는 경로가 없을 때 404 페이지 렌더링 */}
             </Routes>
             <ToastContainer />

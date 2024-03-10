@@ -93,6 +93,14 @@ function HamburgerButton() {
                 Home
               </Link>
               <Link
+                  className="block px-5 py-2 text-black hover:text-blue-500"
+                  style={{fontSize: "15px"}}
+                  to="/system-stack"
+                  onClick={() => setIsOpen(false)}
+              >
+                Website Tech Stack
+              </Link>
+              <Link
                   className="block px-5 py-2 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
                   style={{fontSize: "15px"}} // 글씨 크기를 더 크게 변경
                   to="/about"

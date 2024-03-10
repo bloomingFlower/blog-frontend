@@ -27,6 +27,7 @@
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
     "react-modal": "^3.16.1",
+    "react-modal-image": "^2.6.0",
     "react-promise-tracker": "^2.1.1",
     "react-quill": "^2.0.0",
     "react-router": "^6.21.0",
