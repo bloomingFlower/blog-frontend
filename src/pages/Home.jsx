@@ -4,7 +4,7 @@ import backgroundImage from "@img/background2.png";
 import WelcomeMessage from "./components/WelcomMessage";
 
 function Home() {
-    const [text, setText] = useState("");
+    const [setText] = useState("");
     const [username, setUsername] = useState(""); // 로그인한 사용자의 아이디를 저장할 상태 생성
 
     useEffect(() => {
@@ -18,9 +18,9 @@ function Home() {
 
         let fullText;
         if (storedUsername) {
-            fullText = `Welcome to Our Website, ${storedUsername} :)`; // 로그인한 사용자의 아이디를 fullText에 추가
+            fullText = `Welcome to Over engineered, ${storedUsername} :)`; // 로그인한 사용자의 아이디를 fullText에 추가
         } else {
-            fullText = `Welcome to Our Website :)`;
+            fullText = `Welcome to Over engineered :)`;
         }
         const startInterval = () => {
             intervalId.id = setInterval(() => {
