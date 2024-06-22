@@ -48,47 +48,47 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
             }
         };
 
-        fetchPost().then(r => console.log("r: " + r));
+        fetchPost();
     }, [postId, navigate]);
 
-    useEffect(() => {
-        const fetchToken = async () => {
-            if (post) {
-                const script1 = document.createElement('script');
-                // TODO https 설정 필요(nginx) https://www.devbitsandbytes.com/setting-up-remark42-from-scratch/ 참고
-                script1.text = `
-                    var remark_config = {
-                        host: 'http://129.154.213.18:8088',
-                        site_id: '${postId}',
-                        components: ['embed'],
-                        token: 'Bearer ${jwt}'
-                    };
-                `;
-                document.body.appendChild(script1);
-
-                const script2 = document.createElement('script');
-                script2.text = `
-                    !function(e,n){
-                        for(var o=0;o<e.length;o++){
-                            var r=n.createElement("script"),c=".js",d=n.head||n.body;
-                            "noModule"in r?(r.type="module",c=".mjs"):r.async=!0;
-                            r.defer=!0,r.src=remark_config.host+"/web/"+e[o]+c,d.appendChild(r)
-                        }
-                    }(remark_config.components||["embed"],document);
-                `;
-                script2.async = true;
-                document.body.appendChild(script2);
-
-                return () => {
-                    document.body.removeChild(script1);
-                    document.body.removeChild(script2);
-                };
-            }
-        };
-
-        fetchToken().then(r =>  console.log("r: " + r));
-
-    }, [postId, post, jwt]);
+    // useEffect(() => {
+    //     const fetchToken = async () => {
+    //         if (post) {
+    //             const script1 = document.createElement('script');
+    //             // TODO https 설정 필요(nginx) https://www.devbitsandbytes.com/setting-up-remark42-from-scratch/ 참고
+    //             script1.text = `
+    //                 var remark_config = {
+    //                     host: 'http://129.154.213.18:8088',
+    //                     site_id: '${postId}',
+    //                     components: ['embed'],
+    //                     token: 'Bearer ${jwt}'
+    //                 };
+    //             `;
+    //             document.body.appendChild(script1);
+    //
+    //             const script2 = document.createElement('script');
+    //             script2.text = `
+    //                 !function(e,n){
+    //                     for(var o=0;o<e.length;o++){
+    //                         var r=n.createElement("script"),c=".js",d=n.head||n.body;
+    //                         "noModule"in r?(r.type="module",c=".mjs"):r.async=!0;
+    //                         r.defer=!0,r.src=remark_config.host+"/web/"+e[o]+c,d.appendChild(r)
+    //                     }
+    //                 }(remark_config.components||["embed"],document);
+    //             `;
+    //             script2.async = true;
+    //             document.body.appendChild(script2);
+    //
+    //             return () => {
+    //                 document.body.removeChild(script1);
+    //                 document.body.removeChild(script2);
+    //             };
+    //         }
+    //     };
+    //
+    //     fetchToken().then(r =>  console.log("r: " + r));
+    //
+    // }, [postId, post, jwt]);
 
 
     if (!post) {
