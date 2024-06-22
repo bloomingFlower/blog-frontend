@@ -4,9 +4,9 @@ function WelcomeMessage({ username }) {
     const [message, setMessage] = useState('');
     const [isTyping, setIsTyping] = useState(true);
 
-    let fullMessage = 'Welcome to Our Website :)'; // 원래 메시지 입니다.
+    let fullMessage = 'Welcome to Over Engineered blog :)'; // 원래 메시지 입니다.
     if (username) {
-        fullMessage = `Welcome to Our World, ${username} :)`; // 로그인한 사용자의 아이디를 fullMessage에 추가
+        fullMessage = `Welcome to Over Engineered blog, ${username} :)`; // 로그인한 사용자의 아이디를 fullMessage에 추가
     }
     useEffect(() => {
         if (message.length < fullMessage.length) {

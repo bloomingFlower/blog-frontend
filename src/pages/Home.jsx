@@ -4,7 +4,7 @@ import backgroundImage from "@img/background2.png";
 import WelcomeMessage from "./components/WelcomMessage";
 
 function Home() {
-    const [setText] = useState("");
+    const [text, setText] = useState("");
     const [username, setUsername] = useState(""); // 로그인한 사용자의 아이디를 저장할 상태 생성
 
     useEffect(() => {
