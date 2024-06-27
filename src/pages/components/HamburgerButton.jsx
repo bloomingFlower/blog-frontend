@@ -114,7 +114,7 @@ function HamburgerButton() {
                   to="/post"
                   onClick={() => setIsOpen(false)}
               >
-                Post
+                Post(Rest)
               </Link>
               <Link
                   className="block px-5 py-2 text-black hover:text-blue-500"
@@ -122,7 +122,7 @@ function HamburgerButton() {
                   to="/scrap"
                   onClick={() => setIsOpen(false)}
               >
-                Scrap
+                Scrap(gRPC)
               </Link>
               {isLoggedIn && (
                   <>
