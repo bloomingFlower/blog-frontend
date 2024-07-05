@@ -10,7 +10,8 @@ function Scrap() {
     const fetchData = async () => {
       try {
         const client = new ApiServiceClient(`${process.env.REACT_GRPC_API_URL}`, null, {
-          withCredentials: true
+          withCredentials: true,
+          format: 'binary'
         });
         const request = new GetPostsForUserRequest();
         request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
@@ -34,16 +35,16 @@ function Scrap() {
   }, []);
 
   return (
-      <div className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundImage: `url(${backgroundImage})` }}>
-        <div>
-          {data && data.map((item) => (
-              <div key={item.guid}>
-                <h2>{item.title}</h2>
-                <p>{item.content}</p>
-              </div>
-          ))}
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundImage: `url(${backgroundImage})` }}>
+      <div>
+        {data && data.map((item) => (
+          <div key={item.guid}>
+            <h2>{item.title}</h2>
+            <p>{item.content}</p>
+          </div>
+        ))}
       </div>
+    </div>
   );
 }
 
