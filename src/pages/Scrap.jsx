@@ -14,20 +14,16 @@ function Scrap() {
         });
         const request = new GetPostsForUserRequest();
         request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
-        request.setLimit("10");
+        request.setLimit('10');
 
-        const stream = client.handlerGetPostsForUser(request);
-
-        stream.on('data', (response) => {
-          setData(oldData => [...oldData, response]);
-          console.log(response);
-        });
-
-        stream.on('error', (error) => {
-          console.error(error);
-        });
-
-        stream.on('end', () => {
+        client.handlerGetPostsForUser(request, {}, (err, response) => {
+          if (err) {
+            console.error('Error:', err);
+            return;
+          }
+          console.log('Response:', response.toObject());
+          setData(response.toObject());
+          console.log(data);
         });
       } catch (error) {
         console.error('Failed to fetch data:', error);
