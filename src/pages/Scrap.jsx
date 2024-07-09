@@ -19,7 +19,7 @@ function Scrap() {
         request.setLimit('10');
 
         const metadata = new grpc.Metadata();
-        metadata.set('Content-Type', 'application/grpc-web');
+        metadata.set('Content-Type', 'application/grpc-web-text');
         metadata.set('X-Grpc-Web', '1');
 
         client.handlerGetPostsForUser(request, metadata, (err, response) => {
@@ -31,7 +31,7 @@ function Scrap() {
           setData(response.toObject());
         });
       } catch (error) {
-        console.error('Fetch error:', error);
+        console.error('Failed to fetch data:', error);
       }
     };
 
