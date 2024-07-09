@@ -22,14 +22,20 @@ function Scrap() {
         metadata.set('Content-Type', 'application/grpc-web-text');
         metadata.set('X-Grpc-Web', '1');
 
-        client.handlerGetPostsForUser(request, metadata, (err, response) => {
-          if (err) {
-            console.error('Error:', err);
-            return;
-          }
-          console.log('Response:', response.toObject());
-          setData(response.toObject());
-        });
+        client.handlerGetPostsForUser(request, metadata)
+          .on('data', (response) => {
+            console.log('Response:', response.toObject());
+            setData(response.toObject());
+          })
+          .on('status', (status) => {
+            console.log('Status:', status);
+          })
+          .on('metadata', (metadata) => {
+            console.log('Metadata:', metadata);
+          })
+          .on('end', (trailers) => {
+            console.log('Trailers:', trailers);
+          });
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
