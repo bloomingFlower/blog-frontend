@@ -73,5 +73,16 @@ module.exports = {
       "@styles": path.resolve(__dirname, "src/styles/"), // CSS 파일이 있는 경로
       "@img": path.resolve(__dirname, "src/static/img/"), // 이미지 파일이 있는 경로
     },
+    fallback: {
+      "fs": false,
+      "tls": false,
+      "net": false,
+      "path": false,
+      "zlib": false,
+      "http": false,
+      "https": false,
+      "stream": false,
+      "crypto": false,
+    }
   },
 };
