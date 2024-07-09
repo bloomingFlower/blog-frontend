@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { grpc } from "@improbable-eng/grpc-web";
 import { ApiServiceClient } from '../../protos/ApiServiceClientPb';
 import { GetPostsForUserRequest } from '../../protos/api_pb';
 import backgroundImage from "@img/background2.png";
@@ -9,17 +10,17 @@ function Scrap() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const client = new ApiServiceClient(`${process.env.REACT_GRPC_API_URL}`, null, {
-          withCredentials: true,
+        const client = new ApiServiceClient(`${process.env.REACT_GRPC_API_URL}`, {
+          transport: grpc.WebsocketTransport(),
+          debug: true,
         });
         const request = new GetPostsForUserRequest();
         request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
         request.setLimit('10');
 
-        const metadata = {
-          'Content-Type': 'application/grpc-web',
-          'X-Grpc-Web': '1'
-        };
+        const metadata = new grpc.Metadata();
+        metadata.set('Content-Type', 'application/grpc-web');
+        metadata.set('X-Grpc-Web', '1');
 
         client.handlerGetPostsForUser(request, metadata, (err, response) => {
           if (err) {
@@ -28,10 +29,9 @@ function Scrap() {
           }
           console.log('Response:', response.toObject());
           setData(response.toObject());
-          console.log(data);
         });
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error('Fetch error:', error);
       }
     };
 

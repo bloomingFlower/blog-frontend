@@ -27,3 +27,5 @@ yarn-error.log*
 .env.production
 
 id_rsa.enc
+
+dump
