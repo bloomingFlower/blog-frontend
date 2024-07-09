@@ -17,7 +17,7 @@ function Scrap() {
         request.setLimit('10');
 
         const metadata = {
-          'Content-Type': 'application/grpc-web-text',
+          'Content-Type': 'application/grpc-web',
           'X-Grpc-Web': '1'
         };
 
