@@ -8,40 +8,38 @@ function Scrap() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const client = new ApiServiceClient(`${process.env.REACT_GRPC_API_URL}`, {
-          transport: grpc.WebsocketTransport(),
-          debug: true,
+    try {
+      const client = new ApiServiceClient(`${process.env.REACT_GRPC_API_URL}`, {
+        withCredentials: true,
+        transport: grpc.WebsocketTransport(),
+        debug: process.env.NODE_ENV !== 'production',
+      });
+
+      const request = new GetPostsForUserRequest();
+      request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
+      request.setLimit('10');
+
+      const metadata = new grpc.Metadata();
+      metadata.set('Content-Type', 'application/grpc-web-text');
+      metadata.set('X-Grpc-Web', '1');
+
+      client.handlerGetPostsForUser(request, metadata)
+        .on('data', (response) => {
+          console.log('Response:', response.toObject());
+          setData(response.toObject());
+        })
+        .on('status', (status) => {
+          console.log('Status:', status);
+        })
+        .on('metadata', (metadata) => {
+          console.log('Metadata:', metadata);
+        })
+        .on('end', (trailers) => {
+          console.log('Trailers:', trailers);
         });
-        const request = new GetPostsForUserRequest();
-        request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
-        request.setLimit('10');
-
-        const metadata = new grpc.Metadata();
-        metadata.set('Content-Type', 'application/grpc-web-text');
-        metadata.set('X-Grpc-Web', '1');
-
-        client.handlerGetPostsForUser(request, metadata)
-          .on('data', (response) => {
-            console.log('Response:', response.toObject());
-            setData(response.toObject());
-          })
-          .on('status', (status) => {
-            console.log('Status:', status);
-          })
-          .on('metadata', (metadata) => {
-            console.log('Metadata:', metadata);
-          })
-          .on('end', (trailers) => {
-            console.log('Trailers:', trailers);
-          });
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
-    };
-
-    fetchData();
+    } catch (error) {
+      console.error('Failed to create gRPC client:', error);
+    }
   }, []);
 
   return (
