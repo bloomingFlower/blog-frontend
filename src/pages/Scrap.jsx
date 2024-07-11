@@ -16,14 +16,17 @@ function Scrap() {
         request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
         request.setLimit('10');
 
-        client.handlerGetPostsForUser(request, {}, (err, response) => {
+        const metadata = {
+          'Content-Type': 'application/grpc-web+proto'
+        };
+
+        client.handlerGetPostsForUser(request, metadata, (err, response) => {
           if (err) {
             console.error('Error:', err);
             return;
           }
           console.log('Response:', response.toObject());
           setData(response.toObject());
-          console.log(data);
         });
       } catch (error) {
         console.error('Failed to fetch data:', error);
