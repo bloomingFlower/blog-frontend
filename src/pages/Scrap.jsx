@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ApiServiceClient } from '../../protos/ApiServiceClientPb';
-import { GetPostsForUserRequest } from '../../protos/api_pb';
+import { GetPostsForUserRequest, GetFeedsRequest } from '../../protos/api_pb';
 import backgroundImage from "@img/background2.png";
 
 function Scrap() {
