@@ -10,14 +10,15 @@ function Scrap() {
     const fetchData = async () => {
       try {
         const client = new ApiServiceClient(`${process.env.REACT_GRPC_API_URL}`, null, {
-          withCredentials: true
+          withCredentials: true,
         });
         const request = new GetPostsForUserRequest();
         request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
         request.setLimit('10');
 
         const metadata = {
-          'Content-Type': 'application/grpc-web+proto'
+          'Content-Type': 'application/grpc-web+proto',
+          'X-Grpc-Web': '1'
         };
 
         client.handlerGetPostsForUser(request, metadata, (err, response) => {
@@ -39,7 +40,7 @@ function Scrap() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <div>
-        {data && data.map((item) => (
+        {data && data.postsList && data.postsList.map((item) => (
           <div key={item.guid}>
             <h2>{item.title}</h2>
             <p>{item.content}</p>
