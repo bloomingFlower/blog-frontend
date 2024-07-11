@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { grpc } from "@improbable-eng/grpc-web";
 import { ApiServiceClient } from '../../protos/ApiServiceClientPb';
 import { GetPostsForUserRequest } from '../../protos/api_pb';
 import backgroundImage from "@img/background2.png";
@@ -11,7 +10,6 @@ function Scrap() {
     try {
       const client = new ApiServiceClient(`${process.env.REACT_GRPC_API_URL}`, {
         withCredentials: true,
-        transport: grpc.WebsocketTransport(),
         debug: process.env.NODE_ENV !== 'production',
       });
 
@@ -19,9 +17,9 @@ function Scrap() {
       request.setUserid('ba1af24d-9bfc-4f40-8c9c-9c1ea87b69fa');
       request.setLimit('10');
 
-      const metadata = new grpc.Metadata();
-      metadata.set('Content-Type', 'application/grpc-web-text');
-      metadata.set('X-Grpc-Web', '1');
+      const metadata = {
+        'Content-Type': 'application/grpc-web-text'
+      };
 
       client.handlerGetPostsForUser(request, metadata)
         .on('data', (response) => {
