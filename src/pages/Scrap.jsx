@@ -18,7 +18,8 @@ function Scrap() {
 
         const metadata = {
           'Content-Type': 'application/grpc-web+proto',
-          'X-Grpc-Web': '1'
+          'X-Grpc-Web': '1',
+          'api_key': `${process.env.GRPC_API_KEY}`
         };
 
         client.handlerGetPostsForUser(request, metadata, (err, response) => {
