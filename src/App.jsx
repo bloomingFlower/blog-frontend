@@ -58,15 +58,11 @@ function App() {
     if (!searchQuery.trim()) return;
 
     try {
-      const [postResponse, scrapResponse] = await Promise.all([
-        api.get('/api/posts/search', { params: { query: searchQuery } }),
-        api.get('/api/scraps/search', { params: { query: searchQuery } })
-      ]);
+      const postResponse = await api.get('/api/posts/search', { params: { query: searchQuery } });
 
-      setSearchResults([
-        ...postResponse.data.data.map(post => ({ ...post, type: 'post' })),
-        ...scrapResponse.data.data.map(scrap => ({ ...scrap, type: 'scrap' }))
-      ]);
+      setSearchResults(
+        postResponse.data.data.map(post => ({ ...post, type: 'post' }))
+      );
       setIsSearchOpen(true);
     } catch (error) {
       console.error('Failed to fetch search results:', error);
