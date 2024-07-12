@@ -8,6 +8,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
+    const token = sessionStorage.getItem('jwt');
+    if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+    }
     config.metadata = { startTime: new Date() }; // 요청 시작 시간 기록
     config.cancelToken = new axios.CancelToken(cancel => config.canceller = cancel);
     return config;
@@ -30,7 +34,7 @@ api.interceptors.response.use(
 
         // 로그 데이터를 서버에 보냄
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/api/log`, logData, {withCredentials: true});
+            await axios.post(`${process.env.REACT_APP_API_URL}/api/log`, logData, { withCredentials: true });
         } catch (error) {
             console.error('Failed to send log data:', error);
         }
