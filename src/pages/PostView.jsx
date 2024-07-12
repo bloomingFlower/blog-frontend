@@ -5,9 +5,9 @@ import api from "./components/api";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Modal from 'react-modal';
-import {trackPromise} from "react-promise-tracker";
+import { trackPromise } from "react-promise-tracker";
 import LoadingIndicator from "./components/LoadingIndicator";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 
 Modal.setAppElement('#root'); // Add this line
 
@@ -92,7 +92,7 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
 
 
     if (!post) {
-        return <LoadingIndicator/>;
+        return <LoadingIndicator />;
     }
     const handleEditClick = () => {
         setIsPostViewModalOpen(false); // 현재 모달을 닫습니다.
@@ -117,51 +117,52 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
             onRequestClose={() => setIsPostViewModalOpen(false)}
             shouldCloseOnOverlayClick={true}
             contentLabel="Post View"
-            className="max-w-5xl mx-auto mt-20 mb-20 bg-white rounded-lg overflow-hidden"
-            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            className="w-11/12 max-w-4xl mx-auto my-10 bg-white rounded-lg shadow-xl overflow-auto"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
             style={{
                 content: {
-                    width: '80%', // 원하는 너비로 설정
-                    margin: 'auto', // 모달을 화면 중앙에 배치
+                    maxHeight: '90vh',
                 }
             }}
         >
-            <div className="p-8 bg-white rounded-lg shadow-lg">
-                <h2 className="text-xl font-bold mb-4 text-center">{post.title}</h2>
-                <ReactQuill
-                    value={post.content}
-                    readOnly={true}
-                    theme="snow"
-                    modules={{toolbar: false}}
-                />
-                <div className="mt-4 flex flex-wrap">
+            <div className="p-6 md:p-8">
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-800">{post.title}</h2>
+                <div className="mb-6">
+                    <ReactQuill
+                        value={post.content}
+                        readOnly={true}
+                        theme="snow"
+                        modules={{ toolbar: false }}
+                    />
+                </div>
+                <div className="mb-6 flex flex-wrap">
                     {post.tags.split(',').map((tag, index) => (
                         <span
-                            className="inline-block bg-blue-500 text-white rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2"
+                            className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2"
                             key={index}>
-                           #{tag.trim()}
-                         </span>
+                            #{tag.trim()}
+                        </span>
                     ))}
                 </div>
                 {post.file && (
                     <a href={post.file} download={post.file.split('/').pop()}
-                       className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        {post.file.split('/').pop()}
+                        className="mb-6 inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300">
+                        Download: {post.file.split('/').pop()}
                     </a>
                 )}
-                <div id="remark42"></div>
-                <div className="flex justify-between space-x-4">
-                    <button className="w-1/2 mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            onClick={handleEditClick}>Edit Post
+                <div id="remark42" className="mb-6"></div>
+                <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4">
+                    <button className="w-full md:w-1/3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                        onClick={handleEditClick}>Edit Post
                     </button>
                     <button
-                        className="w-1/2 mt-4 bg-amber-500 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded"
+                        className="w-full md:w-1/3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
                         onClick={handleHideClick}
                     >
                         {post.hidden ? '숨김 해제' : '숨김'}
                     </button>
-                    <button className="w-1/2 mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                            onClick={() => setIsPostViewModalOpen(false)}>Close
+                    <button className="w-full md:w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                        onClick={() => setIsPostViewModalOpen(false)}>Close
                     </button>
                 </div>
             </div>

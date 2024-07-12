@@ -3,15 +3,15 @@ import backgroundImage from "@img/background2.png";
 import PostUpload from "./PostUpload";
 import PostView from "./PostView";
 import api from "./components/api";
-import {trackPromise} from "react-promise-tracker";
-import {toast} from "react-toastify";
+import { trackPromise } from "react-promise-tracker";
+import { toast } from "react-toastify";
 import SearchPost from "./components/SearchPost";
 
 function Post() {
   const [isLoggedIn, setIsLoggedIn] = useState(sessionStorage.getItem('isLoggedIn') === 'true');
   const [isPostViewModalOpen, setIsPostViewModalOpen] = useState(false);
   // PostUpload 모달의 열림/닫힘을 제어하는 상태를 추가
-// 편집 중인 포스트의 ID를 저장하는 상태를 추가
+  // 편집 중인 포스트의 ID를 저장하는 상태를 추가
   const [editingPostId, setEditingPostId] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [page, setPage] = useState(1);
@@ -35,6 +35,9 @@ function Post() {
     </svg>
   );
 
+  const [isLoading, setIsLoading] = useState(true);
+
+
   const handlePostClick = (postId) => {
     setSelectedPostId(postId);
     setIsPostViewModalOpen(true);
@@ -47,12 +50,15 @@ function Post() {
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setIsLoading(true);
       try {
         const response = await trackPromise(api.get(`/api/posts?page=${page}`));
         setPosts(response.data.data);
         setLastPage(response.data.meta.last_page);
       } catch (error) {
         toast.error('Failed to fetch posts:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -111,123 +117,130 @@ function Post() {
   };
 
   const handleBackClick = () => {
-    setSearchResults([]); // 검색 결과를 비웁니다.
+    setSearchResults([]);
   };
+
   return (
-    <div
-      className="flex flex-col items-start h-screen text-center bg-cover bg-no-repeat pt-10"
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-      }}
-    >
+    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8" style={{
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}>
       {isUploadModalOpen && (
-          <PostUpload setIsUploadModalOpen={setIsUploadModalOpen} postId={editingPostId} />
+        <PostUpload setIsUploadModalOpen={setIsUploadModalOpen} postId={editingPostId} />
       )}
       {isPostViewModalOpen && (
-          <PostView
-              postId={selectedPostId}
-              setIsPostViewModalOpen={setIsPostViewModalOpen}
-              setEditingPostId={setEditingPostId}
-              setIsUploadModalOpen={setIsUploadModalOpen}
-          />
+        <PostView
+          postId={selectedPostId}
+          setIsPostViewModalOpen={setIsPostViewModalOpen}
+          setEditingPostId={setEditingPostId}
+          setIsUploadModalOpen={setIsUploadModalOpen}
+        />
       )}
-      <div
-          className="container mx-auto px-4"
-          style={{
-            fontFamily: "PlayfairDisplay, serif",
-          }}
-      >
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold cursor-pointer"
-              onClick={() => window.location.reload()}>Posts</h1>
-          {isLoggedIn && ( // 로그인 상태일 때만 "Upload" 버튼 렌더링
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4 sm:mb-0 cursor-pointer"
+            onClick={() => window.location.reload()}>
+            Posts
+          </h1>
+          <div className="flex items-center space-x-4">
+            <SearchPost setSearchResults={setSearchResults} />
+            {isLoggedIn && (
               <button
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
-                  onClick={handleUploadClick}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center transition duration-300"
+                onClick={handleUploadClick}
               >
-                <UploadIcon className="text-2xl mr-2 h-4 w-4"/>
+                <UploadIcon className="mr-2 h-5 w-5" />
                 Upload
               </button>
-          )}
+            )}
+          </div>
         </div>
-        <div className="grid grid-cols-1 gap-3">
-          {(searchResults.length > 0 ? searchResults : posts).length > 0 ? (
-              (searchResults.length > 0 ? searchResults : posts).map((post) => (
+
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (searchResults.length > 0 ? searchResults : posts).length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(searchResults.length > 0 ? searchResults : posts).map((post) => (
+              <div
+                className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 ${post.hidden ? 'opacity-50' : ''}`}
+                onClick={() => handlePostClick(post.id)}
+                key={post.id}
+              >
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">{post.title}</h2>
                   <div
-                      className={`rounded-lg shadow-lg overflow-hidden cursor-pointer h-34 flex flex-col justify-between ${post.hidden ? 'bg-gray-400 hover:bg-gray-600' : 'bg-white hover:bg-amber-100'}`}
-                      onClick={() => handlePostClick(post.id)}
-                      key={post.id}
-                  >
-                    <div className="p-4">
-                      <h2 className="text-base font-bold">{post.title}</h2> {/* 글씨 크기를 줄입니다. */}
-                      <div
-                          className="text-gray-700 overflow-hidden overflow-ellipsis h-12"
-                          dangerouslySetInnerHTML={{__html: post.content}}
-                      />
-                    </div>
-                    <div className="px-4 py-2 flex justify-between items-end">
-                      <div className="flex flex-wrap">
-                        {post.tags.split(',').map((tag, index) => (
-                            <span
-                                className="inline-block bg-blue-500 text-white rounded-full px-3 py-1 text-xs font-semibold mr-2 mb-2"
-                                key={index}
-                            >
-                              #{tag.trim()}
-                            </span>
-                        ))}
-                      </div>
-                      <p className="text-xs">
-                        {post.created_at === "0001-01-01T00:00:00Z" || post.updated_at && post.updated_at !== post.created_at
-                            ? `Updated at ${new Date(post.updated_at).toLocaleString()}`
-                            : `Created at ${new Date(post.created_at).toLocaleString()}`
-                        }
-                      </p>
-                    </div>
+                    className="text-gray-600 text-sm mb-4 line-clamp-3"
+                    dangerouslySetInnerHTML={{ __html: post.content }}
+                  />
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {post.tags.split(',').map((tag, index) => (
+                      <span
+                        className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
+                        key={index}
+                      >
+                        #{tag.trim()}
+                      </span>
+                    ))}
                   </div>
-              ))
-          ) : (
-              <p className="text-xl text-pink-400 py-4 text-center">...</p>
-          )}
-        </div>
-        <div className="mt-8 flex justify-between">
+                  <p className="text-xs text-gray-500">
+                    {post.created_at === "0001-01-01T00:00:00Z" || post.updated_at && post.updated_at !== post.created_at
+                      ? `Updated at ${new Date(post.updated_at).toLocaleString()}`
+                      : `Created at ${new Date(post.created_at).toLocaleString()}`
+                    }
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xl text-pink-400 py-4 text-center">No posts found</p>
+        )}
+
+        <div className="mt-8 flex flex-col sm:flex-row justify-between items-center">
           <button
-              onClick={handlePrevPage}
-              disabled={page === 1}
-              className={`bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded ${page === 1 ? 'invisible' : ''}`}
+            onClick={handlePrevPage}
+            disabled={page === 1}
+            className={`mb-4 sm:mb-0 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${page === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Previous Page
           </button>
-          <div className="flex space-x-2">
-            {Array.from({length: 5}, (_, i) => i + 1)
-                .map(i => {
-                  const pageNumber = page > 3 ? page - 3 + i : i;
-                  return pageNumber <= lastPage ? pageNumber : null;
-                })
-                .filter(Boolean)
-                .map(p => (
-                    <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        className={`py-1 px-3 rounded ${p === page ? 'bg-blue-500 hover:bg-blue-700 text-white text-xs' : 'bg-white hover:bg-gray-200 text-blue-500'}`}
-                    >
-                      {p}
-                    </button>
-                ))}
+          <div className="flex space-x-2 mb-4 sm:mb-0">
+            {Array.from({ length: 5 }, (_, i) => i + 1)
+              .map(i => {
+                const pageNumber = page > 3 ? page - 3 + i : i;
+                return pageNumber <= lastPage ? pageNumber : null;
+              })
+              .filter(Boolean)
+              .map(p => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`py-2 px-4 rounded transition duration-300 ${p === page ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 hover:bg-gray-200'}`}
+                >
+                  {p}
+                </button>
+              ))}
           </div>
           <button
-              onClick={handleNextPage}
-              disabled={page === lastPage}
-              className={`bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded ${page === lastPage ? 'invisible' : ''}`}
+            onClick={handleNextPage}
+            disabled={page === lastPage}
+            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${page === lastPage ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Next Page
           </button>
         </div>
+
         {searchResults.length > 0 && (
-            <button onClick={handleBackClick}>Back to all posts</button>
+          <button
+            onClick={handleBackClick}
+            className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition duration-300"
+          >
+            Back to all posts
+          </button>
         )}
-        <div className="mt-8">
-          <SearchPost setSearchResults={setSearchResults}/>
-        </div>
       </div>
     </div>
   );

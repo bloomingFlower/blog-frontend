@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ApiServiceClient } from '../../protos/ApiServiceClientPb';
 import { GetPostsForUserRequest, GetFeedsRequest } from '../../protos/api_pb';
 import backgroundImage from "@img/background2.png";
+import logger from '../utils/logger';
 
 const formatDate = (seconds) => {
   return new Date(seconds * 1000).toLocaleDateString('ko-KR', {
@@ -34,24 +35,23 @@ function Scrap() {
         const receivedPosts = [];
 
         stream.on('data', (response) => {
-          console.log('Received post:', response.toObject());
           receivedPosts.push(response.toObject());
         });
 
         stream.on('status', (status) => {
-          console.log('Stream status:', status);
+          logger.debug('Stream status:', status);
         });
 
         stream.on('end', () => {
-          console.log('Stream ended. Total posts received:', receivedPosts.length);
+          logger.info(`Stream ended. Total posts received: ${receivedPosts.length}`);
           setPosts(receivedPosts);
         });
 
         stream.on('error', (err) => {
-          console.error('Stream error:', err);
+          logger.error('Stream error:', err);
         });
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        logger.error('Failed to fetch data:', error);
       }
     };
 
