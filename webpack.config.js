@@ -1,4 +1,3 @@
-const webpack = require('webpack');
 const path = require("path");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -40,24 +39,6 @@ module.exports = {
     new CompressionPlugin({
       test: /\.(js|css|html|svg)$/,
       algorithm: 'gzip',
-    }),
-    new ImageMinimizerPlugin({
-      minimizer: {
-        implementation: ImageMinimizerPlugin.squooshMinify,
-        options: {
-          encodeOptions: {
-            mozjpeg: {
-              quality: 80,
-            },
-            webp: {
-              lossless: 1,
-            },
-            avif: {
-              cqLevel: 0,
-            },
-          },
-        },
-      },
     }),
   ],
   module: {
