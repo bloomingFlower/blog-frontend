@@ -6,11 +6,11 @@ cache:
     - "node_modules"
 
 node_js:
-  - 17.9.1 # 19.x Ubuntu 16.04.7 version issue
+  - 18.17.0 # 19.x Ubuntu 16.04.7 version issue
 
 before_install:
   - npm config set registry https://registry.npmjs.org/
-  - npm install -g npm@latest
+  - if [ $(npm -v | cut -d. -f1) -lt 9 ]; then npm i -g npm@^9.0.0; fi
 
 install:
   - npm ci
