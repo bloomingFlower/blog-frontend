@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from "./api";
-import {trackPromise} from "react-promise-tracker";
-import {toast} from "react-toastify";
+import { trackPromise } from "react-promise-tracker";
+import { toast } from "react-toastify";
 
 function SearchComponent({ setSearchResults }) {
     const [query, setQuery] = useState('');
@@ -33,7 +33,7 @@ function SearchComponent({ setSearchResults }) {
     };
 
     return (
-        <form onSubmit={handleSearch} className="flex space-x-1 w-1/2 mx-auto">
+        <form onSubmit={handleSearch} className="flex space-x-1 w-full">
             <input
                 id="searchInput"
                 type="text"
@@ -48,7 +48,7 @@ function SearchComponent({ setSearchResults }) {
                 <option value="content">Content</option>
                 <option value="tags">Tags</option>
             </select>
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded">Search</button>
+            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded whitespace-nowrap">Search</button>
         </form>
     );
 }

@@ -143,11 +143,13 @@ function Post() {
             onClick={() => window.location.reload()}>
             Posts
           </h1>
-          <div className="flex items-center space-x-4">
-            <SearchPost setSearchResults={setSearchResults} />
+          <div className="flex items-center space-x-4 w-full sm:w-auto">
+            <div className="w-full sm:w-auto">
+              <SearchPost setSearchResults={setSearchResults} />
+            </div>
             {isLoggedIn && (
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center transition duration-300"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center transition duration-300 whitespace-nowrap"
                 onClick={handleUploadClick}
               >
                 <UploadIcon className="mr-2 h-5 w-5" />
