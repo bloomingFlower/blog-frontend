@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense, useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingIndicator from './pages/components/LoadingIndicator';
-import { AuthProvider } from './pages/components/AuthContext';
+import { AuthProvider, AuthContext } from './pages/components/AuthContext';
 import api from './pages/components/api';
 
 import "tailwindcss/tailwind.css";
@@ -24,14 +24,15 @@ const Footer = lazy(() => import("./pages/components/Footer"));
 const HamburgerButton = lazy(() => import("./pages/components/HamburgerButton"));
 const SearchResults = lazy(() => import('./pages/components/SearchResults'));
 const SystemStack = lazy(() => import("./pages/SystemStack"));
+const ActivityMonitor = lazy(() => import('./pages/components/ActivityMonitor'));
 
 function App() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
   const [isSearchInputVisible, setIsSearchInputVisible] = useState(false);
-  const searchRef = useRef();
-  const searchInputRef = useRef();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const [remainingTime, setRemainingTime] = useState(30 * 60 * 1000); // 30분
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -76,6 +77,12 @@ function App() {
     }
   };
 
+  const formatTime = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(0);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
   return (
     <AuthProvider>
       <Router>
@@ -83,6 +90,13 @@ function App() {
           <nav className="flex items-center justify-between p-3 bg-white text-black h-[60%] font-serif relative">
             <Link to="/" className="text-xl">Our Journey</Link>
             <div className="flex items-center" ref={searchRef}>
+              <AuthContext.Consumer>
+                {({ isLoggedIn }) => isLoggedIn && (
+                  <span className="mr-4 text-sm">
+                    Remaining login time: {formatTime(remainingTime)}
+                  </span>
+                )}
+              </AuthContext.Consumer>
               <div className="relative mr-4">
                 <button onClick={toggleSearchInput} className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,11 +124,13 @@ function App() {
           {isSearchOpen && (
             <div className="absolute top-16 right-0 w-full md:w-2/3 bg-white shadow-md z-50">
               <Suspense fallback={<LoadingIndicator />}>
+                <ActivityMonitor />
                 <SearchResults results={searchResults} onClose={() => setIsSearchOpen(false)} />
               </Suspense>
             </div>
           )}
           <Suspense fallback={<LoadingIndicator />}>
+            <ActivityMonitor onTimeUpdate={setRemainingTime} />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/post" element={<Post />} />
