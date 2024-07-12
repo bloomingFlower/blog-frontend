@@ -4,7 +4,7 @@ import { GetPostsForUserRequest, GetFeedsRequest } from '../../protos/api_pb';
 import backgroundImage from "@img/background2.png";
 
 function Scrap() {
-  const [data, setData] = useState(null);
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,13 +22,25 @@ function Scrap() {
           'api_key': `${process.env.GRPC_API_KEY}`
         };
 
-        client.handlerGetPostsForUser(request, metadata, (err, response) => {
-          if (err) {
-            console.error('Error:', err);
-            return;
-          }
-          console.log('Response:', response.toObject());
-          setData(response.toObject());
+        const stream = client.handlerGetPostsForUser(request, metadata);
+        const receivedPosts = [];
+
+        stream.on('data', (response) => {
+          console.log('Received post:', response.toObject());
+          receivedPosts.push(response.toObject());
+        });
+
+        stream.on('status', (status) => {
+          console.log('Stream status:', status);
+        });
+
+        stream.on('end', () => {
+          console.log('Stream ended. Total posts received:', receivedPosts.length);
+          setPosts(receivedPosts);
+        });
+
+        stream.on('error', (err) => {
+          console.error('Stream error:', err);
         });
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -41,7 +53,7 @@ function Scrap() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <div>
-        {data && data.postsList && data.postsList.map((item) => (
+        {posts && posts.map((item) => (
           <div key={item.guid}>
             <h2>{item.title}</h2>
             <p>{item.content}</p>
