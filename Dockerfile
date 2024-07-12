@@ -9,7 +9,9 @@ WORKDIR /app
 
 # 의존성 파일 복사 및 설치
 COPY package.json package-lock.json ./
-RUN npm install
+# 의존성 설치 (이 레이어는 package.json이 변경되지 않으면 캐시됨)
+RUN npm ci --only=production
+# protobuf-compiler 설치 (이 레이어는 거의 변경되지 않음)
 RUN apt-get update && apt-get install -y protobuf-compiler
 
 # 프로토콜 버퍼 파일 복사 및 컴파일
@@ -25,8 +27,12 @@ RUN npm run build
 
 # 최종 실행 이미지
 FROM nginx:alpine
+
+# 빌드 결과 복사
 COPY --from=builder /app/protos /usr/share/nginx/html/protos
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+# .env 파일 복사
 COPY .env.production /root/.env
 
 # Nginx 설정 파일 복사

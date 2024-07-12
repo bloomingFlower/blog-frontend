@@ -1,21 +1,32 @@
 language: node_js
 cache:
+  npm: true
   directories:
-  - "~/.npm"
-  - "node_modules"
+    - "~/.npm"
+    - "node_modules"
+
 node_js:
-- 17.9.1 # 19.x Ubuntu 16.04.7 version issue
+  - 17.9.1 # 19.x Ubuntu 16.04.7 version issue
+
 before_install:
-- openssl aes-256-cbc -K $encrypted_2d8c63ef40a5_key -iv $encrypted_2d8c63ef40a5_iv
-  -in id_rsa.enc -out ../id_rsa -d
-- chmod 600 ../id_rsa
-- echo -e "Host $DEPLOY_SERVER\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - npm config set registry https://registry.npmjs.org/
+  - npm install -g npm@latest
+
 install:
-- npm install
+  - npm ci
+
 script:
-- npm run build
-after_success:
+  - npm run lint
+  - npm run test
+  - npm run build
+
+before_deploy:
+  - openssl aes-256-cbc -K $encrypted_2d8c63ef40a5_key -iv $encrypted_2d8c63ef40a5_iv -in id_rsa.enc -out ../id_rsa -d
+  - chmod 600 ../id_rsa
+  - echo -e "Host $DEPLOY_SERVER\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+deploy:
   - export VERSION=$(git rev-parse --short HEAD) # Git 커밋 해시
   - echo $VERSION
   - rsync -rave "ssh -i ../id_rsa" --exclude=node_modules --exclude=dist --exclude=.git . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend

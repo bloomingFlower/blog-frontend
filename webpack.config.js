@@ -3,12 +3,14 @@ const path = require("path");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const CompressionPlugin = require('compression-webpack-plugin');
+const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
 
 module.exports = {
   entry: "./src/index.jsx",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js",
+    filename: "[name].[contenthash].js",
     publicPath: "/",
   },
   devServer: {
@@ -16,20 +18,46 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './public/index.html' // 기본 HTML 파일 경로
+      template: './public/index.html'
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'public', to: '.', filter: async (resourcePath) => {
+        { 
+          from: 'public', 
+          to: '.',
+          filter: async (resourcePath) => {
             if (resourcePath.endsWith('index.html')) {
               return false;
             }
             return true;
-          }},
+          }
+        },
       ],
     }),
     new Dotenv({
       path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development',
+    }),
+    new CompressionPlugin({
+      test: /\.(js|css|html|svg)$/,
+      algorithm: 'gzip',
+    }),
+    new ImageMinimizerPlugin({
+      minimizer: {
+        implementation: ImageMinimizerPlugin.squooshMinify,
+        options: {
+          encodeOptions: {
+            mozjpeg: {
+              quality: 80,
+            },
+            webp: {
+              lossless: 1,
+            },
+            avif: {
+              cqLevel: 0,
+            },
+          },
+        },
+      },
     }),
   ],
   module: {
@@ -39,6 +67,11 @@ module.exports = {
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
+          options: {
+            presets: [
+              ['@babel/preset-env', { targets: "defaults" }]
+            ]
+          }
         },
       },
       {
@@ -55,12 +88,12 @@ module.exports = {
         ],
       },
       {
-        test: /\.(png|jpe?g|gif)$/i,
+        test: /\.(png|jpe?g|gif|webp|avif)$/i,
         use: [
           {
             loader: "file-loader",
             options: {
-              name: "[path][name].[ext]",
+              name: "images/[name].[hash].[ext]",
             },
           },
         ],
@@ -70,8 +103,8 @@ module.exports = {
   resolve: {
     extensions: [".js", ".jsx", ".tsx", ".ts"],
     alias: {
-      "@styles": path.resolve(__dirname, "src/styles/"), // CSS 파일이 있는 경로
-      "@img": path.resolve(__dirname, "src/static/img/"), // 이미지 파일이 있는 경로
+      "@styles": path.resolve(__dirname, "src/styles/"),
+      "@img": path.resolve(__dirname, "src/static/img/"),
     },
     fallback: {
       "fs": false,
@@ -84,5 +117,18 @@ module.exports = {
       "stream": false,
       "crypto": false,
     }
+  },
+  optimization: {
+    moduleIds: 'deterministic',
+    runtimeChunk: 'single',
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    },
   },
 };
