@@ -1,16 +1,18 @@
 language: node_js
+
+node_js:
+  - 17.9.1 # 19.x Ubuntu 16.04.7 version issue
+
 cache:
   npm: true
   directories:
     - "~/.npm"
     - "node_modules"
 
-node_js:
-  - 18.17.0 # 19.x Ubuntu 16.04.7 version issue
 
 before_install:
   - npm config set registry https://registry.npmjs.org/
-  - if [ $(npm -v | cut -d. -f1) -lt 9 ]; then npm i -g npm@^9.0.0; fi
+  - npm install -g npm@8.11.0
 
 install:
   - npm ci
