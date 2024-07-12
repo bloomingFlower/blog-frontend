@@ -1,7 +1,8 @@
 // PostView.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "./components/api";
+import { AuthContext } from "./components/AuthContext";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Modal from 'react-modal';
@@ -31,8 +32,8 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
     // if (jwt === undefined) {
     //     toast.error("jwt is undefined");
     // }
-
-    const jwt = "";
+    const { isLoggedIn } = useContext(AuthContext);
+    const { jwt } = useContext(AuthContext);
     useEffect(() => {
         const fetchPost = async () => {
             try {
@@ -101,6 +102,10 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
     };
 
     const handleHideClick = async () => {
+        if (!isLoggedIn) {
+            toast.warning('Please log in to hide posts');
+            return;
+        }
         try {
             // 서버에 요청을 보내어 포스트의 숨김 상태를 업데이트
             await trackPromise(api.put(`/api/post/${postId}/hide`));
@@ -155,12 +160,14 @@ function PostView({ postId, setIsPostViewModalOpen, setEditingPostId, setIsUploa
                     <button className="w-full md:w-1/3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
                         onClick={handleEditClick}>Edit Post
                     </button>
-                    <button
-                        className="w-full md:w-1/3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-                        onClick={handleHideClick}
-                    >
-                        {post.hidden ? '숨김 해제' : '숨김'}
-                    </button>
+                    {isLoggedIn && (
+                        <button
+                            className="w-full md:w-1/3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                            onClick={handleHideClick}
+                        >
+                            {post.hidden ? '숨김 해제' : '숨김'}
+                        </button>
+                    )}
                     <button className="w-full md:w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
                         onClick={() => setIsPostViewModalOpen(false)}>Close
                     </button>

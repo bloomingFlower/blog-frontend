@@ -6,6 +6,8 @@ function HamburgerButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [clickTimes, setClickTimes] = useState([]);
   const navigate = useNavigate();
+  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
+
   const handleMouseOver = () => {
     setIsOpen(true);
   };
@@ -13,10 +15,11 @@ function HamburgerButton() {
   const handleMouseOut = () => {
     setIsOpen(false);
   };
-  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    sessionStorage.clear();
+    navigate('/');
   };
 
   useEffect(() => {
@@ -74,69 +77,68 @@ function HamburgerButton() {
       </button>
       {isOpen && (
         <div
-          className="menu"
-          style={{
-            position: "absolute",
-            top: "100%", // 네비바의 높이에 맞게 조절
-            right: "0px",
-            width: "100%", // 화면 좌우로 가득 차게 변경
-            backgroundColor: "rgba(255, 255, 255, 0.7)", // 반투명한 흰색으로 변경
-            zIndex: "1000",
-          }}
+          className="menu absolute top-full right-0 w-48 bg-white shadow-lg rounded-lg overflow-hidden z-50"
           onMouseOut={handleMouseOut}
         >
           <Link
-            className="block px-5 py-2 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
-            style={{ fontSize: "15px" }} // 글씨 크기를 더 크게 변경
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/"
             onClick={() => setIsOpen(false)}
           >
             Home
           </Link>
           <Link
-            className="block px-5 py-2 text-black hover:text-blue-500"
-            style={{ fontSize: "15px" }}
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/system-stack"
             onClick={() => setIsOpen(false)}
           >
             Website Tech Stack
           </Link>
           <Link
-            className="block px-5 py-2 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
-            style={{ fontSize: "15px" }} // 글씨 크기를 더 크게 변경
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/about"
             onClick={() => setIsOpen(false)}
           >
             About
           </Link>
           <Link
-            className="block px-5 py-2 text-black hover:text-blue-500" // 텍스트 색상을 검은색으로 변경
-            style={{ fontSize: "15px" }} // 글씨 크기를 더 크게 변경
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/post"
             onClick={() => setIsOpen(false)}
           >
             Post(Rest)
           </Link>
           <Link
-            className="block px-5 py-2 text-black hover:text-blue-500"
-            style={{ fontSize: "15px" }}
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/scrap"
             onClick={() => setIsOpen(false)}
           >
             Scrap(gRPC)
           </Link>
-          {isLoggedIn && (
+          {isLoggedIn ? (
             <>
-
               <Link
-                className="block px-5 py-2 text-black hover:text-blue-500"
-                style={{ fontSize: "15px" }}
-                to="/logout"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                to="/edit-profile"
+                onClick={() => setIsOpen(false)}
+              >
+                Edit Profile
+              </Link>
+              <button
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={handleLogout}
               >
                 Logout
-              </Link>
+              </button>
             </>
+          ) : (
+            <Link
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              to="/admin-login"
+              onClick={() => setIsOpen(false)}
+            >
+              Login
+            </Link>
           )}
         </div>
       )}

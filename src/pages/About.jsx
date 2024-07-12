@@ -1,36 +1,40 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import "tailwindcss/tailwind.css";
 import backgroundImage from "@img/background2.png";
 
 function Section({ title, children }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-      <section className="mb-5">
-        <h2
-            className="text-base text-blue-600 mb-2 cursor-pointer"
-            onClick={() => setIsOpen(!isOpen)}
+    <div className="mb-6 bg-white bg-opacity-80 rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out">
+      <button
+        className="w-full px-6 py-4 text-left text-lg font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none flex justify-between items-center"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {title}
+        <svg
+          className={`w-6 h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
         >
-          {title}
-        </h2>
-        <div className={`text-sm mb-5 ${isOpen ? "text-gray-500 bg-gray-500" : "text-gray-700"}`}>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="px-6 py-4 text-gray-700 bg-white">
           {children}
         </div>
-      </section>
+      )}
+    </div>
   );
 }
 
 function About() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleTitleClick = () => {
-    setIsOpen(!isOpen);
-  };
-
   return (
     <div
-      className="flex flex-col items-center justify-center h-screen text-center bg-cover bg-no-repeat"
+      className="min-h-screen bg-cover bg-center py-12 px-4 sm:px-6 lg:px-8"
       style={{
         backgroundImage: `url(${backgroundImage})`,
       }}
@@ -39,47 +43,45 @@ function About() {
         <title>About Me</title>
         <meta name="description" content="About me page of my website" />
       </Helmet>
-      <div className="p-5 bg-white bg-opacity-50 rounded-lg">
-        <h1 className="text-4xl text-gray-800 mb-5 cursor-pointer" onClick={handleTitleClick}>About Me(Draft-Template)</h1>
-        <Section title="Education">
-          <p>Computer Engineering, University of XYZ, 2015-2019</p>
-        </Section>
-        <Section title="Work Experience">
-          <p>Software Engineer at ABC Corp, 2019-Present</p>
-        </Section>
-        <Section title="Skills">
-          <p>JavaScript, React, Node.js, Python, SQL</p>
-        </Section>
-        <Section title="Projects">
-          <p>Project 1: Description</p>
-          <p>Project 2: Description</p>
-        </Section>
-        <Section title="Certifications">
-          <p>Certification 1: Description</p>
-          <p>Certification 2: Description</p>
-        </Section>
-        <Section title="Study">
-          I am passionate about learning new things. Here, I share my study
-          notes and experiences!
-        </Section>
-        <Section title="Travel">
-          I love to travel and explore new places. Check out my travel diaries.
-        </Section>
-        <Section title="Food Reviews">
-          I enjoy trying out new cuisines and restaurants. Here are some of my
-          food reviews.
-        </Section>
-        <Section title="Electronics Reviews">
-          I love exploring new gadgets and electronics. Here are some of my
-          reviews.
-        </Section>
-        <Section title="Economy">
-          I am interested in economic trends and developments. Here are my
-          thoughts and analyses.
-        </Section>
-        <Section title="Others">
-          Here are some other topics that I am interested in.
-        </Section>
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">About Me</h1>
+        <div className="space-y-6">
+          <Section title="Education">
+            <p>Computer Engineering, University of XYZ, 2015-2019</p>
+          </Section>
+          <Section title="Work Experience">
+            <p>Software Engineer at ABC Corp, 2019-Present</p>
+          </Section>
+          <Section title="Skills">
+            <p>JavaScript, React, Node.js, Python, SQL</p>
+          </Section>
+          <Section title="Projects">
+            <p>Project 1: Description</p>
+            <p>Project 2: Description</p>
+          </Section>
+          <Section title="Certifications">
+            <p>Certification 1: Description</p>
+            <p>Certification 2: Description</p>
+          </Section>
+          <Section title="Study">
+            <p>I am passionate about learning new things. Here, I share my study notes and experiences!</p>
+          </Section>
+          <Section title="Travel">
+            <p>I love to travel and explore new places. Check out my travel diaries.</p>
+          </Section>
+          <Section title="Food Reviews">
+            <p>I enjoy trying out new cuisines and restaurants. Here are some of my food reviews.</p>
+          </Section>
+          <Section title="Electronics Reviews">
+            <p>I love exploring new gadgets and electronics. Here are some of my reviews.</p>
+          </Section>
+          <Section title="Economy">
+            <p>I am interested in economic trends and developments. Here are my thoughts and analyses.</p>
+          </Section>
+          <Section title="Others">
+            <p>Here are some other topics that I am interested in.</p>
+          </Section>
+        </div>
       </div>
     </div>
   );
