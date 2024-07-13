@@ -4,6 +4,7 @@ import { GetPostsForUserRequest } from "../../protos/api_pb";
 import backgroundImage from "@img/background2.png";
 import logger from "../utils/logger";
 import DOMPurify from "dompurify";
+import he from "he";
 
 const formatDate = (seconds) => {
   return new Date(seconds * 1000).toLocaleDateString("en-US", {
@@ -15,10 +16,7 @@ const formatDate = (seconds) => {
 
 const sanitizeHTML = (html) => {
   // Decode HTML entities before sanitizing
-  const decodedHtml = html
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&");
+  const decodedHtml = he.decode(html);
   return DOMPurify.sanitize(decodedHtml);
 };
 
