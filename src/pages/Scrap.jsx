@@ -13,13 +13,23 @@ const formatDate = (seconds) => {
   });
 };
 
+const sanitizeHTML = (html) => {
+  // Decode HTML entities before sanitizing
+  const decodedHtml = html
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+  return DOMPurify.sanitize(decodedHtml);
+};
+
+const truncateDescription = (description, maxLength = 150) => {
+  if (description.length <= maxLength) return description;
+  return `${description.substring(0, maxLength)}...`;
+};
+
 function Scrap() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const sanitizeHTML = (html) => {
-    return DOMPurify.sanitize(html);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,9 +118,7 @@ function Scrap() {
                     className="text-gray-600 mb-4"
                     dangerouslySetInnerHTML={{
                       __html: sanitizeHTML(
-                        post.description.length > 150
-                          ? `${post.description.substring(0, 150)}...`
-                          : post.description
+                        truncateDescription(post.description)
                       ),
                     }}
                   />
