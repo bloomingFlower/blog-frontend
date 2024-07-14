@@ -43,19 +43,6 @@ module.exports = {
       test: /\.(js|css|html|svg)$/,
       algorithm: "gzip",
     }),
-    new ImageMinimizerPlugin({
-      minimizer: {
-        implementation: ImageMinimizerPlugin.imageminMinify,
-        options: {
-          plugins: [
-            ["gifsicle", { interlaced: true }],
-            ["jpegtran", { progressive: true }],
-            ["optipng", { optimizationLevel: 5 }],
-            ["svgo", { plugins: [{ removeViewBox: false }] }],
-          ],
-        },
-      },
-    }),
   ],
   module: {
     rules: [
