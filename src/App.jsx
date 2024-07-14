@@ -1,10 +1,17 @@
-import React, { useState, useRef, useEffect, lazy, Suspense, useContext } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  lazy,
+  Suspense,
+  useContext,
+} from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import LoadingIndicator from './pages/components/LoadingIndicator';
-import { AuthProvider, AuthContext } from './pages/components/AuthContext';
-import api from './pages/components/api';
+import LoadingIndicator from "./pages/components/LoadingIndicator";
+import { AuthProvider, AuthContext } from "./pages/components/AuthContext";
+import api from "./pages/components/api";
 
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";
@@ -17,14 +24,18 @@ const PostUpload = lazy(() => import("./pages/PostUpload"));
 const Scrap = lazy(() => import("./pages/Scrap"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
-const Logout = lazy(() => import('./pages/components/Logout'));
-const Signup = lazy(() => import('./pages/Signup'));
+const Logout = lazy(() => import("./pages/components/Logout"));
+const Signup = lazy(() => import("./pages/Signup"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Footer = lazy(() => import("./pages/components/Footer"));
-const HamburgerButton = lazy(() => import("./pages/components/HamburgerButton"));
-const SearchResults = lazy(() => import('./pages/components/SearchResults'));
+const HamburgerButton = lazy(() =>
+  import("./pages/components/HamburgerButton")
+);
+const SearchResults = lazy(() => import("./pages/components/SearchResults"));
 const SystemStack = lazy(() => import("./pages/SystemStack"));
-const ActivityMonitor = lazy(() => import('./pages/components/ActivityMonitor'));
+const ActivityMonitor = lazy(() =>
+  import("./pages/components/ActivityMonitor")
+);
 
 function App() {
   const [isSearchInputVisible, setIsSearchInputVisible] = useState(false);
@@ -59,14 +70,16 @@ function App() {
     if (!searchQuery.trim()) return;
 
     try {
-      const postResponse = await api.get('/api/posts/search', { params: { query: searchQuery } });
+      const postResponse = await api.get("/api/posts/search", {
+        params: { query: searchQuery },
+      });
 
       setSearchResults(
-        postResponse.data.data.map(post => ({ ...post, type: 'post' }))
+        postResponse.data.data.map((post) => ({ ...post, type: "post" }))
       );
       setIsSearchOpen(true);
     } catch (error) {
-      console.error('Failed to fetch search results:', error);
+      console.error("Failed to fetch search results:", error);
     }
   };
 
@@ -80,31 +93,51 @@ function App() {
   const formatTime = (ms) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   return (
     <AuthProvider>
       <Router>
-        <div>
-          <nav className="flex items-center justify-between p-3 bg-white text-black h-[60%] font-serif relative">
-            <Link to="/" className="text-xl">Our Journey</Link>
+        <div className="pt-[60px]">
+          <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-3 bg-white text-black h-[60px] font-serif z-50">
+            <Link to="/" className="text-xl">
+              Our Journey
+            </Link>
             <div className="flex items-center" ref={searchRef}>
               <AuthContext.Consumer>
-                {({ isLoggedIn }) => isLoggedIn && (
-                  <span className="mr-4 text-sm">
-                    Remaining login time: {formatTime(remainingTime)}
-                  </span>
-                )}
+                {({ isLoggedIn }) =>
+                  isLoggedIn && (
+                    <span className="mr-4 text-sm">
+                      Remaining login time: {formatTime(remainingTime)}
+                    </span>
+                  )
+                }
               </AuthContext.Consumer>
               <div className="relative mr-4">
-                <button onClick={toggleSearchInput} className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <button
+                  onClick={toggleSearchInput}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </button>
                 {isSearchInputVisible && (
-                  <form onSubmit={handleSearch} className="absolute right-0 mt-2 w-64">
+                  <form
+                    onSubmit={handleSearch}
+                    className="absolute right-0 mt-2 w-64"
+                  >
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -125,7 +158,10 @@ function App() {
             <div className="absolute top-16 right-0 w-full md:w-2/3 bg-white shadow-md z-50">
               <Suspense fallback={<LoadingIndicator />}>
                 <ActivityMonitor />
-                <SearchResults results={searchResults} onClose={() => setIsSearchOpen(false)} />
+                <SearchResults
+                  results={searchResults}
+                  onClose={() => setIsSearchOpen(false)}
+                />
               </Suspense>
             </div>
           )}
