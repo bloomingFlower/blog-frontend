@@ -27,6 +27,9 @@ before_deploy:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
 deploy:
+  on:
+    branch:
+      main
   - export VERSION=$(git rev-parse --short HEAD)
   - echo $VERSION
   - rsync -rave "ssh -i ../id_rsa" --checksum --exclude=node_modules --exclude=dist --exclude=.git . $DEPLOY_USER@$DEPLOY_SERVER:~/blog-frontend
