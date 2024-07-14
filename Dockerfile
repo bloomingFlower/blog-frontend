@@ -10,7 +10,7 @@ WORKDIR /app
 # 의존성 파일 복사 및 설치
 COPY package.json package-lock.json ./
 # 의존성 설치 (이 레이어는 package.json이 변경되지 않으면 캐시됨)
-RUN npm ci --only=production
+RUN npm ci
 # protobuf-compiler 설치 (이 레이어는 거의 변경되지 않음)
 RUN apt-get update && apt-get install -y protobuf-compiler
 
