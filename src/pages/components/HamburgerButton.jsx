@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { AuthContext } from './AuthContext';
+import { AuthContext } from "./AuthContext";
 
 function HamburgerButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +19,7 @@ function HamburgerButton() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     sessionStorage.clear();
-    navigate('/');
+    navigate("/");
   };
 
   useEffect(() => {
@@ -39,13 +39,17 @@ function HamburgerButton() {
 
   return (
     <div
+      className="relative"
       onMouseOver={handleMouseOver}
-      style={{ display: "flex", alignItems: "center" }}
+      onMouseOut={handleMouseOut}
     >
-      <button onClick={handleHamburgerClick} className="hover:rotate-180 transform transition duration-200">
+      <button
+        onClick={handleHamburgerClick}
+        className="p-1 sm:p-2 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:rotate-180 transform transition duration-200"
+      >
         {isOpen ? (
           <svg
-            className="w-6 h-6"
+            className="h-5 w-5 sm:h-6 sm:w-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -60,7 +64,7 @@ function HamburgerButton() {
           </svg>
         ) : (
           <svg
-            className="w-6 h-6"
+            className="h-5 w-5 sm:h-6 sm:w-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

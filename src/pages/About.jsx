@@ -13,19 +13,23 @@ function Section({ title, children }) {
       >
         {title}
         <svg
-          className={`w-6 h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            }`}
+          className={`w-6 h-6 transform transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       {isOpen && (
-        <div className="px-6 py-4 text-gray-700 bg-white">
-          {children}
-        </div>
+        <div className="px-6 py-4 text-gray-700 bg-white">{children}</div>
       )}
     </div>
   );
@@ -44,42 +48,54 @@ function About() {
         <meta name="description" content="About me page of my website" />
       </Helmet>
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">About Me</h1>
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">
+          About Me
+        </h1>
         <div className="space-y-6">
           <Section title="Education">
-            <p>Computer Engineering, University of XYZ, 2015-2019</p>
+            <p></p>
           </Section>
           <Section title="Work Experience">
-            <p>Software Engineer at ABC Corp, 2019-Present</p>
+            <p></p>
           </Section>
           <Section title="Skills">
-            <p>JavaScript, React, Node.js, Python, SQL</p>
+            <p></p>
           </Section>
           <Section title="Projects">
-            <p>Project 1: Description</p>
-            <p>Project 2: Description</p>
+            <p></p>
           </Section>
           <Section title="Certifications">
-            <p>Certification 1: Description</p>
-            <p>Certification 2: Description</p>
+            <p></p>
           </Section>
           <Section title="Study">
-            <p>I am passionate about learning new things. Here, I share my study notes and experiences!</p>
+            <p>
+              I am passionate about learning new things. Here, I share my study
+              notes and experiences!
+            </p>
           </Section>
           <Section title="Travel">
-            <p>I love to travel and explore new places. Check out my travel diaries.</p>
+            <p>
+              I love to travel and explore new places. Check out my travel
+              diaries.
+            </p>
           </Section>
           <Section title="Food Reviews">
-            <p>I enjoy trying out new cuisines and restaurants. Here are some of my food reviews.</p>
+            <p>
+              I enjoy trying out new cuisines and restaurants. Here are some of
+              my food reviews.
+            </p>
           </Section>
           <Section title="Electronics Reviews">
-            <p>I love exploring new gadgets and electronics. Here are some of my reviews.</p>
+            <p>
+              I love exploring new gadgets and electronics. Here are some of my
+              reviews.
+            </p>
           </Section>
           <Section title="Economy">
-            <p>I am interested in economic trends and developments. Here are my thoughts and analyses.</p>
+            <p></p>
           </Section>
           <Section title="Others">
-            <p>Here are some other topics that I am interested in.</p>
+            <p></p>
           </Section>
         </div>
       </div>

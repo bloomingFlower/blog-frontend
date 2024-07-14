@@ -99,28 +99,28 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="pt-[60px]">
-          <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-3 bg-white text-black h-[60px] font-serif z-50">
-            <Link to="/" className="text-xl">
+        <div className="flex flex-col min-h-screen">
+          <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50">
+            <Link to="/" className="text-lg sm:text-xl">
               Our Journey
             </Link>
             <div className="flex items-center" ref={searchRef}>
               <AuthContext.Consumer>
                 {({ isLoggedIn }) =>
                   isLoggedIn && (
-                    <span className="mr-4 text-sm">
+                    <span className="hidden md:inline-block mr-4 text-xs sm:text-sm">
                       Remaining login time: {formatTime(remainingTime)}
                     </span>
                   )
                 }
               </AuthContext.Consumer>
-              <div className="relative mr-4">
+              <div className="relative mr-2 sm:mr-4">
                 <button
                   onClick={toggleSearchInput}
                   className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   <svg
-                    className="h-6 w-6"
+                    className="h-5 w-5 sm:h-6 sm:w-6"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -144,43 +144,45 @@ function App() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search..."
-                      className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-1 sm:px-4 sm:py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </form>
                 )}
               </div>
               <Suspense fallback={<LoadingIndicator />}>
-                <HamburgerButton style={{ width: "40px", height: "40px" }} />
+                <HamburgerButton />
               </Suspense>
             </div>
           </nav>
-          {isSearchOpen && (
-            <div className="absolute top-16 right-0 w-full md:w-2/3 bg-white shadow-md z-50">
-              <Suspense fallback={<LoadingIndicator />}>
-                <ActivityMonitor />
-                <SearchResults
-                  results={searchResults}
-                  onClose={() => setIsSearchOpen(false)}
-                />
-              </Suspense>
-            </div>
-          )}
-          <Suspense fallback={<LoadingIndicator />}>
-            <ActivityMonitor onTimeUpdate={setRemainingTime} />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/post" element={<Post />} />
-              <Route path="/post/upload" element={<PostUpload />} />
-              <Route path="/scrap" element={<Scrap />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/admin-login" element={<AdminLogin />} />
-              <Route path="/logout" element={<Logout />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/edit-profile" element={<EditProfile />} />
-              <Route path="/system-stack" element={<SystemStack />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <main className="flex-grow mt-[50px] sm:mt-[60px]">
+            {isSearchOpen && (
+              <div className="w-full md:w-2/3 bg-white shadow-md z-50">
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ActivityMonitor />
+                  <SearchResults
+                    results={searchResults}
+                    onClose={() => setIsSearchOpen(false)}
+                  />
+                </Suspense>
+              </div>
+            )}
+            <Suspense fallback={<LoadingIndicator />}>
+              <ActivityMonitor onTimeUpdate={setRemainingTime} />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/post" element={<Post />} />
+                <Route path="/post/upload" element={<PostUpload />} />
+                <Route path="/scrap" element={<Scrap />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/admin-login" element={<AdminLogin />} />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/edit-profile" element={<EditProfile />} />
+                <Route path="/system-stack" element={<SystemStack />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
           <ToastContainer />
           <Suspense fallback={<LoadingIndicator />}>
             <Footer />
