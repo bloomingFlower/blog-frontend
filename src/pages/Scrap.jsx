@@ -83,26 +83,26 @@ function Scrap() {
 
   return (
     <div
-      className="min-h-screen bg-cover py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-center my-6 text-white">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
           Bookmarked Articles
         </h1>
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
           </div>
         ) : posts.length > 0 ? (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post) => (
               <div
                 key={post.id}
                 className="bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105"
               >
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition duration-300">
+                <div className="p-4 sm:p-6">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition duration-300">
                     <a
                       href={post.url}
                       target="_blank"
@@ -113,15 +113,15 @@ function Scrap() {
                     </a>
                   </h2>
                   <p
-                    className="text-gray-600 mb-4"
+                    className="text-sm sm:text-base text-gray-600 mb-4"
                     dangerouslySetInnerHTML={{
                       __html: sanitizeHTML(
                         truncateDescription(post.description)
                       ),
                     }}
                   />
-                  <div className="flex justify-between items-center text-sm text-gray-500">
-                    <span>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs sm:text-sm text-gray-500">
+                    <span className="mb-1 sm:mb-0">
                       Published: {formatDate(post.publishedat.seconds)}
                     </span>
                     <span>
@@ -133,7 +133,7 @@ function Scrap() {
             ))}
           </div>
         ) : (
-          <p className="text-xl text-white text-center">
+          <p className="text-lg sm:text-xl text-white text-center">
             No bookmarked articles found.
           </p>
         )}
