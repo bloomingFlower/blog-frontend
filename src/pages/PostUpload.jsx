@@ -11,6 +11,7 @@ import api from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import sanitizeHtml from "sanitize-html";
 import { toast } from "react-toastify";
+import DOMPurify from "dompurify";
 
 Quill.register("modules/imageUploader", ImageUploader);
 
@@ -23,6 +24,13 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const quillRef = useRef(); // Quill 인스턴스에 접근하기 위한 ref
   // TODO : 이미지 리사이즈, 압축 기능 구현
+
+  // DOMPurify 설정
+  const purifyConfig = {
+    ADD_TAGS: ["img"],
+    ADD_ATTR: ["src", "alt", "width", "height"],
+  };
+
   const modules = useMemo(() => {
     return {
       toolbar: [
@@ -104,8 +112,11 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
       return;
     }
 
-    // HTML Sanitization
-    const cleanContent = sanitizeHtml(editorState, {
+    // DOMPurify를 사용하여 에디터 내용 살균 (이미지 태그 허용)
+    const sanitizedContent = DOMPurify.sanitize(editorState, purifyConfig);
+
+    // HTML Sanitization (기존 코드 유지, 추가적인 보안 계층으로 사용)
+    const cleanContent = sanitizeHtml(sanitizedContent, {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat([
         "img",
         "p",
@@ -119,7 +130,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
       ]),
       allowedAttributes: {
         a: ["href", "target"],
-        img: ["src", "alt"],
+        img: ["src", "alt", "width", "height"],
         video: [
           "src",
           "controls",
@@ -237,7 +248,14 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
           <ReactQuill
             ref={quillRef}
             value={editorState}
-            onChange={setEditorState || handleInputChange}
+            onChange={(content, delta, source, editor) => {
+              // 에디터 내용이 변경될 때마다 sanitize 처리 (이미지 태그 허용)
+              const sanitizedContent = DOMPurify.sanitize(
+                editor.getHTML(),
+                purifyConfig
+              );
+              setEditorState(sanitizedContent);
+            }}
             modules={modules}
             theme="snow"
             placeholder="내용을 입력해주세요"
