@@ -11,10 +11,14 @@ cache:
     - "node_modules"
 
 before_install:
+  - npm cache clean --force
+  - sudo apt-get update
+  - sudo apt-get install -y autoconf automake libtool
   - npm config set registry https://registry.npmjs.org/
   - npm install -g npm@8.11.0
 
 install:
+  - rm -rf node_modules
   - npm install
 
 script:
