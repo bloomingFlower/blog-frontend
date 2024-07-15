@@ -130,6 +130,7 @@ const Signup = () => {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10"
                 placeholder="First Name"
                 required
+                aria-label="First Name"
               />
             </div>
             <div className="relative">
@@ -142,6 +143,7 @@ const Signup = () => {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10"
                 placeholder="Last Name"
                 required
+                aria-label="Last Name"
               />
             </div>
             <div className="relative">
@@ -157,6 +159,7 @@ const Signup = () => {
                 placeholder="Email address"
                 ref={emailRef}
                 required
+                aria-label="Email address"
               />
             </div>
             <div className="relative flex items-center">
@@ -165,6 +168,7 @@ const Signup = () => {
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
                 className="appearance-none rounded-none relative block w-1/3 pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                aria-label="Country code"
               >
                 <option value="+1">+1</option>
                 <option value="+82">+82</option>
@@ -178,6 +182,7 @@ const Signup = () => {
                 className="appearance-none rounded-none relative block w-2/3 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Phone number"
                 required
+                aria-label="Phone number"
               />
             </div>
             <div className="relative">
@@ -188,6 +193,7 @@ const Signup = () => {
                 maxLength={50}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10"
                 placeholder="Password"
+                aria-label="Password"
               />
             </div>
             <div className="relative">
@@ -204,6 +210,7 @@ const Signup = () => {
                 } placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10`}
                 placeholder="Confirm Password"
                 required
+                aria-label="Confirm Password"
               />
             </div>
           </div>
@@ -212,6 +219,7 @@ const Signup = () => {
             <button
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+              aria-label="Sign Up"
             >
               Sign Up
             </button>

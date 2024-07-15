@@ -106,6 +106,7 @@ const EditProfile = () => {
               onChange={(e) => setFirstName(e.target.value)}
               maxLength={20}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              aria-label="First Name"
             />
           </label>
           <label className="block">
@@ -116,6 +117,7 @@ const EditProfile = () => {
               onChange={(e) => setLastName(e.target.value)}
               maxLength={20}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              aria-label="Last Name"
             />
           </label>
           <label className="block">
@@ -127,6 +129,7 @@ const EditProfile = () => {
               maxLength={90}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               disabled
+              aria-label="Email"
             />
           </label>
           <label className="block">
@@ -137,6 +140,7 @@ const EditProfile = () => {
               onChange={(e) => setPhone(e.target.value)}
               maxLength={10}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              aria-label="Phone"
             />
           </label>
           <button

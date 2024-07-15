@@ -243,6 +243,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="제목을 입력해주세요"
+          aria-label="Title"
         />
         <div className="mb-4">
           <ReactQuill
@@ -260,6 +261,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
             theme="snow"
             placeholder="내용을 입력해주세요"
             className="bg-white rounded-lg"
+            aria-label="Content"
           />
         </div>
         <div className="mb-4">
@@ -267,12 +269,14 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
             type="file"
             onChange={(e) => setFile(e.target.files[0])}
+            aria-label="File"
           />
         </div>
         <CreatableSelect
           className="mb-6"
           isMulti
           placeholder={"#태그를 입력하세요"}
+          aria-label="Tags"
           onChange={handleInputTag}
           options={tags.map((tag) => ({ value: tag.value, label: tag.label }))}
           value={tags.map((tag) => ({ value: tag.value, label: tag.label }))}
@@ -306,12 +310,14 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
           <button
             className="w-full sm:w-auto py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300"
             onClick={handleUpload}
+            aria-label="Upload"
           >
             {postId ? "Update" : "Upload"}
           </button>
           <button
             className="w-full sm:w-auto py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700 transition duration-300"
             onClick={handleClose}
+            aria-label="Cancel"
           >
             Cancel
           </button>
@@ -329,12 +335,14 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
             <button
               className="py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600 transition duration-300"
               onClick={() => setIsUploadModalOpen(false)}
+              aria-label="Yes"
             >
               Yes
             </button>
             <button
               className="py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600 transition duration-300"
               onClick={() => setIsConfirmModalOpen(false)}
+              aria-label="No"
             >
               No
             </button>

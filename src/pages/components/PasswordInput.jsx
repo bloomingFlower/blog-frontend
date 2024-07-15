@@ -34,6 +34,7 @@ function PasswordInput({ onChange, className, ...props }) {
         onBlur={handleBlur}
         className={className}
         {...props}
+        aria-label="Password"
       />
       {isTouched && password.length === 0 && (
         <p className="text-red-500 text-xs mt-1">Please enter a password</p>

@@ -122,6 +122,7 @@ function PostView({
             <button
               className="w-full sm:w-1/3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
               onClick={handleHideClick}
+              aria-label="Hide"
             >
               {post.hidden ? "숨김 해제" : "숨김"}
             </button>
@@ -129,6 +130,7 @@ function PostView({
           <button
             className="w-full sm:w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
             onClick={() => setIsPostViewModalOpen(false)}
+            aria-label="Close"
           >
             Close
           </button>

@@ -117,7 +117,8 @@ function App() {
               <div className="relative mr-2 sm:mr-4">
                 <button
                   onClick={toggleSearchInput}
-                  className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-5000"
+                  aria-label="Search"
                 >
                   <svg
                     className="h-5 w-5 sm:h-6 sm:w-6"

@@ -158,6 +158,7 @@ const AdminLogin = () => {
                 <button
                   onClick={handleLogout}
                   className="text-indigo-600 text-sm hover:text-indigo-500"
+                  aria-label="Logout"
                 >
                   Logout
                 </button>
@@ -195,6 +196,7 @@ const AdminLogin = () => {
                           ? backgroundColor
                           : "white",
                       }}
+                      aria-label="Email address"
                     />
                   </div>
                   <div className="relative">
@@ -211,6 +213,7 @@ const AdminLogin = () => {
                       placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      aria-label="Password"
                     />
                   </div>
                 </div>
@@ -224,6 +227,7 @@ const AdminLogin = () => {
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
+                      aria-label="Remember me"
                     />
                     <label
                       htmlFor="remember-me"
@@ -236,7 +240,8 @@ const AdminLogin = () => {
                   <div className="text-sm">
                     <a
                       href="#"
-                      className="font-medium text-indigo-600 hover:text-indigo-500"
+                      className="font-medium text-indigo-6000 hover:text-indigo-500"
+                      aria-label="Forgot your password?"
                     >
                       Forgot your password?
                     </a>
@@ -255,7 +260,8 @@ const AdminLogin = () => {
               <div className="text-sm text-center">
                 <a
                   href="/signup"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-indigo-6000 hover:text-indigo-500"
+                  aria-label="Don't have an account? Sign up"
                 >
                   Don't have an account? Sign up
                 </a>

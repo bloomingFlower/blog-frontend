@@ -8,6 +8,7 @@ function Section({ title, children, isOpen, toggleOpen }) {
       <button
         className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left text-base sm:text-lg font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none flex justify-between items-center"
         onClick={toggleOpen}
+        aria-label="Section"
       >
         {title}
         <svg
@@ -136,12 +137,14 @@ function About() {
           <button
             onClick={expandAll}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+            aria-label="Expand All"
           >
             Expand All
           </button>
           <button
             onClick={collapseAll}
             className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+            aria-label="Collapse All"
           >
             Collapse All
           </button>

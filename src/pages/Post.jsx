@@ -168,6 +168,7 @@ function Post() {
             {isLoggedIn && (
               <button
                 className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center transition duration-300"
+                aria-label="Upload"
                 onClick={handleUploadClick}
               >
                 <UploadIcon className="mr-2 h-5 w-5" />
@@ -245,6 +246,7 @@ function Post() {
           <button
             onClick={handlePrevPage}
             disabled={page === 1}
+            aria-label="Previous Page"
             className={`mb-4 sm:mb-0 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${
               page === 1 ? "opacity-50 cursor-not-allowed" : ""
             }`}
@@ -275,6 +277,7 @@ function Post() {
           <button
             onClick={handleNextPage}
             disabled={page === lastPage}
+            aria-label="Next Page"
             className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${
               page === lastPage ? "opacity-50 cursor-not-allowed" : ""
             }`}
@@ -287,6 +290,7 @@ function Post() {
           <button
             onClick={handleBackClick}
             className="mt-4 w-full sm:w-auto bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition duration-300"
+            aria-label="Back to all posts"
           >
             Back to all posts
           </button>

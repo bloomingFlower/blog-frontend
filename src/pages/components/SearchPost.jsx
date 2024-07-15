@@ -45,12 +45,14 @@ function SearchComponent({ setSearchResults }) {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search..."
         className="flex-grow rounded border border-gray-300 p-2 text-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+        aria-label="Search"
       />
       <div className="flex space-x-2">
         <select
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
           className="rounded border border-gray-300 p-2 text-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+          aria-label="Search Type"
         >
           <option value="all">All</option>
           <option value="title">Title</option>
@@ -60,6 +62,7 @@ function SearchComponent({ setSearchResults }) {
         <button
           type="submit"
           className="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded whitespace-nowrap transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50"
+          aria-label="Search"
         >
           Search
         </button>

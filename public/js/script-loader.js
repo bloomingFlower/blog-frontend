@@ -32,7 +32,5 @@ function loadScript(callback) {
 loadScript(function (error) {
   if (error) {
     console.error("Failed to load main script");
-  } else {
-    console.log("Main script loaded successfully");
   }
 });
