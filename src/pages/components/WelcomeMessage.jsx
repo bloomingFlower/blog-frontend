@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 function WelcomeMessage({ username }) {
   const [message, setMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
+  const [setIsTyping] = useState(true);
 
   let fullMessage = "Welcome to Over Engineered blog :)";
   if (username) {

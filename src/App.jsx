@@ -1,11 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  lazy,
-  Suspense,
-  useContext,
-} from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -159,7 +152,6 @@ function App() {
             {isSearchOpen && (
               <div className="w-full md:w-2/3 bg-white shadow-md z-50">
                 <Suspense fallback={<LoadingIndicator />}>
-                  <ActivityMonitor />
                   <SearchResults
                     results={searchResults}
                     onClose={() => setIsSearchOpen(false)}
