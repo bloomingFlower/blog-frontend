@@ -1,5 +1,11 @@
 // PostUpload.jsx
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import ReactQuill, { Quill } from "react-quill";
 import ImageUploader from "quill-image-uploader";
 import "quill-image-uploader/dist/quill.imageUploader.min.css";
@@ -22,6 +28,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
   const [tags, setTags] = useState([]);
   const [isModified, setIsModified] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const quillRef = useRef(); // Quill 인스턴스에 접근하기 위한 ref
   // TODO : 이미지 리사이즈, 압축 기능 구현
 
@@ -106,6 +113,8 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+
     // title과 content가 비어있는지 확인
     if (!title.trim() || !editorState.trim()) {
       toast.error("Title or content cannot be empty");
@@ -186,6 +195,8 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
       }
     } catch (error) {
       toast.error("Failed to upload post:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -194,13 +205,19 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     setEditorState(content);
   };
 
-  const handleInputTag = (newValue, actionMeta) => {
-    if (actionMeta.action === "remove-value") {
-      setTags(newValue);
-    } else if (actionMeta.action === "create-option") {
-      setTags([...tags, newValue[newValue.length - 1]]);
-    }
-  };
+  const handleInputTag = useCallback(
+    (newValue, actionMeta) => {
+      if (actionMeta.action === "remove-value") {
+        setTags(newValue);
+      } else if (actionMeta.action === "create-option") {
+        const newTag = newValue[newValue.length - 1];
+        if (newTag.value.trim()) {
+          setTags([...tags, { ...newTag, value: newTag.value.trim() }]);
+        }
+      }
+    },
+    [tags]
+  );
 
   const handleClose = () => {
     if (isModified) {
@@ -223,33 +240,33 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
       isOpen={true}
       onRequestClose={() => setIsUploadModalOpen(false)}
       contentLabel="Post Upload"
-      className="w-11/12 max-w-4xl mx-auto my-4 sm:my-10 bg-white rounded-lg shadow-xl overflow-auto"
-      overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
+      className="w-11/12 max-w-4xl mx-auto my-4 bg-white rounded-lg shadow-xl overflow-auto"
+      overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-2 sm:p-4"
       style={{
         content: {
           maxHeight: "90vh",
+          height: "auto",
         },
       }}
     >
-      <div className="p-4 sm:p-6 md:p-8">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
+      <div className="p-3 sm:p-4 md:p-6 flex flex-col">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center text-gray-800">
           {postId ? "Edit Post" : "Upload a Post"}
         </h2>
         <input
           ref={titleRef}
-          className="w-full mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+          className="w-full mb-2 sm:mb-3 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 text-xs sm:text-sm"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="제목을 입력해주세요"
           aria-label="Title"
         />
-        <div className="mb-4">
+        <div className="mb-2 sm:mb-3 flex-grow" style={{ minHeight: "200px" }}>
           <ReactQuill
             ref={quillRef}
             value={editorState}
             onChange={(content, delta, source, editor) => {
-              // 에디터 내용이 변경될 때마다 sanitize 처리 (이미지 태그 허용)
               const sanitizedContent = DOMPurify.sanitize(
                 editor.getHTML(),
                 purifyConfig
@@ -259,22 +276,22 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
             modules={modules}
             theme="snow"
             placeholder="내용을 입력해주세요"
-            className="bg-white rounded-lg"
+            className="bg-white rounded-lg h-full text-xs sm:text-sm"
             aria-label="Content"
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-2 sm:mb-3">
           <input
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 text-xs sm:text-sm"
             type="file"
             onChange={(e) => setFile(e.target.files[0])}
             aria-label="File"
           />
         </div>
         <CreatableSelect
-          className="mb-6"
+          className="mb-3 sm:mb-4 text-xs sm:text-sm"
           isMulti
-          placeholder={"#태그를 입력하세요"}
+          placeholder={"# Include tags"}
           aria-label="Tags"
           onChange={handleInputTag}
           options={tags.map((tag) => ({ value: tag.value, label: tag.label }))}
@@ -303,50 +320,37 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
                 color: "#2b6cb0",
               },
             }),
+            placeholder: (provided) => ({
+              ...provided,
+              fontSize: "0.75rem",
+              "@media (min-width: 640px)": {
+                fontSize: "0.875rem",
+              },
+            }),
           }}
         />
-        <div className="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <button
-            className="w-full sm:w-auto py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300"
+            className={`w-full sm:w-1/2 py-2 px-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300 text-xs sm:text-sm ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             onClick={handleUpload}
+            disabled={isLoading}
             aria-label="Upload"
           >
-            {postId ? "Update" : "Upload"}
+            {isLoading ? "Uploading..." : postId ? "Update" : "Upload"}
           </button>
           <button
-            className="w-full sm:w-auto py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700 transition duration-300"
+            className={`w-full sm:w-1/2 py-2 px-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300 text-xs sm:text-sm ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             onClick={handleClose}
+            disabled={isLoading}
             aria-label="Cancel"
           >
             Cancel
           </button>
         </div>
-        <Modal
-          isOpen={isConfirmModalOpen}
-          onRequestClose={() => setIsConfirmModalOpen(false)}
-          className="w-11/12 max-w-md mx-auto bg-white rounded-lg shadow-xl overflow-auto p-6"
-          overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
-        >
-          <h2 className="text-xl font-bold mb-4 text-center text-gray-800">
-            Are you sure you want to close?
-          </h2>
-          <div className="flex justify-center space-x-4">
-            <button
-              className="py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600 transition duration-300"
-              onClick={() => setIsUploadModalOpen(false)}
-              aria-label="Yes"
-            >
-              Yes
-            </button>
-            <button
-              className="py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600 transition duration-300"
-              onClick={() => setIsConfirmModalOpen(false)}
-              aria-label="No"
-            >
-              No
-            </button>
-          </div>
-        </Modal>
       </div>
     </Modal>
   );

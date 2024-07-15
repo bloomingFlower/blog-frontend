@@ -29,12 +29,13 @@ function Post() {
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
+      className="w-4 h-4 sm:w-5 sm:h-5"
     >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
-        d="M14 10v4m0 0v4m0-4h4m-4 0H10m-4 4a4 4 0 004-4v-4a4 4 0 00-4 4z"
+        d="M12 4v16m8-8H4"
       />
     </svg>
   );
@@ -46,10 +47,15 @@ function Post() {
     setIsPostViewModalOpen(true);
   };
 
-  const handleUploadClick = () => {
-    setIsUploadModalOpen(true);
+  const handleUploadClick = (e) => {
+    e.stopPropagation(); // 이벤트 버블링 방지
+    setIsUploadModalOpen((prev) => {
+      return !prev;
+    });
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  useEffect(() => {}, [isUploadModalOpen]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -187,16 +193,13 @@ function Post() {
             <div className="w-full sm:w-auto">
               <SearchPost setSearchResults={setSearchResults} />
             </div>
-            {isLoggedIn && (
-              <button
-                className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center transition duration-300 sm:max-w-[120px] h-10 sm:h-auto"
-                aria-label="Upload"
-                onClick={handleUploadClick}
-              >
-                <UploadIcon className="mr-2 h-5 w-5" />
-                Upload
-              </button>
-            )}
+            <button
+              className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
+              aria-label="Upload"
+              onClick={handleUploadClick}
+            >
+              <UploadIcon />
+            </button>
           </div>
         </div>
 
