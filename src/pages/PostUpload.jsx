@@ -29,6 +29,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
   const [isModified, setIsModified] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const quillRef = useRef(); // Quill 인스턴스에 접근하기 위한 ref
   // TODO : 이미지 리사이즈, 압축 기능 구현
 
@@ -38,52 +39,70 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     ADD_ATTR: ["src", "alt", "width", "height"],
   };
 
+  const imageUploader = useCallback((file) => {
+    return new Promise((resolve, reject) => {
+      if (!file) {
+        toast.error("Please select an image");
+        return reject("No file selected");
+      }
+      const formData = new FormData();
+      formData.append("image", file);
+
+      trackPromise(
+        api({
+          url: `${process.env.REACT_APP_API_URL}/api/v1/upload-img`,
+          method: "POST",
+          data: formData,
+          withCredentials: true,
+        })
+      )
+        .then((response) => {
+          resolve(response.data.url);
+        })
+        .catch((error) => {
+          toast.error("Failed to upload image");
+          reject("Upload failed");
+        });
+    });
+  }, []);
+
+  const imageHandler = useCallback(() => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      const quill = quillRef.current.getEditor();
+      const range = quill.getSelection(true);
+
+      try {
+        const url = await imageUploader(file);
+        quill.insertEmbed(range.index, "image", url);
+      } catch (error) {
+        toast.error("Failed to upload image:", error);
+      }
+    };
+  }, [imageUploader]);
+
   const modules = useMemo(() => {
     return {
-      toolbar: [
-        [{ header: [1, 2, 3, 4, 5, 6, false] }, { font: [] }],
-        [{ size: ["small", false, "large", "huge"] }], // custom dropdown
-        ["bold", "italic", "underline", "strike", "blockquote"],
-        [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-        [
-          { list: "ordered" },
-          { list: "bullet" },
-          { indent: "-1" },
-          { indent: "+1" },
-        ], // outdent/indent
-        ["link", "image", "video"],
-        ["clean"],
-      ],
-      imageUploader: {
-        upload: (file) => {
-          try {
-            return new Promise((resolve, reject) => {
-              if (!file) {
-                toast.error("No file selected");
-                return;
-              }
-              const formData = new FormData();
-              formData.append("image", file);
-              api({
-                url: `${process.env.REACT_APP_API_URL}/api/v1/upload-img`,
-                method: "POST",
-                data: formData,
-                withCredentials: true,
-              })
-                .then((response) => {
-                  resolve(response.data.url);
-                })
-                .catch((error) => {
-                  reject("Upload failed");
-                });
-            });
-          } catch (error) {
-            toast("Error in imageUploader:", error);
-          }
+      toolbar: {
+        container: [
+          [{ header: [1, 2, 3, false] }],
+          ["bold", "italic", "underline", "strike"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          [{ color: [] }, { background: [] }],
+          ["link", "image", "video"],
+          ["clean"],
+        ],
+        handlers: {
+          image: imageHandler,
         },
       },
     };
-  }, []);
+  }, [imageHandler]);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -113,7 +132,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (isUploading) return;
 
     // title과 content가 비어있는지 확인
     if (!title.trim() || !editorState.trim()) {
@@ -121,10 +140,12 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
       return;
     }
 
+    setIsUploading(true);
+
     // DOMPurify를 사용하여 에디터 내용 살균 (이미지 태그 허용)
     const sanitizedContent = DOMPurify.sanitize(editorState, purifyConfig);
 
-    // HTML Sanitization (기존 코드 유지, 추가적인 보안 계층으로 사용)
+    // HTML Sanitization (기존 코드 유지, 추가적인 보안 ���층으로 사용)
     const cleanContent = sanitizeHtml(sanitizedContent, {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat([
         "img",
@@ -174,7 +195,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
           setIsUploadModalOpen(false);
           window.location.reload();
         } else {
-          alert("Failed to upload post");
+          toast.error("Failed to update post");
         }
       } else {
         const response = await trackPromise(
@@ -190,13 +211,15 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
           setIsUploadModalOpen(false);
           window.location.reload();
         } else {
-          alert("Failed to upload post");
+          toast.error("Failed to upload post");
         }
       }
     } catch (error) {
-      toast.error("Failed to upload post:", error);
+      toast.error(
+        `Failed to ${postId ? "update" : "upload"} post: ${error.message}`
+      );
     } finally {
-      setIsLoading(false);
+      setIsUploading(false);
     }
   };
 
@@ -332,20 +355,29 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <button
             className={`w-full sm:w-1/2 py-2 px-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300 text-xs sm:text-sm ${
-              isLoading ? "opacity-50 cursor-not-allowed" : ""
+              isUploading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             onClick={handleUpload}
-            disabled={isLoading}
+            disabled={isUploading}
             aria-label="Upload"
           >
-            {isLoading ? "Uploading..." : postId ? "Update" : "Upload"}
+            {isUploading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                {postId ? "Updating..." : "Uploading..."}
+              </div>
+            ) : postId ? (
+              "Update"
+            ) : (
+              "Upload"
+            )}
           </button>
           <button
-            className={`w-full sm:w-1/2 py-2 px-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300 text-xs sm:text-sm ${
-              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            className={`w-full sm:w-1/2 py-2 px-3 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300 text-xs sm:text-sm ${
+              isUploading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             onClick={handleClose}
-            disabled={isLoading}
+            disabled={isUploading}
             aria-label="Cancel"
           >
             Cancel
