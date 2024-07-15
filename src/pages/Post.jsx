@@ -169,7 +169,7 @@ function Post() {
             </div>
             {isLoggedIn && (
               <button
-                className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center transition duration-300"
+                className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center transition duration-300 sm:max-w-[120px] h-10 sm:h-auto"
                 aria-label="Upload"
                 onClick={handleUploadClick}
               >
