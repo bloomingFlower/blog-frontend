@@ -144,7 +144,7 @@ function Post() {
           onClick={handleUploadClick}
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
         >
-          새 포스트 작성하기
+          Create New Post
         </button>
       )}
     </div>
@@ -193,13 +193,15 @@ function Post() {
             <div className="w-full sm:w-auto">
               <SearchPost setSearchResults={setSearchResults} />
             </div>
-            <button
-              className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
-              aria-label="Upload"
-              onClick={handleUploadClick}
-            >
-              <UploadIcon />
-            </button>
+            {isLoggedIn && (
+              <button
+                className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
+                aria-label="Upload"
+                onClick={handleUploadClick}
+              >
+                <UploadIcon />
+              </button>
+            )}
           </div>
         </div>
 
