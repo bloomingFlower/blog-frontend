@@ -1,30 +1,38 @@
-function loadScript(url, callback) {
+function loadScript(callback) {
+  var scripts = document.getElementsByTagName("script");
+  var mainScriptSrc = "";
+
+  for (var i = 0; i < scripts.length; i++) {
+    var src = scripts[i].src;
+    if (src.includes("main.") && src.endsWith(".js")) {
+      mainScriptSrc = src;
+      break;
+    }
+  }
+
+  if (mainScriptSrc) {
     var script = document.createElement("script");
     script.type = "text/javascript";
-  
-    script.onload = function() {
+
+    script.onload = function () {
       callback(false);
     };
-  
-    script.onerror = function() {
+
+    script.onerror = function () {
       callback(true);
     };
-  
-    script.src = url;
+
+    script.src = mainScriptSrc;
     document.getElementsByTagName("head")[0].appendChild(script);
+  } else {
+    callback(true);
   }
-  
-  loadScript("/bundle.js", function(error) {
-    if (error) {
-      // /bundle.js 로드 실패, /dist/bundle.js 로드 시도
-      loadScript("/dist/bundle.js", function(error) {
-        if (error) {
-          console.error("Failed to load both /bundle.js and /dist/bundle.js");
-        } else {
-          console.log("/dist/bundle.js loaded successfully");
-        }
-      });
-    } else {
-      console.log("/bundle.js loaded successfully");
-    }
-  });
+}
+
+loadScript(function (error) {
+  if (error) {
+    console.error("Failed to load main script");
+  } else {
+    console.log("Main script loaded successfully");
+  }
+});
