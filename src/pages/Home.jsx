@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "tailwindcss/tailwind.css";
-import backgroundImage from "@img/background2.png";
+import backgroundImage from "@img/background2.webp";
 import WelcomeMessage from "./components/WelcomeMessage";
 
 function Home() {

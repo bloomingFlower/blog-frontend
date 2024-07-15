@@ -1,7 +1,7 @@
 import React from "react";
 import "tailwindcss/tailwind.css";
-import backgroundImage1 from "@img/404.png";
-import backgroundImage2 from "@img/404_2.png";
+import backgroundImage1 from "@img/404.webp";
+import backgroundImage2 from "@img/404_2.webp";
 
 function NotFound() {
   const images = [backgroundImage1, backgroundImage2];

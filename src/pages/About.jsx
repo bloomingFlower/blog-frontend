@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import backgroundImage from "@img/background2.png";
+import backgroundImage from "@img/background2.webp";
 
 function Section({ title, children, isOpen, toggleOpen }) {
   return (

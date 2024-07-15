@@ -1,6 +1,6 @@
 import React from "react";
 import ModalImage from "react-modal-image";
-import backgroundImage from "@img/background2.png";
+import backgroundImage from "@img/background2.webp";
 import systemImage from "@img/system_stack.png";
 
 export const SystemStack = () => {

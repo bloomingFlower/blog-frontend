@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import backgroundImage from "@img/background2.png";
+import backgroundImage from "@img/background2.webp";
 import PasswordInput from "./components/PasswordInput";
 import { trackPromise } from "react-promise-tracker";
 import api from "./components/api";

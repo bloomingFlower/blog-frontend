@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import backgroundImage from "@img/background2.png";
+import backgroundImage from "@img/background2.webp";
 import PostUpload from "./PostUpload";
 import PostView from "./PostView";
 import api from "./components/api";

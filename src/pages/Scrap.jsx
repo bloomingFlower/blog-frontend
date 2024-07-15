@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ApiServiceClient } from "../../protos/ApiServiceClientPb";
 import { GetPostsForUserRequest } from "../../protos/api_pb";
-import backgroundImage from "@img/background2.png";
+import backgroundImage from "@img/background2.webp";
 import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import he from "he";

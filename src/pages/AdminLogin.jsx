@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import backgroundImage from "@img/background2.png";
+import backgroundImage from "@img/background2.webp";
 import { AuthContext } from "./components/AuthContext";
 import DeleteAccountButton from "./components/DeleteAccountButton";
 import { trackPromise } from "react-promise-tracker";
