@@ -146,7 +146,6 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     formData.append("title", title);
     formData.append("content", cleanContent);
     const tagValues = tags.map((tag) => tag.value).join(",");
-    console.log("tags", tagValues);
     formData.append("tags", tagValues);
     if (file) {
       formData.append("file", file);

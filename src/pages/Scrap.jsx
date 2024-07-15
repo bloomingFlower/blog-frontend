@@ -61,9 +61,9 @@ function Scrap() {
         });
 
         stream.on("end", () => {
-          logger.info(
-            `Stream ended. Total posts received: ${receivedPosts.length}`
-          );
+          // logger.info(
+          //   `Stream ended. Total posts received: ${receivedPosts.length}`
+          // );
           setPosts(receivedPosts);
           setIsLoading(false);
         });

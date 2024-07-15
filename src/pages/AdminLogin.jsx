@@ -1,7 +1,12 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 import backgroundImage from "@img/background2.webp";
 import { AuthContext } from "./components/AuthContext";
 import DeleteAccountButton from "./components/DeleteAccountButton";
@@ -20,6 +25,18 @@ const AdminLogin = () => {
   const [inputCompleted, setInputCompleted] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState("white");
   const [isEmailInvalid, setIsEmailInvalid] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [isInputActive, setIsInputActive] = useState(false);
+  const shouldNavigate = useRef(false);
+
+  const resetCountdown = useCallback(() => {
+    setCountdown(10);
+    setIsInputActive(false);
+  }, []);
+
+  useEffect(() => {
+    resetCountdown();
+  }, [resetCountdown]);
 
   const validateEmail = (email) => {
     const re =
@@ -35,14 +52,27 @@ const AdminLogin = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      const timer = setTimeout(() => {
-        navigate("/");
-      }, 10000);
-
-      return () => clearTimeout(timer);
+    let timer;
+    if (!isLoggedIn && !isInputActive) {
+      timer = setInterval(() => {
+        setCountdown((prevCount) => {
+          if (prevCount === 1) {
+            clearInterval(timer);
+            shouldNavigate.current = true;
+          }
+          return prevCount - 1;
+        });
+      }, 1000);
     }
-  }, [navigate, isLoggedIn]);
+
+    return () => clearInterval(timer);
+  }, [isLoggedIn, isInputActive]);
+
+  useEffect(() => {
+    if (shouldNavigate.current) {
+      navigate("/");
+    }
+  }, [countdown, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -112,12 +142,29 @@ const AdminLogin = () => {
         toast.error("Failed to log in: " + response.status);
       }
     } catch (error) {
-      if (error.status === 404) {
-        toast.error("User not found");
-      } else if (error.status === 401) {
-        toast.error("Incorrect password");
+      if (error.response) {
+        if (error.response.status === 404) {
+          toast.error("User not found", {
+            toastId: "userNotFound",
+          });
+        } else if (error.response.status === 401) {
+          toast.error("Incorrect password", {
+            toastId: "incorrectPassword",
+          });
+        } else {
+          toast.error(
+            `An error occurred: ${
+              error.response.data.message || "Unknown error"
+            }`,
+            {
+              toastId: "generalError",
+            }
+          );
+        }
       } else {
-        toast.error("An error occurred");
+        toast.error("Network error", {
+          toastId: "networkError",
+        });
       }
     }
   };
@@ -135,12 +182,26 @@ const AdminLogin = () => {
     setBackgroundColor("yellow"); // 원하는 색상으로 변경
   };
 
+  const handleInputChange = useCallback((e) => {
+    setIsInputActive(true);
+    if (e.target.name === "username") {
+      setUsername(e.target.value);
+    } else if (e.target.name === "password") {
+      setPassword(e.target.value);
+    }
+  }, []);
+
+  const handleInputBlur = useCallback(() => {
+    if (username === "" && password === "") {
+      setIsInputActive(false);
+    }
+  }, [username, password]);
+
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <ToastContainer />
       <div className="max-w-md w-full space-y-8 bg-white bg-opacity-80 p-6 sm:p-10 rounded-xl shadow-2xl">
         <div>
           {isLoggedIn ? (
@@ -170,6 +231,11 @@ const AdminLogin = () => {
               <h2 className="mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
                 Sign in
               </h2>
+              {!isInputActive && (
+                <p className="mt-2 text-center text-sm text-gray-600">
+                  Auto-redirecting to home page in {countdown} seconds.
+                </p>
+              )}
               <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                 <input type="hidden" name="remember" value="true" />
                 <div className="rounded-md shadow-sm -space-y-px">
@@ -188,14 +254,9 @@ const AdminLogin = () => {
                       } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
                       placeholder="Email address"
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      onChange={handleInputChange}
+                      onBlur={handleInputBlur}
                       onFocus={handleFocus}
-                      onBlur={handleBlur}
-                      style={{
-                        backgroundColor: inputCompleted
-                          ? backgroundColor
-                          : "white",
-                      }}
                       aria-label="Email address"
                     />
                   </div>
@@ -212,7 +273,8 @@ const AdminLogin = () => {
                       className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10"
                       placeholder="Password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={handleInputChange}
+                      onBlur={handleInputBlur}
                       aria-label="Password"
                     />
                   </div>

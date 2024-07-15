@@ -6,6 +6,7 @@ import api from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
 import SearchPost from "./components/SearchPost";
+import { FaRegSadTear } from "react-icons/fa";
 
 function Post() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -124,6 +125,25 @@ function Post() {
     setSearchResults([]);
   };
 
+  const NoPostsFound = () => (
+    <div className="flex flex-col items-center justify-center h-64 bg-white bg-opacity-80 rounded-lg shadow-md p-8">
+      <FaRegSadTear className="text-6xl text-gray-400 mb-4" />
+      <h2 className="text-2xl font-bold text-gray-700 mb-2">No posts found</h2>
+      <p className="text-gray-500 text-center mb-4">
+        No posts are currently displayed. Please write a new post or check back
+        later.
+      </p>
+      {isLoggedIn && (
+        <button
+          onClick={handleUploadClick}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          새 포스트 작성하기
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <div
       className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8"
@@ -239,9 +259,7 @@ function Post() {
             ))}
           </div>
         ) : (
-          <p className="text-xl text-pink-400 py-4 text-center">
-            No posts found
-          </p>
+          <NoPostsFound />
         )}
 
         <div className="mt-8 flex flex-col sm:flex-row justify-between items-center">

@@ -137,7 +137,7 @@ function App() {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search..."
+                      placeholder="Not yet implemented..."
                       className="w-full px-3 py-1 sm:px-4 sm:py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </form>
@@ -176,7 +176,23 @@ function App() {
               </Routes>
             </Suspense>
           </main>
-          <ToastContainer />
+          <ToastContainer
+            position="top-center"
+            autoClose={2500}
+            hideProgressBar={false}
+            newestOnTop={true}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            className="sm:text-sm md:text-base"
+            toastClassName={() =>
+              "relative flex p-1 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer bg-white bg-clip-padding border border-gray-200 shadow-lg"
+            }
+            bodyClassName={() => "flex text-black font-medium block p-3"}
+          />
           <Suspense fallback={<LoadingIndicator />}>
             <Footer />
           </Suspense>
