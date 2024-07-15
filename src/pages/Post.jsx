@@ -54,7 +54,9 @@ function Post() {
     const fetchPosts = async () => {
       setIsLoading(true);
       try {
-        const response = await trackPromise(api.get(`/api/posts?page=${page}`));
+        const response = await trackPromise(
+          api.get(`/api/v1/posts?page=${page}`)
+        );
         setPosts(response.data.data);
         setLastPage(response.data.meta.last_page);
       } catch (error) {

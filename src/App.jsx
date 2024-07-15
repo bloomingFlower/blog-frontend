@@ -63,7 +63,7 @@ function App() {
     if (!searchQuery.trim()) return;
 
     try {
-      const postResponse = await api.get("/api/posts/search", {
+      const postResponse = await api.get("/api/v1/posts/search", {
         params: { query: searchQuery },
       });
 

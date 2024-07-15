@@ -55,7 +55,7 @@ const AdminLogin = () => {
     try {
       const response = await trackPromise(
         api.post(
-          "/api/login",
+          "/api/v1/login",
           {
             email: username,
             password: password,

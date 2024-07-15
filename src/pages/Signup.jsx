@@ -73,7 +73,7 @@ const Signup = () => {
     // 회원가입 로직 구현
     try {
       const response = await trackPromise(
-        api.post("/api/register", {
+        api.post("/api/v1/register", {
           first_name: firstName,
           last_name: lastName,
           email: email,

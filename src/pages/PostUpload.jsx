@@ -58,7 +58,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
               const formData = new FormData();
               formData.append("image", file);
               api({
-                url: `${process.env.REACT_APP_API_URL}/api/upload-img`,
+                url: `${process.env.REACT_APP_API_URL}/api/v1/upload-img`,
                 method: "POST",
                 data: formData,
                 withCredentials: true,
@@ -81,7 +81,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await trackPromise(api.get(`/api/post/${postId}`));
+        const response = await trackPromise(api.get(`/api/v1/post/${postId}`));
         if (response.data.data) {
           setTitle(response.data.data.title);
           setEditorState(response.data.data.content);
@@ -155,7 +155,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
       if (postId) {
         // If postId is provided, update the existing post
         const response = await trackPromise(
-          api.put(`/api/post/${postId}`, formData, {
+          api.put(`/api/v1/post/${postId}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
@@ -170,7 +170,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
         }
       } else {
         const response = await trackPromise(
-          api.post("/api/posts", formData, {
+          api.post("/api/v1/posts", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },

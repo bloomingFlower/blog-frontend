@@ -15,7 +15,7 @@ function SearchComponent({ setSearchResults }) {
     }
     try {
       const response = await trackPromise(
-        api.get("/api/posts/search", {
+        api.get("/api/v1/posts/search", {
           params: {
             query,
             type: searchType,

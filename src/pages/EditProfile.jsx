@@ -62,7 +62,7 @@ const EditProfile = () => {
     try {
       const response = await trackPromise(
         api.put(
-          "/api/user",
+          "/api/v1/user",
           {
             first_name: firstName,
             last_name: lastName,

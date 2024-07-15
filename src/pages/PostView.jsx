@@ -25,7 +25,7 @@ function PostView({
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await trackPromise(api.get(`/api/post/${postId}`));
+        const response = await trackPromise(api.get(`/api/v1/post/${postId}`));
         if (response.data.data) {
           setPost(response.data.data);
         } else {
@@ -56,7 +56,7 @@ function PostView({
     }
     try {
       // 서버에 요청을 보내어 포스트의 숨김 상태를 업데이트
-      await trackPromise(api.put(`/api/post/${postId}/hide`));
+      await trackPromise(api.put(`/api/v1/post/${postId}/hide`));
       toast.success("Post hidden successfully");
       window.location.reload(); // 페이지를 다시 로드합니다.
     } catch (error) {

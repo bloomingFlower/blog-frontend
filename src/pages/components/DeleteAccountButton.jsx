@@ -11,7 +11,7 @@ function DeleteAccountButton() {
     if (window.confirm("Are you sure you want to delete your account?")) {
       try {
         const response = await trackPromise(
-          api.delete("/api/user", {
+          api.delete("/api/v1/user", {
             withCredentials: true,
           })
         );
