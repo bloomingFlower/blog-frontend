@@ -15,6 +15,8 @@ const About = lazy(() => import("./pages/About"));
 const Post = lazy(() => import("./pages/Post"));
 const PostUpload = lazy(() => import("./pages/PostUpload"));
 const Scrap = lazy(() => import("./pages/Scrap"));
+const RustNews = lazy(() => import("./pages/RustNews"));
+const BitcoinPricePage = lazy(() => import("./pages/BitcoinPricePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const Logout = lazy(() => import("./pages/components/Logout"));
@@ -166,6 +168,8 @@ function App() {
                 <Route path="/post" element={<Post />} />
                 <Route path="/post/upload" element={<PostUpload />} />
                 <Route path="/scrap" element={<Scrap />} />
+                <Route path="/rust-news" element={<RustNews />} />
+                <Route path="/bitcoin-price" element={<BitcoinPricePage />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/admin-login" element={<AdminLogin />} />
                 <Route path="/logout" element={<Logout />} />

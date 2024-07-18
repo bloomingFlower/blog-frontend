@@ -111,14 +111,28 @@ function HamburgerButton() {
             to="/post"
             onClick={() => setIsOpen(false)}
           >
-            Post(Rest)
+            Post(Go-REST)
           </Link>
           <Link
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/scrap"
             onClick={() => setIsOpen(false)}
           >
-            Scrap(gRPC)
+            Scrap(Go-gRPC)
+          </Link>
+          <Link
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            to="/rust-news"
+            onClick={() => setIsOpen(false)}
+          >
+            Rust News(Rust-Kafka+SyllaDB)
+          </Link>
+          <Link
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            to="/bitcoin-price"
+            onClick={() => setIsOpen(false)}
+          >
+            Bitcoin Price(Rust-Kafka+SSE)
           </Link>
           {isLoggedIn ? (
             <>
