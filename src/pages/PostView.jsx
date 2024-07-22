@@ -112,19 +112,21 @@ function PostView({
         )}
         <div id="remark42" className="mb-6"></div>
         <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
-          <button
-            className="w-full sm:w-1/3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-            onClick={handleEditClick}
-          >
-            Edit Post
-          </button>
+          {isLoggedIn && (
+            <button
+              className="w-full sm:w-1/3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+              onClick={handleEditClick}
+            >
+              Edit Post
+            </button>
+          )}
           {isLoggedIn && (
             <button
               className="w-full sm:w-1/3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
               onClick={handleHideClick}
               aria-label="Hide"
             >
-              {post.hidden ? "숨김 해제" : "숨김"}
+              {post.hidden ? "Unhide" : "Hide"}
             </button>
           )}
           <button
