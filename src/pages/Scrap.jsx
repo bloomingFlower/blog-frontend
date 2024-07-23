@@ -5,6 +5,7 @@ import backgroundImage from "@img/background2.webp";
 import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import he from "he";
+import LoadingIndicator from "./components/LoadingIndicator";
 
 const formatDate = (seconds) => {
   return new Date(seconds * 1000).toLocaleDateString("en-US", {
@@ -92,7 +93,7 @@ function Scrap() {
         </h1>
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+            <LoadingIndicator />
           </div>
         ) : posts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
