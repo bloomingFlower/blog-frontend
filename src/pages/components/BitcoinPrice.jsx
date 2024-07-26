@@ -68,10 +68,10 @@ function BitcoinPrice() {
     const kstString = kstFormatter.format(date);
 
     return (
-      <div className="text-xs text-gray-600">
-        <div className="mb-1"><span className="font-semibold">UTC:</span> {utcString}</div>
-        <div><span className="font-semibold">KST:</span> {kstString}</div>
-      </div>
+      <>
+        <span className="block mb-1"><span className="font-semibold">UTC:</span> {utcString}</span>
+        <span className="block"><span className="font-semibold">KST:</span> {kstString}</span>
+      </>
     );
   };
 
@@ -115,9 +115,10 @@ function BitcoinPrice() {
           <p className="text-3xl font-semibold mb-1">
             {formatPrice(bitcoinInfo.price)}
           </p>
-          <p className="text-sm text-gray-600 mb-2">
-            Last updated: {formatDate(bitcoinInfo.last_updated)}
-          </p>
+          <div className="text-sm text-gray-600 mb-2">
+            <p className="mb-1">Last updated:</p>
+            <div className="text-xs">{formatDate(bitcoinInfo.last_updated)}</div>
+          </div>
           <div className="grid grid-cols-2 gap-4 text-sm mb-4">
             <div className="bg-blue-100 p-2 rounded">
               <p className="font-semibold">24h High</p>
