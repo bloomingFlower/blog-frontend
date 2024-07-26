@@ -36,6 +36,34 @@ function BitcoinPrice() {
     }).format(price);
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid Date";
+
+    const utcString = date.toUTCString();
+    const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    const kstString = kstDate.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+    return `UTC: ${utcString} | KST: ${kstString}`;
+  };
+
+  const getChangeColor = (change) => {
+    return change >= 0 ? "text-green-500" : "text-red-500";
+  };
+
+  const formatPercentage = (percentage) => {
+    return percentage.toFixed(2);
+  };
+
+  const renderPriceChange = (change, percentage) => {
+    const color = getChangeColor(change);
+    const arrow = change >= 0 ? "▲" : "▼";
+    return (
+      <span className={`${color} font-bold`}>
+        {arrow} {formatPrice(Math.abs(change))} ({formatPercentage(percentage)}%)
+      </span>
+    );
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Connected":
@@ -55,20 +83,27 @@ function BitcoinPrice() {
       <h2 className="text-xl font-bold mb-2">Bitcoin Current Price</h2>
       {bitcoinInfo ? (
         <>
-          <p className="text-2xl font-semibold mb-1">
+          <p className="text-3xl font-semibold mb-1">
             {formatPrice(bitcoinInfo.price)}
           </p>
           <p className="text-sm text-gray-600 mb-2">
-            Last updated: {bitcoinInfo.last_updated}
+            Last updated: {formatDate(bitcoinInfo.last_updated)}
           </p>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <p>24h High: {formatPrice(bitcoinInfo.high_24h)}</p>
-            <p>24h Low: {formatPrice(bitcoinInfo.low_24h)}</p>
-            <p>24h Change: {formatPrice(bitcoinInfo.price_change_24h)}</p>
-            <p>
-              24h Change %: {bitcoinInfo.price_change_percentage_24h.toFixed(2)}
-              %
-            </p>
+          <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+            <div className="bg-blue-100 p-2 rounded">
+              <p className="font-semibold">24h High</p>
+              <p className="text-lg">{formatPrice(bitcoinInfo.high_24h)}</p>
+            </div>
+            <div className="bg-blue-100 p-2 rounded">
+              <p className="font-semibold">24h Low</p>
+              <p className="text-lg">{formatPrice(bitcoinInfo.low_24h)}</p>
+            </div>
+            <div className="col-span-2 bg-gray-100 p-2 rounded">
+              <p className="font-semibold">24h Change</p>
+              <p className="text-lg">
+                {renderPriceChange(bitcoinInfo.price_change_24h, bitcoinInfo.price_change_percentage_24h)}
+              </p>
+            </div>
           </div>
         </>
       ) : (
