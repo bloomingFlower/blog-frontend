@@ -1,57 +1,45 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
 function BitcoinPrice() {
   const [bitcoinInfo, setBitcoinInfo] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
-  const errorToastShown = useRef(false);
-  const reconnectTimeout = useRef(null);
 
   useEffect(() => {
-    let eventSource;
+    // Get Bitcoin Price from EventSource
+    const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sse`);
 
-    const connectSSE = () => {
-      eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sse`);
-
-      eventSource.onopen = () => {
-        setConnectionStatus("Connected");
-        errorToastShown.current = false;
-      };
-
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setBitcoinInfo(data);
-      };
-
-      eventSource.onerror = (error) => {
-        console.error("SSE Error:", error);
-        setConnectionStatus("Reconnecting...");
-        eventSource.close();
-
-        if (!errorToastShown.current) {
-          toast.error("Bitcoin Price Update Error. Attempting to reconnect...");
-          errorToastShown.current = true;
-        }
-
-        // 재연결 시도 전 기존 타임아웃 취소
-        if (reconnectTimeout.current) {
-          clearTimeout(reconnectTimeout.current);
-        }
-
-        // 5초 후 재연결 시도
-        reconnectTimeout.current = setTimeout(connectSSE, 5000);
-      };
+    // Handle connection open event
+    eventSource.onopen = () => {
+      setConnectionStatus("Connected");
+      toast.success("Connected to Bitcoin price updates");
     };
 
-    connectSSE();
+    // Handle message receive event
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.status === 'success' && data.data) {
+        setBitcoinInfo(data.data);
+        setConnectionStatus("Connected");
+      } else if (data.status === 'waiting') {
+        setConnectionStatus("Waiting for data...");
+      } else if (data.status === 'error') {
+        console.error('Error receiving data');
+        setConnectionStatus("Error");
+        toast.error("Error receiving Bitcoin price updates");
+      }
+    };
 
+    // Handle error event
+    eventSource.onerror = (error) => {
+      console.error("SSE Error:", error);
+      setConnectionStatus("Reconnecting...");
+      toast.error("Connection lost. Attempting to reconnect...");
+    };
+
+    // Cleanup on component unmount
     return () => {
-      if (eventSource) {
-        eventSource.close();
-      }
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
-      }
+      eventSource.close();
       setConnectionStatus("Disconnected");
     };
   }, []);
