@@ -1,30 +1,57 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 
 function BitcoinPrice() {
   const [bitcoinInfo, setBitcoinInfo] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+  const errorToastShown = useRef(false);
+  const reconnectTimeout = useRef(null);
 
   useEffect(() => {
-    const eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sse`);
+    let eventSource;
 
-    eventSource.onopen = () => {
-      setConnectionStatus("Connected");
+    const connectSSE = () => {
+      eventSource = new EventSource(`${process.env.REACT_APP_API_URL}/sse`);
+
+      eventSource.onopen = () => {
+        setConnectionStatus("Connected");
+        errorToastShown.current = false;
+      };
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setBitcoinInfo(data);
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("SSE Error:", error);
+        setConnectionStatus("Reconnecting...");
+        eventSource.close();
+
+        if (!errorToastShown.current) {
+          toast.error("Bitcoin Price Update Error. Attempting to reconnect...");
+          errorToastShown.current = true;
+        }
+
+        // 재연결 시도 전 기존 타임아웃 취소
+        if (reconnectTimeout.current) {
+          clearTimeout(reconnectTimeout.current);
+        }
+
+        // 5초 후 재연결 시도
+        reconnectTimeout.current = setTimeout(connectSSE, 5000);
+      };
     };
 
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setBitcoinInfo(data);
-    };
-
-    eventSource.onerror = (error) => {
-      console.error("SSE Error:", error);
-      setConnectionStatus("Reconnecting...");
-      toast.error("Bitcoin Price Update Error");
-    };
+    connectSSE();
 
     return () => {
-      eventSource.close();
+      if (eventSource) {
+        eventSource.close();
+      }
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+      }
       setConnectionStatus("Disconnected");
     };
   }, []);
