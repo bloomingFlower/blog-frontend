@@ -40,10 +40,39 @@ function BitcoinPrice() {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid Date";
 
-    const utcString = date.toUTCString();
-    const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-    const kstString = kstDate.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
-    return `UTC: ${utcString} | KST: ${kstString}`;
+    // UTC time format
+    const utcFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+
+    // KST time format
+    const kstFormatter = new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+
+    const utcString = utcFormatter.format(date);
+    const kstString = kstFormatter.format(date);
+
+    return (
+      <div className="text-xs text-gray-600">
+        <div className="mb-1"><span className="font-semibold">UTC:</span> {utcString}</div>
+        <div><span className="font-semibold">KST:</span> {kstString}</div>
+      </div>
+    );
   };
 
   const getChangeColor = (change) => {
