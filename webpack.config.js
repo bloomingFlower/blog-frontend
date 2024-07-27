@@ -1,7 +1,7 @@
+const webpack = require("webpack");
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const Dotenv = require("dotenv-webpack");
 const CompressionPlugin = require("compression-webpack-plugin");
 
 module.exports = {
@@ -32,11 +32,13 @@ module.exports = {
         },
       ],
     }),
-    new Dotenv({
-      path:
+    new webpack.DefinePlugin({
+      "process.env":
         process.env.NODE_ENV === "production"
-          ? ".env.production"
-          : ".env.development",
+          ? JSON.stringify(process.env)
+          : JSON.stringify(
+              require("dotenv").config({ path: ".env.development" }).parsed
+            ),
     }),
     new CompressionPlugin({
       test: /\.(js|css|html|svg)$/,
