@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { isEqual } from "lodash";
@@ -6,6 +6,9 @@ import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.webp";
 import { trackPromise } from "react-promise-tracker";
 import api from "./components/api";
+import { FaPhone } from "react-icons/fa";
+import { isValidPhoneNumber, getExampleNumber } from "libphonenumber-js/max";
+import examples from "libphonenumber-js/examples.mobile.json";
 
 const EditProfile = () => {
   const [firstName, setFirstName] = useState("");
@@ -16,6 +19,25 @@ const EditProfile = () => {
   const [user, setUser] = useState(null);
   const [initialUser, setInitialUser] = useState(null);
   const [username, setUsername] = useState("");
+  const [countryCode, setCountryCode] = useState("KR");
+
+  const countryCodes = [
+    { code: "US", country: "US", dialCode: "+1" },
+    { code: "RU", country: "RU", dialCode: "+7" },
+    { code: "FR", country: "FR", dialCode: "+33" },
+    { code: "GB", country: "GB", dialCode: "+44" },
+    { code: "DE", country: "DE", dialCode: "+49" },
+    { code: "AU", country: "AU", dialCode: "+61" },
+    { code: "JP", country: "JP", dialCode: "+81" },
+    { code: "KR", country: "KR", dialCode: "+82" },
+    { code: "CN", country: "CN", dialCode: "+86" },
+    { code: "IN", country: "IN", dialCode: "+91" },
+  ];
+
+  const phoneNumberHint = useMemo(() => {
+    const exampleNumber = getExampleNumber(countryCode, examples);
+    return exampleNumber ? exampleNumber.formatNational() : "";
+  }, [countryCode]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,10 +73,11 @@ const EditProfile = () => {
       return;
     }
 
-    // 전화번호 패턴 검사
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(updatedUser.phone)) {
-      toast.error("Invalid phone number. Please enter 10 digit phone number.");
+    // 전화번호 유효성 검사
+    if (!isValidPhoneNumber(updatedUser.phone, countryCode)) {
+      toast.error(
+        "Invalid phone number. Please enter a valid phone number for the selected country."
+      );
       return;
     }
 
@@ -93,62 +116,99 @@ const EditProfile = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="max-w-md w-full space-y-8 bg-white bg-opacity-50 p-6 rounded-lg">
+      <div className="max-w-md w-full space-y-8 bg-white bg-opacity-80 p-8 rounded-xl shadow-2xl backdrop-blur-sm">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Edit Your Profile
+        </h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <label className="block">
-            <span className="text-gray-700">First Name:</span>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              maxLength={20}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              aria-label="First Name"
-            />
-          </label>
-          <label className="block">
-            <span className="text-gray-700">Last Name:</span>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              maxLength={20}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              aria-label="Last Name"
-            />
-          </label>
-          <label className="block">
-            <span className="text-gray-700">Email:</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              maxLength={90}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              disabled
-              aria-label="Email"
-            />
-          </label>
-          <label className="block">
-            <span className="text-gray-700">Phone:</span>
-            <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              maxLength={10}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              aria-label="Phone"
-            />
-          </label>
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Update Profile
-          </button>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="first-name" className="sr-only">
+                First Name
+              </label>
+              <input
+                id="first-name"
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                maxLength={20}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="First Name"
+              />
+            </div>
+            <div>
+              <label htmlFor="last-name" className="sr-only">
+                Last Name
+              </label>
+              <input
+                id="last-name"
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                maxLength={20}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Last Name"
+              />
+            </div>
+            <div>
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email-address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                maxLength={90}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                disabled
+              />
+            </div>
+            <div className="relative flex flex-col">
+              <div className="flex items-center">
+                <FaPhone className="absolute left-3 text-gray-400 z-10" />
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="appearance-none rounded-l-md relative block w-2/5 pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  aria-label="Country code"
+                >
+                  {countryCodes.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.dialCode} ({country.country})
+                    </option>
+                  ))}
+                </select>
+                <input
+                  id="phone-number"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  maxLength={10}
+                  className="appearance-none rounded-r-md relative block w-3/5 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Phone number"
+                  required
+                  aria-label="Phone number"
+                />
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                Example: {phoneNumberHint}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+            >
+              Update Profile
+            </button>
+          </div>
         </form>
       </div>
     </div>

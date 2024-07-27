@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -7,6 +7,12 @@ import PasswordInput from "./components/PasswordInput";
 import { trackPromise } from "react-promise-tracker";
 import api from "./components/api";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
+import {
+  parsePhoneNumber,
+  isValidPhoneNumber,
+  getExampleNumber,
+} from "libphonenumber-js/max";
+import examples from "libphonenumber-js/examples.mobile.json";
 
 const Signup = () => {
   const [firstName, setFirstName] = useState("");
@@ -15,7 +21,7 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState(""); // phone 상태 추가
-  const [countryCode, setCountryCode] = useState("+1"); // 국가 코드 상태 추가
+  const [countryCode, setCountryCode] = useState("KR"); // 국가 코드 상태 추가
   const [emailExists, setEmailExists] = useState(false); // 이메일 존재 상태 추가
   const emailRef = useRef(); // 이메일 입력 필드 참조 생성
 
@@ -27,20 +33,23 @@ const Signup = () => {
 
   // 전화번호 입력 처리 함수 추가
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/[^\d]/g, "");
-    let phoneNumber = "";
-    if (value.length <= 3) {
-      phoneNumber = value;
-    } else if (value.length <= 7) {
-      phoneNumber = `${value.slice(0, 3)}-${value.slice(3)}`;
-    } else {
-      phoneNumber = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(
-        7,
-        11
-      )}`;
+    const input = e.target.value.replace(/\D/g, "");
+    try {
+      const phoneNumber = parsePhoneNumber(input, countryCode);
+      if (phoneNumber) {
+        setPhone(phoneNumber.formatNational());
+      } else {
+        setPhone(input);
+      }
+    } catch (error) {
+      setPhone(input);
     }
-    setPhone(phoneNumber);
   };
+
+  const phoneNumberHint = useMemo(() => {
+    const exampleNumber = getExampleNumber(countryCode, examples);
+    return exampleNumber ? exampleNumber.formatNational() : "";
+  }, [countryCode]);
 
   const handleSubmit = async (e) => {
     // Add async keyword here
@@ -63,10 +72,10 @@ const Signup = () => {
       return;
     }
 
-    // 전화번호 패턴 검사
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(phone)) {
-      toast.error("Invalid phone number. Please enter 10 digit phone number.");
+    if (!isValidPhoneNumber(phone, countryCode)) {
+      toast.error(
+        "Invalid phone number. Please enter a valid phone number for the selected country."
+      );
       return;
     }
 
@@ -162,28 +171,40 @@ const Signup = () => {
                 aria-label="Email address"
               />
             </div>
-            <div className="relative flex items-center">
-              <FaPhone className="absolute left-3 text-gray-400 z-10" />
-              <select
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                className="appearance-none rounded-none relative block w-1/3 pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                aria-label="Country code"
-              >
-                <option value="+1">+1</option>
-                <option value="+82">+82</option>
-                <option value="+88">+88</option>
-              </select>
-              <input
-                type="tel"
-                value={phone}
-                onChange={handlePhoneChange}
-                maxLength={13}
-                className="appearance-none rounded-none relative block w-2/3 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Phone number"
-                required
-                aria-label="Phone number"
-              />
+            <div className="relative flex flex-col">
+              <div className="flex items-center">
+                <FaPhone className="absolute left-3 text-gray-400 z-10" />
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="appearance-none rounded-l-md relative block w-2/5 pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  aria-label="Country code"
+                >
+                  <option value="US">+1 (US)</option>
+                  <option value="RU">+7 (RU)</option>
+                  <option value="FR">+33 (FR)</option>
+                  <option value="GB">+44 (GB)</option>
+                  <option value="DE">+49 (DE)</option>
+                  <option value="AU">+61 (AU)</option>
+                  <option value="JP">+81 (JP)</option>
+                  <option value="KR">+82 (KR)</option>
+                  <option value="CN">+86 (CN)</option>
+                  <option value="IN">+91 (IN)</option>
+                </select>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  maxLength={13}
+                  className="appearance-none rounded-r-md relative block w-3/5 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Phone number"
+                  required
+                  aria-label="Phone number"
+                />
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                Example: {phoneNumberHint}
+              </p>
             </div>
             <div className="relative">
               <FaLock className="absolute top-3 left-3 text-gray-400 z-10" />
@@ -191,7 +212,7 @@ const Signup = () => {
                 value={password}
                 onChange={handlePasswordChange}
                 maxLength={50}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10"
                 placeholder="Password"
                 aria-label="Password"
               />
