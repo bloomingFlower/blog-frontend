@@ -197,12 +197,13 @@ function App() {
             }
             bodyClassName={() => "flex text-black font-medium block p-3"}
           />
-          <Suspense fallback={<LoadingIndicator />}>
-            <Footer />
-          </Suspense>
+          <footer className="fixed bottom-0 left-0 right-0 bg-white">
+            <Suspense fallback={<LoadingIndicator />}>
+              <Footer />
+            </Suspense>
+          </footer>
         </div>
       </Router>
-      <LoadingIndicator />
     </AuthProvider>
   );
 }
