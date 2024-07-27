@@ -28,7 +28,6 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=builder /app/protos /usr/share/nginx/html/protos
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY .env.production /root/.env
 
 # Nginx 설정 파일 복사
 COPY nginx.conf /etc/nginx/conf.d/default.conf
