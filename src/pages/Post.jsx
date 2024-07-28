@@ -21,7 +21,7 @@ function Post() {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [posts, setPosts] = useState([]);
-  // 검색 결과를 저장할 ��태를 추가
+  // 검색 결과를 저장할 상태를 추가
   const [searchResults, setSearchResults] = useState([]);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -255,20 +255,18 @@ function Post() {
               Posts
             </h1>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-              <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-                <div className="w-full sm:w-auto">
-                  <SearchPost setSearchResults={setSearchResults} />
-                </div>
-                {isLoggedIn && (
-                  <button
-                    className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
-                    aria-label="Upload"
-                    onClick={handleUploadClick}
-                  >
-                    <UploadIcon />
-                  </button>
-                )}
+              <div className="w-full mb-4 sm:mb-0 sm:mr-4">
+                <SearchPost setSearchResults={setSearchResults} />
               </div>
+              {isLoggedIn && (
+                <button
+                  className="w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
+                  aria-label="Upload"
+                  onClick={handleUploadClick}
+                >
+                  <UploadIcon />
+                </button>
+              )}
             </div>
 
             {isLoading ? (
