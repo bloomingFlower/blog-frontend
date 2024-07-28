@@ -8,7 +8,15 @@ const dotenv = require("dotenv");
 // 환경에 따라 .env 파일 로드
 const env =
   process.env.NODE_ENV === "production"
-    ? {} // 프로덕션 환경에서는 k8s secrets를 사용할 것이므로 빈 객체
+    ? {
+        NODE_ENV: "production",
+        // 프로덕션에서는 빈 문자열로 설정
+        REACT_APP_API_URL: "",
+        REACT_APP_SSE_API_URL: "",
+        REACT_GRPC_API_URL: "",
+        GRPC_API_KEY: "",
+        RSS_API_KEY: "",
+      }
     : dotenv.config({ path: ".env.development" }).parsed;
 
 module.exports = {
@@ -41,14 +49,6 @@ module.exports = {
     }),
     new webpack.DefinePlugin({
       "process.env": JSON.stringify(env),
-    }),
-    new webpack.EnvironmentPlugin({
-      NODE_ENV: "development",
-      REACT_APP_API_URL: "",
-      REACT_APP_SSE_API_URL: "",
-      REACT_GRPC_API_URL: "",
-      RSS_API_KEY: "",
-      GRPC_API_KEY: "",
     }),
     new CompressionPlugin({
       test: /\.(js|css|html|svg)$/,
