@@ -28,7 +28,6 @@ RUN protoc --proto_path=/app --js_out=import_style=commonjs,binary:/app/protos a
 COPY . .
 
 # React 애플리케이션 빌드
-RUN npm run clean
 RUN npm run build
 
 # 최종 실행 이미지
