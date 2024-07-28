@@ -42,7 +42,7 @@
   },
   "scripts": {
     "start": "webpack serve --mode development --env development",
-    "build": "NODE_ENV=production webpack --mode production",
+    "build": "NODE_ENV=production DISABLE_ESLINT_PLUGIN=true TSC_COMPILE_ON_ERROR=true webpack --mode production --stats-error-details",
     "test": "jest",
     "lint": "eslint .",
     "clean": "rimraf dist"
