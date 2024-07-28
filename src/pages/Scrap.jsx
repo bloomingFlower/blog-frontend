@@ -6,6 +6,7 @@ import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import he from "he";
 import LoadingIndicator from "./components/LoadingIndicator";
+import { FaRegSadTear } from "react-icons/fa";
 
 const formatDate = (seconds) => {
   return new Date(seconds * 1000).toLocaleDateString("en-US", {
@@ -25,6 +26,19 @@ const truncateDescription = (description, maxLength = 150) => {
   if (description.length <= maxLength) return description;
   return `${description.substring(0, maxLength)}...`;
 };
+
+const NoBookmarksFound = () => (
+  <div className="flex flex-col items-center justify-center h-64 bg-white bg-opacity-80 rounded-lg shadow-md p-8">
+    <FaRegSadTear className="text-6xl text-gray-400 mb-4" />
+    <h2 className="text-2xl font-bold text-gray-700 mb-2">
+      No bookmarks found
+    </h2>
+    <p className="text-gray-500 text-center mb-4">
+      You haven't bookmarked any articles yet. Start exploring and save
+      interesting articles!
+    </p>
+  </div>
+);
 
 function Scrap() {
   const [posts, setPosts] = useState([]);
@@ -102,9 +116,11 @@ function Scrap() {
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
-          Bookmarked Articles
-        </h1>
+        <div className="mb-8 py-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-white">
+            Bookmarked Articles
+          </h1>
+        </div>
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <LoadingIndicator />
@@ -148,9 +164,7 @@ function Scrap() {
             ))}
           </div>
         ) : (
-          <p className="text-lg sm:text-xl text-white text-center">
-            No bookmarked articles found.
-          </p>
+          <NoBookmarksFound />
         )}
       </div>
     </div>

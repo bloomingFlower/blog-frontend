@@ -21,7 +21,7 @@ function Post() {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [posts, setPosts] = useState([]);
-  // 검색 결과를 저장할 상태를 추가
+  // 검색 결과를 저장할 ��태를 추가
   const [searchResults, setSearchResults] = useState([]);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -251,13 +251,10 @@ function Post() {
                 </p>
               </div>
             )}
+            <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
+              Posts
+            </h1>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-              <h1
-                className="text-3xl font-bold text-gray-900 mb-4 sm:mb-0 cursor-pointer"
-                onClick={() => window.location.reload()}
-              >
-                Posts
-              </h1>
               <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                 <div className="w-full sm:w-auto">
                   <SearchPost setSearchResults={setSearchResults} />
