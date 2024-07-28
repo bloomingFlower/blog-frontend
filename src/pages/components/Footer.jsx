@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 
 function Footer() {
   const [year, setYear] = useState(new Date().getFullYear());
-  const [isClicked, setIsClicked] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
   const [isSuperMode, setIsSuperMode] = useState(false);
   const [bgColor, setBgColor] = useState("bg-yellow-500");
-  const [fontSize, setFontSize] = useState(12); // 글자 크기 상태 추가
-  let originalFontSize = 12; // handleClick 함수 바깥에 선언
+  const [fontSize, setFontSize] = useState(12);
+  const [score, setScore] = useState(0);
 
   const colors = [
     "bg-red-500",
@@ -19,63 +19,77 @@ function Footer() {
   ];
 
   const handleClick = () => {
-    setIsClicked(true);
+    setClickCount((prevCount) => prevCount + 1);
     setYear(year + 1);
-    originalFontSize = fontSize; // 글자 크기 증가 전에 originalFontSize 업데이트
-    setFontSize(fontSize + 1);
+    setFontSize((prevSize) => prevSize + 1);
+    setScore((prevScore) => prevScore + 10);
 
-    if (year >= new Date().getFullYear() + 7) {
+    if (clickCount >= 4) {
       setIsSuperMode(true);
     }
 
     setTimeout(() => {
       setYear(new Date().getFullYear());
-      setIsClicked(false);
-      setFontSize(originalFontSize);
+      setFontSize(12);
     }, 1000);
   };
 
   const handleSuperModeToggle = () => {
     setIsSuperMode(!isSuperMode);
+    if (!isSuperMode) {
+      setScore((prevScore) => prevScore + 100);
+    }
   };
 
   useEffect(() => {
     let timer;
     if (isSuperMode) {
       timer = setInterval(() => {
-        setBgColor(colors[Math.floor(Math.random() * colors.length)]);
+        const newColor = colors[Math.floor(Math.random() * colors.length)];
+        console.log("Selected color:", newColor);
+        setBgColor(newColor);
+        setScore((prevScore) => prevScore + 1);
       }, 200);
     }
 
     return () => {
       clearInterval(timer);
     };
-  }, [isSuperMode, colors]);
+  }, [isSuperMode]);
 
   return (
-    <div
-      className={`text-center py-2 ${
-        isSuperMode ? bgColor + " text-white" : ""
-      }`}
-    >
-      <span
-        onClick={handleClick}
-        className={`transition-all duration-1000 ${
-          isClicked ? "text-red-500 scale-150 rotate-180" : ""
-        }`}
-        style={{ fontSize: `${fontSize}px`, cursor: "pointer" }}
+    <>
+      <footer
+        className={`${
+          isSuperMode
+            ? bgColor + " text-white"
+            : "bg-white bg-opacity-90 text-gray-600"
+        } border-t border-gray-200 transition-all duration-300`}
       >
-        © {year} JaeyoungYun
-      </span>
-      {isSuperMode && (
-        <button
-          onClick={handleSuperModeToggle}
-          className="ml-4 px-2 py-1 bg-red-500 text-white rounded"
-        >
-          슈퍼모드 해제
-        </button>
-      )}
-    </div>
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center items-center h-8">
+            <span
+              onClick={handleClick}
+              className={`transition-all duration-1000 ${
+                clickCount > 0 ? "text-red-500 scale-110 rotate-180" : ""
+              }`}
+              style={{ fontSize: `${fontSize}px`, cursor: "pointer" }}
+            >
+              © {year} JaeyoungYun
+            </span>
+            {isSuperMode && (
+              <button
+                onClick={handleSuperModeToggle}
+                className="ml-4 px-2 bg-red-500 text-white rounded text-xs animate-pulse"
+              >
+                SUPER MODE {isSuperMode ? "OFF" : "ON"}
+              </button>
+            )}
+            <span className="ml-4 text-xs font-bold">SCORE: {score}</span>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }
 

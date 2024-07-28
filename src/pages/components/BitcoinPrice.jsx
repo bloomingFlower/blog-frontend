@@ -137,20 +137,22 @@ function BitcoinPrice() {
   };
 
   return (
-    <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-4 mb-4">
-      <h2 className="text-xl font-bold mb-2">Bitcoin Current Price</h2>
+    <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-4 mb-4 max-w-2xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-bold mb-2">
+        Bitcoin Current Price
+      </h2>
       {bitcoinInfo ? (
         <>
-          <p className="text-3xl font-semibold mb-1">
+          <p className="text-2xl md:text-3xl font-semibold mb-1">
             {formatPrice(bitcoinInfo.price)}
           </p>
-          <div className="text-sm text-gray-600 mb-2">
+          <div className="text-sm md:text-base text-gray-600 mb-2">
             <p className="mb-1">Last updated:</p>
-            <div className="text-xs">
+            <div className="text-xs md:text-sm">
               {formatDate(bitcoinInfo.last_updated)}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm md:text-base mb-4">
             <div className="bg-blue-100 p-2 rounded">
               <p className="font-semibold">24h High</p>
               <p className="text-lg">{formatPrice(bitcoinInfo.high_24h)}</p>
@@ -159,7 +161,7 @@ function BitcoinPrice() {
               <p className="font-semibold">24h Low</p>
               <p className="text-lg">{formatPrice(bitcoinInfo.low_24h)}</p>
             </div>
-            <div className="col-span-2 bg-gray-100 p-2 rounded">
+            <div className="col-span-1 sm:col-span-2 bg-gray-100 p-2 rounded">
               <p className="font-semibold">24h Change</p>
               <p className="text-lg">
                 {renderPriceChange(
@@ -179,11 +181,11 @@ function BitcoinPrice() {
             connectionStatus
           )}`}
         ></div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm md:text-base text-gray-600">
           Stream Status: {connectionStatus}
         </p>
       </div>
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs md:text-sm text-gray-500 mt-2">
         Note: Updates may be infrequent due to API license restrictions.
       </p>
     </div>
