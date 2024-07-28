@@ -11,7 +11,7 @@ function SearchComponent({ setSearchResults }) {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!query) {
-      toast.warning("Please enter a search term.");
+      toast.warning("검색어를 입력해주세요.");
       return;
     }
     try {
@@ -55,7 +55,7 @@ function SearchComponent({ setSearchResults }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search..."
-          className="w-full h-10 pl-2 pr-10 text-sm bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full h-10 pl-2 pr-10 text-sm bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-300"
         />
         <button
           type="submit"
