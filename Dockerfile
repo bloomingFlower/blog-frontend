@@ -7,13 +7,6 @@ LABEL maintainer="JYY <yourrubber@duck.com>"
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 환경 변수를 nginx에 전달
-ENV REACT_APP_API_URL=${REACT_APP_API_URL}
-ENV REACT_APP_SSE_API_URL=${REACT_APP_SSE_API_URL}
-ENV REACT_GRPC_API_URL=${REACT_GRPC_API_URL}
-ENV GRPC_API_KEY=${GRPC_API_KEY}
-ENV RSS_API_KEY=${RSS_API_KEY}
-
 # 의존성 파일 복사 및 설치
 COPY package.json package-lock.json ./
 RUN npm install
@@ -37,6 +30,9 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Nginx 설정 파일 복사
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY 40-replace-env-variables.sh /docker-entrypoint.d/
+RUN chmod +x /docker-entrypoint.d/40-replace-env-variables.sh
 
 # 실행 명령
 EXPOSE 80
