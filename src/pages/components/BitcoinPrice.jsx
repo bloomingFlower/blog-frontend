@@ -5,13 +5,18 @@ function BitcoinPrice() {
   const [bitcoinInfo, setBitcoinInfo] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
 
+  const getSSEApiUrl = () => {
+    if (process.env.NODE_ENV === "development") {
+      return process.env.REACT_APP_SSE_API_URL;
+    }
+    return window.ENV.REACT_APP_SSE_API_URL !== "%REACT_APP_SSE_API_URL%"
+      ? window.ENV.REACT_APP_SSE_API_URL
+      : "";
+  };
+
   useEffect(() => {
     // Get Bitcoin Price from EventSource
-    const eventSource = new EventSource(
-      `${
-        window.ENV.REACT_APP_SSE_API_URL || process.env.REACT_APP_SSE_API_URL
-      }/sse`
-    );
+    const eventSource = new EventSource(`${getSSEApiUrl()}/sse`);
 
     // Handle connection open event
     eventSource.onopen = () => {

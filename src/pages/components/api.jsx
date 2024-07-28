@@ -2,8 +2,17 @@
 import axios from "axios";
 import { trackPromise } from "react-promise-tracker";
 
+const getBaseURL = () => {
+  if (process.env.NODE_ENV === "development") {
+    return process.env.REACT_APP_API_URL;
+  }
+  return window.ENV.REACT_APP_API_URL !== "%REACT_APP_API_URL%"
+    ? window.ENV.REACT_APP_API_URL
+    : "";
+};
+
 const api = axios.create({
-  baseURL: window.ENV.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL}`,
+  baseURL: getBaseURL(),
   withCredentials: true, // 자격 증명을 포함하는 옵션
 });
 
@@ -36,15 +45,9 @@ api.interceptors.response.use(
 
     // 로그 데이터를 서버에 보냄
     try {
-      await axios.post(
-        `${
-          window.ENV.REACT_APP_API_URL || process.env.REACT_APP_API_URL
-        }/api/v1/log`,
-        logData,
-        {
-          withCredentials: true,
-        }
-      );
+      await axios.post(`${getBaseURL()}/api/v1/log`, logData, {
+        withCredentials: true,
+      });
     } catch (error) {
       console.error("Failed to send log data:", error);
     }

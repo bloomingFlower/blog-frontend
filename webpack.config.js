@@ -3,6 +3,13 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CompressionPlugin = require("compression-webpack-plugin");
+const dotenv = require("dotenv");
+
+// 환경에 따라 .env 파일 로드
+const env =
+  process.env.NODE_ENV === "production"
+    ? {} // 프로덕션 환경에서는 k8s secrets를 사용할 것이므로 빈 객체
+    : dotenv.config({ path: ".env.development" }).parsed;
 
 module.exports = {
   entry: "./src/index.jsx",
@@ -33,12 +40,15 @@ module.exports = {
       ],
     }),
     new webpack.DefinePlugin({
-      "process.env":
-        process.env.NODE_ENV === "production"
-          ? JSON.stringify(process.env)
-          : JSON.stringify(
-              require("dotenv").config({ path: ".env.development" }).parsed
-            ),
+      "process.env": JSON.stringify(env),
+    }),
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: "development",
+      REACT_APP_API_URL: "",
+      REACT_APP_SSE_API_URL: "",
+      REACT_GRPC_API_URL: "",
+      RSS_API_KEY: "",
+      GRPC_API_KEY: "",
     }),
     new CompressionPlugin({
       test: /\.(js|css|html|svg)$/,

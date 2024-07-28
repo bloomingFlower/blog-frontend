@@ -39,6 +39,15 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     ADD_ATTR: ["src", "alt", "width", "height"],
   };
 
+  const getApiUrl = () => {
+    if (process.env.NODE_ENV === "development") {
+      return process.env.REACT_APP_API_URL;
+    }
+    return window.ENV.REACT_APP_API_URL !== "%REACT_APP_API_URL%"
+      ? window.ENV.REACT_APP_API_URL
+      : "";
+  };
+
   const imageUploader = useCallback((file) => {
     return new Promise((resolve, reject) => {
       if (!file) {
@@ -50,9 +59,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
 
       trackPromise(
         api({
-          url: `${
-            window.ENV.REACT_APP_API_URL || process.env.REACT_APP_API_URL
-          }/api/v1/upload-img`,
+          url: `${getApiUrl()}/api/v1/upload-img`,
           method: "POST",
           data: formData,
           withCredentials: true,
