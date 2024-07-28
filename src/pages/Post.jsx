@@ -56,7 +56,7 @@ function Post() {
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => { }, [isUploadModalOpen]);
+  useEffect(() => {}, [isUploadModalOpen]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -214,8 +214,9 @@ function Post() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {(searchResults.length > 0 ? searchResults : posts).map((post) => (
               <div
-                className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 ${post.hidden ? "opacity-50" : ""
-                  }`}
+                className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 ${
+                  post.hidden ? "opacity-50" : ""
+                }`}
                 onClick={() => handlePostClick(post.id)}
                 key={post.id}
               >
@@ -251,13 +252,13 @@ function Post() {
                   </div>
                   <p className="text-xs text-gray-500">
                     {post.created_at === "0001-01-01T00:00:00Z" ||
-                      (post.updated_at && post.updated_at !== post.created_at)
+                    (post.updated_at && post.updated_at !== post.created_at)
                       ? `Updated at ${new Date(
-                        post.updated_at
-                      ).toLocaleString()}`
+                          post.updated_at
+                        ).toLocaleString()}`
                       : `Created at ${new Date(
-                        post.created_at
-                      ).toLocaleString()}`}
+                          post.created_at
+                        ).toLocaleString()}`}
                   </p>
                 </div>
               </div>
@@ -272,8 +273,9 @@ function Post() {
             onClick={handlePrevPage}
             disabled={page === 1}
             aria-label="Previous Page"
-            className={`mb-4 sm:mb-0 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${page === 1 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+            className={`mb-4 sm:mb-0 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${
+              page === 1 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             Previous Page
           </button>
@@ -288,10 +290,11 @@ function Post() {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className={`py-2 px-4 rounded transition duration-300 ${p === page
-                    ? "bg-blue-500 text-white"
-                    : "bg-white text-blue-500 hover:bg-gray-200"
-                    }`}
+                  className={`py-2 px-4 rounded transition duration-300 ${
+                    p === page
+                      ? "bg-blue-500 text-white"
+                      : "bg-white text-blue-500 hover:bg-gray-200"
+                  }`}
                 >
                   {p}
                 </button>
@@ -301,8 +304,9 @@ function Post() {
             onClick={handleNextPage}
             disabled={page === lastPage}
             aria-label="Next Page"
-            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${page === lastPage ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ${
+              page === lastPage ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             Next Page
           </button>

@@ -3,7 +3,7 @@ import axios from "axios";
 import { trackPromise } from "react-promise-tracker";
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API_URL}`, // API 서버의 기본 URL
+  baseURL: window.ENV.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL}`,
   withCredentials: true, // 자격 증명을 포함하는 옵션
 });
 
@@ -36,9 +36,15 @@ api.interceptors.response.use(
 
     // 로그 데이터를 서버에 보냄
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/log`, logData, {
-        withCredentials: true,
-      });
+      await axios.post(
+        `${
+          window.ENV.REACT_APP_API_URL || process.env.REACT_APP_API_URL
+        }/api/v1/log`,
+        logData,
+        {
+          withCredentials: true,
+        }
+      );
     } catch (error) {
       console.error("Failed to send log data:", error);
     }

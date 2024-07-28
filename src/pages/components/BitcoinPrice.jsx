@@ -8,7 +8,9 @@ function BitcoinPrice() {
   useEffect(() => {
     // Get Bitcoin Price from EventSource
     const eventSource = new EventSource(
-      `${process.env.REACT_APP_SSE_API_URL}/sse`
+      `${
+        window.ENV.REACT_APP_SSE_API_URL || process.env.REACT_APP_SSE_API_URL
+      }/sse`
     );
 
     // Handle connection open event

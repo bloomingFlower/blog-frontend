@@ -34,7 +34,7 @@ function Scrap() {
     const fetchData = async () => {
       try {
         const client = new ApiServiceClient(
-          `${process.env.REACT_GRPC_API_URL}`,
+          `${window.ENV.REACT_GRPC_API_URL || process.env.REACT_GRPC_API_URL}`,
           null,
           {
             withCredentials: true,
@@ -47,7 +47,7 @@ function Scrap() {
         const metadata = {
           "Content-Type": "application/grpc-web+proto",
           "X-Grpc-Web": "1",
-          api_key: `${process.env.GRPC_API_KEY}`,
+          api_key: `${window.ENV.GRPC_API_KEY || process.env.GRPC_API_KEY}`,
         };
 
         const stream = client.handlerGetPostsForUser(request, metadata);

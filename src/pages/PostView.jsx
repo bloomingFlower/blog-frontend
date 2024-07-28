@@ -1,5 +1,5 @@
 // PostView.jsx
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "./components/api";
 import { AuthContext } from "./components/AuthContext";
@@ -22,6 +22,8 @@ function PostView({
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(AuthContext);
   const { jwt } = useContext(AuthContext);
+  const commentSectionRef = useRef(null);
+
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -39,6 +41,35 @@ function PostView({
 
     fetchPost();
   }, [postId, navigate]);
+
+  useEffect(() => {
+    if (post) {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/remark42@latest/web/embed.js";
+      script.async = true;
+
+      script.onload = () => {
+        if (window.REMARK42) {
+          window.REMARK42.createInstance({
+            host: "YOUR_REMARK42_HOST",
+            siteId: "YOUR_SITE_ID",
+            url: window.location.origin + window.location.pathname,
+            componentName: "remark42",
+            container: commentSectionRef.current,
+          });
+        }
+      };
+
+      document.body.appendChild(script);
+
+      return () => {
+        document.body.removeChild(script);
+        if (window.REMARK42) {
+          window.REMARK42.destroy();
+        }
+      };
+    }
+  }, [post]);
 
   if (!post) {
     return <LoadingIndicator />;
@@ -110,7 +141,7 @@ function PostView({
             Download: {post.file.split("/").pop()}
           </a>
         )}
-        <div id="remark42" className="mb-6"></div>
+        <div ref={commentSectionRef} className="mb-6"></div>
         <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
           {isLoggedIn && (
             <button

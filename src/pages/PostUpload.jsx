@@ -50,7 +50,9 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
 
       trackPromise(
         api({
-          url: `${process.env.REACT_APP_API_URL}/api/v1/upload-img`,
+          url: `${
+            window.ENV.REACT_APP_API_URL || process.env.REACT_APP_API_URL
+          }/api/v1/upload-img`,
           method: "POST",
           data: formData,
           withCredentials: true,
@@ -145,7 +147,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     // DOMPurify를 사용하여 에디터 내용 살균 (이미지 태그 허용)
     const sanitizedContent = DOMPurify.sanitize(editorState, purifyConfig);
 
-    // HTML Sanitization (기존 코드 유지, 추가적인 보안 ���층으로 사용)
+    // HTML Sanitization (기존 코드 유지, 추가적인 보안 층으로 사용)
     const cleanContent = sanitizeHtml(sanitizedContent, {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat([
         "img",
