@@ -7,6 +7,13 @@ LABEL maintainer="JYY <yourrubber@duck.com>"
 # 작업 디렉토리 설정
 WORKDIR /app
 
+# 환경 변수를 nginx에 전달
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+ENV REACT_APP_SSE_API_URL=${REACT_APP_SSE_API_URL}
+ENV REACT_GRPC_API_URL=${REACT_GRPC_API_URL}
+ENV GRPC_API_KEY=${GRPC_API_KEY}
+ENV RSS_API_KEY=${RSS_API_KEY}
+
 # 의존성 파일 복사 및 설치
 COPY package.json package-lock.json ./
 RUN npm install
