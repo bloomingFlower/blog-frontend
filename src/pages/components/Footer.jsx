@@ -46,7 +46,6 @@ function Footer() {
     if (isSuperMode) {
       timer = setInterval(() => {
         const newColor = colors[Math.floor(Math.random() * colors.length)];
-        console.log("Selected color:", newColor);
         setBgColor(newColor);
         setScore((prevScore) => prevScore + 1);
       }, 200);

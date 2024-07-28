@@ -21,7 +21,6 @@ function BitcoinPrice() {
     // Handle connection open event
     eventSource.onopen = () => {
       setConnectionStatus("Connected");
-      toast.success("Connected to Bitcoin price updates");
     };
 
     // Handle message receive event
@@ -186,7 +185,7 @@ function BitcoinPrice() {
         </p>
       </div>
       <p className="text-xs md:text-sm text-gray-500 mt-2">
-        Note: Updates may be infrequent due to API license restrictions.
+        Note: Updates may be infrequent due to my free API license restrictions.
       </p>
     </div>
   );
