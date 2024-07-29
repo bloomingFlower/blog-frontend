@@ -3,7 +3,7 @@ import BitcoinPrice from "./components/BitcoinPrice";
 import backgroundImage from "@img/background2.webp";
 import logger from "../utils/logger";
 import DOMPurify from "dompurify";
-import api from "./components/api";
+import { api2 } from "./components/api";
 import { FaRegSadTear } from "react-icons/fa";
 
 const formatDate = (dateString) => {
@@ -30,7 +30,9 @@ function RustNews() {
 
   const fetchNews = async () => {
     try {
-      const response = await api.get(`/api/v2/hnstories?page=${page}&limit=10`);
+      const response = await api2.get(
+        `/api/v2/hnstories?page=${page}&limit=10`
+      );
       if (response.data.data.length > 0) {
         setNews((prevNews) => [...prevNews, ...response.data.data]);
         setHasMore(response.data.data.length === 10);

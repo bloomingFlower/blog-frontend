@@ -2,7 +2,7 @@ import React from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { trackPromise } from "react-promise-tracker";
-import api from "./api";
+import { api } from "./api";
 
 function DeleteAccountButton() {
   const navigate = useNavigate();

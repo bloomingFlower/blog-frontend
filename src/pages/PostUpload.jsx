@@ -13,7 +13,7 @@ import CreatableSelect from "react-select/creatable";
 import "react-quill/dist/quill.snow.css";
 import Modal from "react-modal";
 import "tailwindcss/tailwind.css";
-import api from "./components/api";
+import { api } from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import sanitizeHtml from "sanitize-html";
 import { toast } from "react-toastify";

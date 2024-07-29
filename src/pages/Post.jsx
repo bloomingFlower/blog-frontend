@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import backgroundImage from "@img/background2.webp";
 import PostUpload from "./PostUpload";
 import PostView from "./PostView";
-import api from "./components/api";
+import { api } from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
 import SearchPost from "./components/SearchPost";

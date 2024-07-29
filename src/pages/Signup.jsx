@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.webp";
 import PasswordInput from "./components/PasswordInput";
 import { trackPromise } from "react-promise-tracker";
-import api from "./components/api";
+import { api } from "./components/api";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
 import {
   parsePhoneNumber,

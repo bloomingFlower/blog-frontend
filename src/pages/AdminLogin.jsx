@@ -11,7 +11,7 @@ import backgroundImage from "@img/background2.webp";
 import { AuthContext } from "./components/AuthContext";
 import DeleteAccountButton from "./components/DeleteAccountButton";
 import { trackPromise } from "react-promise-tracker";
-import api from "./components/api";
+import { api } from "./components/api";
 import { FaUser, FaLock } from "react-icons/fa";
 import { usePromiseTracker } from "react-promise-tracker";
 

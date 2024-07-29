@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import api from "./api";
+import { api } from "./api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";

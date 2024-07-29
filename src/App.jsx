@@ -4,7 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingIndicator from "./pages/components/LoadingIndicator";
 import { AuthProvider, AuthContext } from "./pages/components/AuthContext";
-import api from "./pages/components/api";
+import { api } from "./pages/components/api";
 
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";

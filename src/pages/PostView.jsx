@@ -1,7 +1,7 @@
 // PostView.jsx
 import React, { useEffect, useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "./components/api";
+import { api } from "./components/api";
 import { AuthContext } from "./components/AuthContext";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";

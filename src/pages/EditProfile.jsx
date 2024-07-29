@@ -5,7 +5,7 @@ import { isEqual } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 import backgroundImage from "@img/background2.webp";
 import { trackPromise } from "react-promise-tracker";
-import api from "./components/api";
+import { api } from "./components/api";
 import { FaPhone } from "react-icons/fa";
 import { isValidPhoneNumber, getExampleNumber } from "libphonenumber-js/max";
 import examples from "libphonenumber-js/examples.mobile.json";
