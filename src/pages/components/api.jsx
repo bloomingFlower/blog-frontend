@@ -78,27 +78,27 @@ const api2 = axios.create({
 });
 
 // api2에 대한 인터셉터 설정 (필요한 경우)
-api2.interceptors.request.use(async (config) => {
-  const token = sessionStorage.getItem("jwt");
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
-  config.metadata = { startTime: new Date() }; // 요청 시작 시간 기록
-  config.cancelToken = new axios.CancelToken(
-    (cancel) => (config.canceller = cancel)
-  );
-  return config;
-});
+// api2.interceptors.request.use(async (config) => {
+//   const token = sessionStorage.getItem("jwt");
+//   if (token) {
+//     config.headers["Authorization"] = `Bearer ${token}`;
+//   }
+//   config.metadata = { startTime: new Date() }; // 요청 시작 시간 기록
+//   config.cancelToken = new axios.CancelToken(
+//     (cancel) => (config.canceller = cancel)
+//   );
+//   return config;
+// });
 
-api2.interceptors.response.use(
-  async (response) => {
-    // api2에 대한 응답 처리 로직
-    return response;
-  },
-  async (error) => {
-    // api2에 대한 에러 처리 로직
-    return Promise.reject(error);
-  }
-);
+// api2.interceptors.response.use(
+//   async (response) => {
+//     // api2에 대한 응답 처리 로직
+//     return response;
+//   },
+//   async (error) => {
+//     // api2에 대한 에러 처리 로직
+//     return Promise.reject(error);
+//   }
+// );
 
 export { api, api2 };

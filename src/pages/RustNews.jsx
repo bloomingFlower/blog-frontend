@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import BitcoinPrice from "./components/BitcoinPrice";
-import backgroundImage from "@img/background2.webp";
+import backgroundImage1 from "@img/background.webp";
+import backgroundImage2 from "@img/background2.webp";
 import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import { api2 } from "./components/api";
@@ -21,21 +22,29 @@ const sanitizeHTML = (html) => {
 function RustNews() {
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [pagingState, setPagingState] = useState(null);
+  const [backgroundIndex, setBackgroundIndex] = useState(0);
+
+  const backgrounds = [backgroundImage1, backgroundImage2];
 
   useEffect(() => {
     fetchNews();
-  }, [page]);
+  }, []);
 
   const fetchNews = async () => {
     try {
-      const response = await api2.get(
-        `/api/v2/hnstories?page=${page}&limit=10`
-      );
+      const response = await api2.get('/api/v2/hnstories', {
+        params: {
+          page_size: 10,
+          paging_state: pagingState
+        }
+      });
+
       if (response.data.data.length > 0) {
         setNews((prevNews) => [...prevNews, ...response.data.data]);
-        setHasMore(response.data.data.length === 10);
+        setHasMore(!!response.data.next_paging_state);
+        setPagingState(response.data.next_paging_state);
       } else {
         setHasMore(false);
       }
@@ -48,7 +57,8 @@ function RustNews() {
 
   const loadMore = () => {
     if (!isLoading && hasMore) {
-      setPage((prevPage) => prevPage + 1);
+      fetchNews();
+      setBackgroundIndex((prevIndex) => (prevIndex + 1) % backgrounds.length);
     }
   };
 
@@ -66,8 +76,8 @@ function RustNews() {
 
   return (
     <div
-      className="min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      className="min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out"
+      style={{ backgroundImage: `url(${backgrounds[backgroundIndex]})` }}
     >
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
@@ -97,11 +107,18 @@ function RustNews() {
                     </a>
                   </h2>
                   <p className="text-sm sm:text-base text-gray-600 mb-4">
-                    {item.points} points | {item.num_comments} comments
+                    {item.points} points
                   </p>
+                  {item.story_text && (
+                    <div
+                      className="text-sm text-gray-700 mb-4 overflow-hidden"
+                      style={{ maxHeight: '100px' }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(item.story_text) }}
+                    />
+                  )}
                   <div className="flex justify-between items-center text-xs sm:text-sm text-gray-500">
                     <span>Author: {item.author}</span>
-                    <span>Published: {formatDate(item.created_at)}</span>
+                    <span>{formatDate(item.created_at)}</span>
                   </div>
                 </div>
               </div>
@@ -114,10 +131,20 @@ function RustNews() {
           <div className="flex justify-center mt-8">
             <button
               onClick={loadMore}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 animate-pulse"
               disabled={isLoading}
             >
-              {isLoading ? "Loading..." : "Load More"}
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading...
+                </span>
+              ) : (
+                "Load More Rust News"
+              )}
             </button>
           </div>
         )}
