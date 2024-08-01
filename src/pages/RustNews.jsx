@@ -118,7 +118,6 @@ function RustNews() {
                   )}
                   <div className="flex justify-between items-center text-xs sm:text-sm text-gray-500">
                     <span>Author: {item.author}</span>
-                    <span>{formatDate(item.created_at)}</span>
                   </div>
                 </div>
               </div>
