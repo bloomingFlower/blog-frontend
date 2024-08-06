@@ -6,7 +6,8 @@ import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import he from "he";
 import LoadingIndicator from "./components/LoadingIndicator";
-import { FaRegSadTear } from "react-icons/fa";
+import { FaRegSadTear, FaRegCalendarAlt, FaRegClock, FaServer } from "react-icons/fa";
+import { FaGolang } from "react-icons/fa6";
 
 const formatDate = (seconds) => {
   return new Date(seconds * 1000).toLocaleDateString("en-US", {
@@ -117,9 +118,18 @@ function Scrap() {
     >
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 py-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center text-white">
-            Bookmarked Articles
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-white mb-4">
+            gRPC-Powered Bookmark Aggregator
           </h1>
+          <div className="bg-white bg-opacity-80 rounded-lg p-4 flex items-center justify-center">
+            <div className="flex items-center justify-center mb-2">
+              <FaServer className="text-green-500 mr-2" />
+              <FaGolang className="text-blue-500 mr-2" />
+            </div>
+            <p className="text-sm text-gray-700">
+              This page leverages gRPC (Go) for efficient, low-latency communication between the client and server, enabling real-time bookmark synchronization and retrieval.
+            </p>
+          </div>
         </div>
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
@@ -152,11 +162,13 @@ function Scrap() {
                     }}
                   />
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs sm:text-sm text-gray-500">
-                    <span className="mb-1 sm:mb-0">
-                      Published: {formatDate(post.publishedat.seconds)}
+                    <span className="mb-1 sm:mb-0 hidden sm:inline-flex items-center">
+                      <FaRegCalendarAlt className="mr-1" />
+                      {formatDate(post.publishedat.seconds)}
                     </span>
-                    <span>
-                      Last updated: {formatDate(post.updatedat.seconds)}
+                    <span className="inline-flex items-center">
+                      <FaRegClock className="mr-1" />
+                      {formatDate(post.updatedat.seconds)}
                     </span>
                   </div>
                 </div>

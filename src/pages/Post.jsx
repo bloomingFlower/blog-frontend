@@ -6,8 +6,10 @@ import { api } from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
 import SearchPost from "./components/SearchPost";
-import { FaRegSadTear } from "react-icons/fa";
 import LoadingIndicator from "./components/LoadingIndicator";
+import { FaRegSadTear, FaServer } from "react-icons/fa";
+import { FaGolang } from "react-icons/fa6";
+
 
 function Post() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -55,7 +57,7 @@ function Post() {
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => {}, [isUploadModalOpen]);
+  useEffect(() => { }, [isUploadModalOpen]);
 
   const fetchPosts = useCallback(async (pageNum) => {
     setIsLoading(true);
@@ -181,11 +183,10 @@ function Post() {
               key={pageNumber}
               onClick={() => handlePageChange(pageNumber)}
               disabled={isLoading}
-              className={`w-8 h-8 rounded-full ${
-                pageNumber === page
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`w-8 h-8 rounded-full ${pageNumber === page
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {pageNumber}
             </button>
@@ -252,8 +253,17 @@ function Post() {
               </div>
             )}
             <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
-              Posts
+              Go-Powered RESTful Post Management System
             </h1>
+            <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-center mb-2">
+                <FaServer className="text-green-500 mr-2" />
+                <FaGolang className="text-blue-500 mr-2" />
+              </div>
+              <p className="text-sm text-gray-700 text-center">
+                This robust post management system is built with Go, implementing RESTful APIs for seamless CRUD operations and efficient data handling.
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
               <div className="w-full mb-4 sm:mb-0 sm:mr-4">
                 <SearchPost setSearchResults={setSearchResults} />
@@ -279,9 +289,8 @@ function Post() {
                 {(searchResults.length > 0 ? searchResults : posts).map(
                   (post) => (
                     <div
-                      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 ${
-                        post.hidden ? "opacity-50" : ""
-                      }`}
+                      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 ${post.hidden ? "opacity-50" : ""
+                        }`}
                       onClick={() => handlePostClick(post.id)}
                       key={post.id}
                     >
@@ -317,14 +326,14 @@ function Post() {
                         </div>
                         <p className="text-xs text-gray-500">
                           {post.created_at === "0001-01-01T00:00:00Z" ||
-                          (post.updated_at &&
-                            post.updated_at !== post.created_at)
+                            (post.updated_at &&
+                              post.updated_at !== post.created_at)
                             ? `Updated at ${new Date(
-                                post.updated_at
-                              ).toLocaleString()}`
+                              post.updated_at
+                            ).toLocaleString()}`
                             : `Created at ${new Date(
-                                post.created_at
-                              ).toLocaleString()}`}
+                              post.created_at
+                            ).toLocaleString()}`}
                         </p>
                       </div>
                     </div>

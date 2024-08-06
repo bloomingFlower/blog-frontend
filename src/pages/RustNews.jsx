@@ -5,15 +5,7 @@ import backgroundImage2 from "@img/background2.webp";
 import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import { api2 } from "./components/api";
-import { FaRegSadTear } from "react-icons/fa";
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
+import { FaRegSadTear, FaBolt, FaDatabase, FaRust } from "react-icons/fa";
 
 const sanitizeHTML = (html) => {
   return DOMPurify.sanitize(html);
@@ -81,8 +73,18 @@ function RustNews() {
     >
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
-          Rust News from Hacker News
+          Rust-Powered News Aggregator
         </h1>
+        <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-center mb-2">
+            <FaRust className="text-orange-500 mr-2" />
+            <FaBolt className="text-yellow-500 mr-2" />
+            <FaDatabase className="text-blue-500 mr-2" />
+          </div>
+          <p className="text-sm text-gray-700 text-center">
+            This high-performance news aggregator is built with Rust, utilizing REST APIs for data retrieval, Apache Kafka for real-time event streaming, ScyllaDB for scalable storage, and Redis for lightning-fast caching.
+          </p>
+        </div>
         <BitcoinPrice />
         {isLoading && news.length === 0 ? (
           <div className="flex justify-center items-center h-64">

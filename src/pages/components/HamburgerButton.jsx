@@ -111,28 +111,28 @@ function HamburgerButton() {
             to="/post"
             onClick={() => setIsOpen(false)}
           >
-            Post(Go-REST)
+            RESTful Post Manager (Go)
           </Link>
           <Link
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/scrap"
             onClick={() => setIsOpen(false)}
           >
-            Scrap(Go-gRPC)
+            gRPC Bookmark Aggregator (Go)
           </Link>
           <Link
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/rust-news"
             onClick={() => setIsOpen(false)}
           >
-            Rust News(Rust-Kafka+SyllaDB)
+            Rust News Pipeline (Kafka+ScyllaDB+Redis)
           </Link>
           <Link
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/bitcoin-price"
             onClick={() => setIsOpen(false)}
           >
-            Bitcoin Price(Rust-Kafka+SSE)
+            Real-Time BTC Tracker (Rust+SSE+Kafka+Redis)
           </Link>
           {isLoggedIn ? (
             <>
