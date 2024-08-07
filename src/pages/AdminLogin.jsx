@@ -5,18 +5,19 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import backgroundImage from "@img/background2.webp";
 import { AuthContext } from "./components/AuthContext";
 import DeleteAccountButton from "./components/DeleteAccountButton";
 import { trackPromise } from "react-promise-tracker";
 import { api } from "./components/api";
-import { FaUser, FaLock } from "react-icons/fa";
+import { FaUser, FaLock, FaGithub, FaEnvelope } from "react-icons/fa";
 import { usePromiseTracker } from "react-promise-tracker";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [rememberMe, setRememberMe] = useState(false);
   const [username, setUsername] = useState("");
@@ -207,6 +208,85 @@ const AdminLogin = () => {
     }
   }, [username, password]);
 
+  // GitHub login handler
+  const handleGitHubLogin = async () => {
+    try {
+      // Request GitHub login URL
+      const response = await api.get('/api/v1/auth/github/login');
+
+      // Check if the URL exists
+      if (response.data && response.data.url) {
+        // Open a popup window
+        const width = 600;
+        const height = 700;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+
+        const popup = window.open(
+          response.data.url,
+          'GitHub Login',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+
+        // Detect if the popup window is closed
+        const checkPopup = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkPopup);
+            handleGithubCallback();
+          }
+        }, 1000);
+      } else {
+        // Handle error if the URL is not found
+        toast.error("Failed to receive GitHub authentication URL.");
+      }
+    } catch (error) {
+      // Log detailed error information
+      console.error("GitHub login error:", error);
+
+      // Display more detailed error message to the user
+      if (error.response) {
+        toast.error(`GitHub login error: ${error.response.data.message || error.response.statusText}`);
+      } else if (error.request) {
+        toast.error("No response from the server. Please check your network connection.");
+      } else {
+        toast.error(`GitHub login error: ${error.message}`);
+      }
+    }
+  };
+
+  // Handle GitHub callback
+  const handleGithubCallback = async () => {
+    try {
+      // Check temporary stored token and user information in local storage
+      const token = localStorage.getItem('github_temp_token');
+      const userInfo = localStorage.getItem('github_temp_user');
+
+      if (token && userInfo) {
+        // Delete information from temporary storage
+        localStorage.removeItem('github_temp_token');
+        localStorage.removeItem('github_temp_user');
+
+        // Save information to session storage
+        sessionStorage.setItem('jwt', token);
+        sessionStorage.setItem('user', userInfo);
+        const user = JSON.parse(userInfo);
+        sessionStorage.setItem('username', user.first_name || user.login);
+        sessionStorage.setItem('isLoggedIn', 'true');
+
+        setUsername(user.first_name || user.login);
+        setIsLoggedIn(true);
+
+        toast.success('GitHub login successful!');
+        navigate('/');
+      } else {
+        toast.error('Failed to receive GitHub login information.');
+      }
+    } catch (error) {
+      console.error('Error during GitHub login callback:', error);
+      toast.error('An error occurred while processing GitHub login.');
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8"
@@ -355,14 +435,31 @@ const AdminLogin = () => {
                   </button>
                 </div>
               </form>
-              <div className="text-sm text-center">
-                <a
-                  href="/signup"
-                  className="font-medium text-indigo-6000 hover:text-indigo-500"
-                  aria-label="Don't have an account? Sign up"
-                >
-                  Don't have an account? Sign up
-                </a>
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-gray-100 text-gray-500">Sign up with</span>
+                  </div>
+                </div>
+                <div className="mt-6 space-y-4">
+                  <button
+                    onClick={() => window.location.href = '/signup'}
+                    className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <FaEnvelope className="w-5 h-5 mr-2" />
+                    Sign up with Email
+                  </button>
+                  <button
+                    onClick={handleGitHubLogin}
+                    className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-gray-800 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    <FaGithub className="w-5 h-5 mr-2" />
+                    Continue with GitHub
+                  </button>
+                </div>
               </div>
             </>
           )}
