@@ -185,7 +185,7 @@ function BitcoinPrice() {
         </p>
       </div>
       <p className="text-xs md:text-sm text-gray-500 mt-2">
-        Note: Updates may be infrequent due to my free API license restrictions.
+        Note: Due to my free API license restrictions, data is updated every 4.5 to 5 minutes.
       </p>
     </div>
   );

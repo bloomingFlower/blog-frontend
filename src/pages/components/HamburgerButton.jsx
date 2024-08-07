@@ -82,7 +82,7 @@ function HamburgerButton() {
       </button>
       {isOpen && (
         <div
-          className="menu absolute top-full right-0 w-48 bg-white shadow-lg rounded-lg overflow-hidden z-50"
+          className="menu absolute top-full right-0 w-51 bg-white shadow-lg rounded-lg overflow-hidden z-50"
           onMouseOut={handleMouseOut}
         >
           <Link
@@ -111,21 +111,21 @@ function HamburgerButton() {
             to="/post"
             onClick={() => setIsOpen(false)}
           >
-            RESTful Post Manager (Go)
+            RESTful Post Manager (Go+Restful+MySQL)
           </Link>
           <Link
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/scrap"
             onClick={() => setIsOpen(false)}
           >
-            gRPC Bookmark Aggregator (Go)
+            gRPC Bookmark Aggregator (Go+gRPC+PostgreSQL)
           </Link>
           <Link
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             to="/rust-news"
             onClick={() => setIsOpen(false)}
           >
-            Rust News Pipeline (Kafka+ScyllaDB+Redis)
+            Restful Rust News Pipeline (Rust+Kafka+ScyllaDB+Redis)
           </Link>
           <Link
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

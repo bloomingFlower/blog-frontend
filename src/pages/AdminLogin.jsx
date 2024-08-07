@@ -76,6 +76,17 @@ const AdminLogin = () => {
     }
   }, [countdown, navigate]);
 
+  useEffect(() => {
+    // Check if there's a remembered login
+    const rememberedLogin = localStorage.getItem('rememberedLogin');
+    if (rememberedLogin) {
+      const { username, password } = JSON.parse(rememberedLogin);
+      setUsername(username);
+      setPassword(password);
+      setRememberMe(true);
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -126,13 +137,11 @@ const AdminLogin = () => {
         sessionStorage.setItem("username", data.user.first_name);
 
         if (rememberMe) {
-          // 로컬 스토리지에 로그인 정보 저장
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("username", data.user.first_name);
+          // Save login info to localStorage if "Remember me" is checked
+          localStorage.setItem('rememberedLogin', JSON.stringify({ username, password }));
         } else {
-          // 세션 스토리지에 로그인 정보 저장
-          sessionStorage.setItem("isLoggedIn", "true");
-          sessionStorage.setItem("username", data.user.first_name);
+          // Clear remembered login if not checked
+          localStorage.removeItem('rememberedLogin');
         }
 
         setUsername(data.user.first_name); // username 상태 설정
@@ -155,8 +164,7 @@ const AdminLogin = () => {
           });
         } else {
           toast.error(
-            `An error occurred: ${
-              error.response.data.message || "Unknown error"
+            `An error occurred: ${error.response.data.message || "Unknown error"
             }`,
             {
               toastId: "generalError",
@@ -251,9 +259,8 @@ const AdminLogin = () => {
                       name="username"
                       type="text"
                       required
-                      className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                        isEmailInvalid ? "border-red-500" : "border-gray-300"
-                      } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
+                      className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${isEmailInvalid ? "border-red-500" : "border-gray-300"
+                        } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
                       placeholder="Email address"
                       value={username}
                       onChange={handleInputChange}
@@ -301,7 +308,7 @@ const AdminLogin = () => {
                     </label>
                   </div>
 
-                  <div className="text-sm">
+                  {/* <div className="text-sm">
                     <a
                       href="#"
                       className="font-medium text-indigo-6000 hover:text-indigo-500"
@@ -309,7 +316,7 @@ const AdminLogin = () => {
                     >
                       Forgot your password?
                     </a>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div>
