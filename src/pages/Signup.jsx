@@ -165,9 +165,8 @@ const Signup = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 maxLength={90}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  emailExists ? "border-red-500" : "border-gray-300"
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10`}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${emailExists ? "border-red-500" : "border-gray-300"
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10`}
                 placeholder="Email address"
                 ref={emailRef}
                 required
@@ -227,11 +226,10 @@ const Signup = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 maxLength={50}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  password !== confirmPassword && password && confirmPassword
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${password !== confirmPassword && password && confirmPassword
                     ? "border-red-500"
                     : "border-gray-300"
-                } placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10`}
+                  } placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10`}
                 placeholder="Confirm Password"
                 required
                 aria-label="Confirm Password"
@@ -278,7 +276,7 @@ const Signup = () => {
         </form>
         <div className="text-sm text-center">
           <a
-            href="/admin-login"
+            href="/login"
             className="font-medium text-indigo-600 hover:text-indigo-500"
           >
             Already have an account? Log in

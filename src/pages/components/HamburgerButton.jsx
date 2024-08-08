@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
+import Logout from './Logout';
 
 function HamburgerButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,17 +17,11 @@ function HamburgerButton() {
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    sessionStorage.clear();
-    navigate("/");
-  };
-
   useEffect(() => {
     if (clickTimes.length === 3) {
       const timeDifference = clickTimes[2] - clickTimes[0];
       if (timeDifference <= 500) {
-        navigate("/admin-login");
+        navigate("/login");
       }
       setClickTimes([]);
     }
@@ -143,17 +138,18 @@ function HamburgerButton() {
               >
                 Edit Profile
               </Link>
-              <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={handleLogout}
+              <Link
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                to="/logout"
+                onClick={() => setIsOpen(false)}
               >
                 Logout
-              </button>
+              </Link>
             </>
           ) : (
             <Link
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              to="/admin-login"
+              to="/login"
               onClick={() => setIsOpen(false)}
             >
               Login

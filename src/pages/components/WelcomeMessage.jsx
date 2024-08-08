@@ -4,20 +4,24 @@ function WelcomeMessage({ username }) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(true);
 
-  let fullMessage = "Welcome to Over Engineered blog :)";
-  if (username) {
-    fullMessage = `Welcome to Over Engineered blog, ${username} :)`;
-  }
-
   useEffect(() => {
-    if (message.length < fullMessage.length) {
-      setTimeout(() => {
-        setMessage(fullMessage.slice(0, message.length + 1));
-      }, 100);
-    } else {
-      setIsTyping(false);
-    }
-  }, [message, fullMessage]);
+    const fullMessage = username
+      ? `Welcome to Over Engineered blog, ${username} :)`
+      : "Welcome to Over Engineered blog :)";
+
+    let currentIndex = 0;
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= fullMessage.length) {
+        setMessage(fullMessage.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTyping(false);
+      }
+    }, 100);
+
+    return () => clearInterval(typingInterval);
+  }, [username]);
 
   return (
     <h1 className="flex text-2xl whitespace-nowrap overflow-hidden">

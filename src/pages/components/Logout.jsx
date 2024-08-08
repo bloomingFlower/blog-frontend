@@ -7,12 +7,12 @@ const Logout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 로그아웃 처리
+    // Logout processing
     sessionStorage.clear();
     setIsLoggedIn(false);
 
-    // 로그아웃 처리 후 홈 페이지로 리다이렉트
-    navigate("/");
+    // Redirect to the home page
+    navigate("/", { replace: true });
   }, [navigate, setIsLoggedIn]);
 
   return null;

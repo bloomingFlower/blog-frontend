@@ -19,7 +19,7 @@ const Scrap = lazy(() => import("./pages/Scrap"));
 const RustNews = lazy(() => import("./pages/RustNews"));
 const BitcoinPricePage = lazy(() => import("./pages/BitcoinPricePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const Login = lazy(() => import("./pages/Login"));
 const Logout = lazy(() => import("./pages/components/Logout"));
 const Signup = lazy(() => import("./pages/Signup"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
@@ -28,6 +28,7 @@ const HamburgerButton = lazy(() =>
   import("./pages/components/HamburgerButton")
 );
 const SearchResults = lazy(() => import("./pages/components/SearchResults"));
+const GithubCallback = lazy(() => import("./pages/components/GithubCallback"));
 const SystemStack = lazy(() => import("./pages/SystemStack"));
 const ActivityMonitor = lazy(() =>
   import("./pages/components/ActivityMonitor")
@@ -173,7 +174,8 @@ function App() {
                   <Route path="/rust-news" element={<RustNews />} />
                   <Route path="/bitcoin-price" element={<BitcoinPricePage />} />
                   <Route path="/about" element={<About />} />
-                  <Route path="/admin-login" element={<AdminLogin />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/github-callback" element={<GithubCallback />} />
                   <Route path="/logout" element={<Logout />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/edit-profile" element={<EditProfile />} />

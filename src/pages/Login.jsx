@@ -15,7 +15,7 @@ import { api } from "./components/api";
 import { FaUser, FaLock, FaGithub, FaEnvelope } from "react-icons/fa";
 import { usePromiseTracker } from "react-promise-tracker";
 
-const AdminLogin = () => {
+const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -228,6 +228,54 @@ const AdminLogin = () => {
     }
   };
 
+  // GitHub callback handling
+  useEffect(() => {
+    const handleGitHubCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const errorDescription = urlParams.get('error_description');
+
+      if (error) {
+        console.error('GitHub login error:', error, errorDescription);
+        toast.error(`GitHub login error: ${errorDescription || error}`);
+        setShowCountdown(true);
+        setIsCountdownActive(true);
+        return;
+      }
+
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+
+      if (code && state) {
+        try {
+          const response = await api.get(`/api/v1/auth/github/callback?code=${code}&state=${state}`);
+          const { token, user } = response.data;
+
+          if (token && user) {
+            // Save information to session storage
+            sessionStorage.setItem('jwt', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
+            sessionStorage.setItem('username', user.first_name || user.login);
+            sessionStorage.setItem('isLoggedIn', 'true');
+
+            setUsername(user.first_name || user.login);
+            setIsLoggedIn(true);
+
+            toast.success('GitHub login successful!');
+            navigate('/');  // Redirect to the main page
+          } else {
+            toast.error('Failed to receive GitHub login information.');
+          }
+        } catch (error) {
+          console.error('Error handling GitHub callback:', error);
+          toast.error('An error occurred while handling the GitHub callback.');
+        }
+      }
+    };
+
+    handleGitHubCallback();
+  }, [location.search]);
+
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8"
@@ -410,4 +458,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin;
+export default Login;
