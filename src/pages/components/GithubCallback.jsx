@@ -59,9 +59,9 @@ const GitHubCallback = () => {
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600">
-      <div className="text-center">
+      <div className="flex flex-col items-center justify-center text-center">
         <LoadingIndicator />
-        <p className="text-white text-xl font-semibold">Processing GitHub login...</p>
+        <p className="text-white text-xl font-semibold mt-4">Processing GitHub login...</p>
         <p className="text-white text-sm mt-2">Please wait a moment.</p>
       </div>
     </div>
