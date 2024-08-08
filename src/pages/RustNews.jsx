@@ -28,7 +28,7 @@ function RustNews() {
     try {
       const response = await api2.get('/api/v2/hnstories', {
         params: {
-          page_size: 10,
+          page_size: 12,
           paging_state: pagingState
         }
       });

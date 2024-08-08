@@ -8,7 +8,7 @@ const LoadingIndicator = () => {
         // Set a timeout to show the loading indicator after 0.5 seconds
         const timer = setTimeout(() => {
             setIsVisible(true);
-        }, 500);
+        }, 700);
 
         // Clean up the timer when the component unmounts
         return () => clearTimeout(timer);

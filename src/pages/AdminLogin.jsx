@@ -22,7 +22,7 @@ const AdminLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [storedUsername, setStoredUsername] = useState(""); // 로그인한 사용자의 아이디를 저장할 상태 생성
+  const [storedUsername, setStoredUsername] = useState(""); // Generate a state to store the username of the logged-in user
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext); // get setIsLoggedIn function
   const [inputCompleted, setInputCompleted] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState("white");
@@ -31,6 +31,8 @@ const AdminLogin = () => {
   const [isInputActive, setIsInputActive] = useState(false);
   const shouldNavigate = useRef(false);
   const { promiseInProgress } = usePromiseTracker();
+  const [showCountdown, setShowCountdown] = useState(true);
+  const [isCountdownActive, setIsCountdownActive] = useState(true);
 
   const resetCountdown = useCallback(() => {
     setCountdown(10);
@@ -56,7 +58,7 @@ const AdminLogin = () => {
 
   useEffect(() => {
     let timer;
-    if (!isLoggedIn && !isInputActive) {
+    if (!isLoggedIn && !isInputActive && isCountdownActive) {
       timer = setInterval(() => {
         setCountdown((prevCount) => {
           if (prevCount === 1) {
@@ -69,7 +71,7 @@ const AdminLogin = () => {
     }
 
     return () => clearInterval(timer);
-  }, [isLoggedIn, isInputActive]);
+  }, [isLoggedIn, isInputActive, isCountdownActive]);
 
   useEffect(() => {
     if (shouldNavigate.current) {
@@ -190,7 +192,7 @@ const AdminLogin = () => {
 
   const handleBlur = (e) => {
     setInputCompleted(true);
-    setBackgroundColor("yellow"); // 원하는 색상으로 변경
+    setBackgroundColor("yellow");
   };
 
   const handleInputChange = useCallback((e) => {
@@ -210,82 +212,69 @@ const AdminLogin = () => {
 
   // GitHub login handler
   const handleGitHubLogin = async () => {
+    setShowCountdown(false);
+    setIsCountdownActive(false);
     try {
-      // Request GitHub login URL
       const response = await api.get('/api/v1/auth/github/login');
-
-      // Check if the URL exists
       if (response.data && response.data.url) {
-        // Open a popup window
-        const width = 600;
-        const height = 700;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-
-        const popup = window.open(
-          response.data.url,
-          'GitHub Login',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
-
-        // Detect if the popup window is closed
-        const checkPopup = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkPopup);
-            handleGithubCallback();
-          }
-        }, 1000);
+        // Redirect to GitHub login page in the current window
+        window.location.href = response.data.url;
       } else {
-        // Handle error if the URL is not found
         toast.error("Failed to receive GitHub authentication URL.");
       }
     } catch (error) {
-      // Log detailed error information
       console.error("GitHub login error:", error);
-
-      // Display more detailed error message to the user
-      if (error.response) {
-        toast.error(`GitHub login error: ${error.response.data.message || error.response.statusText}`);
-      } else if (error.request) {
-        toast.error("No response from the server. Please check your network connection.");
-      } else {
-        toast.error(`GitHub login error: ${error.message}`);
-      }
+      toast.error(`GitHub login error: ${error.message}`);
     }
   };
 
-  // Handle GitHub callback
-  const handleGithubCallback = async () => {
-    try {
-      // Check temporary stored token and user information in local storage
-      const token = localStorage.getItem('github_temp_token');
-      const userInfo = localStorage.getItem('github_temp_user');
+  // GitHub callback handling
+  useEffect(() => {
+    const handleGitHubCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const errorDescription = urlParams.get('error_description');
 
-      if (token && userInfo) {
-        // Delete information from temporary storage
-        localStorage.removeItem('github_temp_token');
-        localStorage.removeItem('github_temp_user');
-
-        // Save information to session storage
-        sessionStorage.setItem('jwt', token);
-        sessionStorage.setItem('user', userInfo);
-        const user = JSON.parse(userInfo);
-        sessionStorage.setItem('username', user.first_name || user.login);
-        sessionStorage.setItem('isLoggedIn', 'true');
-
-        setUsername(user.first_name || user.login);
-        setIsLoggedIn(true);
-
-        toast.success('GitHub login successful!');
-        navigate('/');
-      } else {
-        toast.error('Failed to receive GitHub login information.');
+      if (error) {
+        console.error('GitHub login error:', error, errorDescription);
+        toast.error(`GitHub login error: ${errorDescription || error}`);
+        setShowCountdown(true);
+        setIsCountdownActive(true);
+        return;
       }
-    } catch (error) {
-      console.error('Error during GitHub login callback:', error);
-      toast.error('An error occurred while processing GitHub login.');
-    }
-  };
+
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+
+      if (code && state) {
+        try {
+          const response = await api.get(`/api/v1/auth/github/callback?code=${code}&state=${state}`);
+          const { token, user } = response.data;
+
+          if (token && user) {
+            // Save information to session storage
+            sessionStorage.setItem('jwt', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
+            sessionStorage.setItem('username', user.first_name || user.login);
+            sessionStorage.setItem('isLoggedIn', 'true');
+
+            setUsername(user.first_name || user.login);
+            setIsLoggedIn(true);
+
+            toast.success('GitHub login successful!');
+            navigate('/');  // Redirect to the main page
+          } else {
+            toast.error('Failed to receive GitHub login information.');
+          }
+        } catch (error) {
+          console.error('Error handling GitHub callback:', error);
+          toast.error('An error occurred while handling the GitHub callback.');
+        }
+      }
+    };
+
+    handleGitHubCallback();
+  }, [location.search]);
 
   return (
     <div
@@ -321,7 +310,7 @@ const AdminLogin = () => {
               <h2 className="mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
                 Sign in
               </h2>
-              {!isInputActive && (
+              {!isInputActive && showCountdown && (
                 <p className="mt-2 text-center text-sm text-gray-600">
                   Auto-redirecting to home page in {countdown} seconds.
                 </p>
