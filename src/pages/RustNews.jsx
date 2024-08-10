@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import BitcoinPrice from "./components/BitcoinPrice";
 import backgroundImage1 from "@img/background.webp";
 import backgroundImage2 from "@img/background2.webp";
@@ -17,12 +17,22 @@ function RustNews() {
   const [hasMore, setHasMore] = useState(true);
   const [pagingState, setPagingState] = useState(null);
   const [backgroundIndex, setBackgroundIndex] = useState(0);
+  const newContentRef = useRef(null);
 
   const backgrounds = [backgroundImage1, backgroundImage2];
 
   useEffect(() => {
     fetchNews();
   }, []);
+
+  useEffect(() => {
+    if (newContentRef.current && news.length > 12) {
+      newContentRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [news]);
 
   const fetchNews = async () => {
     try {
@@ -96,9 +106,10 @@ function RustNews() {
           </div>
         ) : news.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {news.map((item) => (
+            {news.map((item, index) => (
               <div
                 key={item.id}
+                ref={index === news.length - 12 ? newContentRef : null}
                 className="bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105"
               >
                 <div className="p-4 sm:p-6">
