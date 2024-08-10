@@ -32,13 +32,18 @@ function RustNews() {
   const [clickPattern, setClickPattern] = useState([]);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const danceIntervalRef = useRef(null);
+  const [touchPattern, setTouchPattern] = useState([]);
 
   const backgrounds = [backgroundImage1, backgroundImage2];
 
   useEffect(() => {
     fetchNews();
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("touchstart", handleTouchStart);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("touchstart", handleTouchStart);
+    };
   }, []);
 
   useEffect(() => {
@@ -53,6 +58,7 @@ function RustNews() {
   useEffect(() => {
     if (!showEasterEgg) {
       setClickPattern([]);
+      setTouchPattern([]);
     }
   }, [showEasterEgg]);
 
@@ -65,6 +71,30 @@ function RustNews() {
       top: scrollY > 300,
       bottom: scrollY < 300 && pageHeight > 300,
     });
+  };
+
+  const handleTouchStart = (event) => {
+    const touchY = event.touches[0].clientY;
+    const screenHeight = window.innerHeight;
+    const direction = touchY < screenHeight / 2 ? "top" : "bottom";
+
+    const newPattern = [...touchPattern, direction].slice(-6);
+    setTouchPattern(newPattern);
+
+    if (newPattern.join("") === "topbottomtopbottom") {
+      activateEasterEgg();
+    }
+  };
+
+  const activateEasterEgg = () => {
+    setShowEasterEgg(true);
+    setClickPattern([]);
+    setTouchPattern([]);
+    startDanceScroll();
+    setTimeout(() => {
+      setShowEasterEgg(false);
+      stopDanceScroll();
+    }, 3000);
   };
 
   const scrollToTop = () => {
@@ -83,13 +113,7 @@ function RustNews() {
     setClickPattern(newPattern);
 
     if (newPattern.join("") === "topbottomtopbottom") {
-      setShowEasterEgg(true);
-      setClickPattern([]); // 패턴 초기화
-      startDanceScroll();
-      setTimeout(() => {
-        setShowEasterEgg(false);
-        stopDanceScroll();
-      }, 3000);
+      activateEasterEgg();
     }
 
     if (direction === "top") {
