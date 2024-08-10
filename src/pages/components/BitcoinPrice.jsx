@@ -137,6 +137,19 @@ function BitcoinPrice() {
     }
   };
 
+  const renderPercentChange = (label, change) => {
+    const color = change >= 0 ? "text-green-500" : "text-red-500";
+    const arrow = change >= 0 ? "▲" : "▼";
+    return (
+      <div className="bg-blue-50 p-1 rounded">
+        <p className="font-semibold">{label}</p>
+        <span className={`${color} text-sm`}>
+          {arrow} {Math.abs(change).toFixed(2)}%
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="flex justify-center items-center h-full">
       <div className="bg-white bg-opacity-90 rounded-lg shadow-md p-3 max-w-sm w-full">
@@ -151,21 +164,16 @@ function BitcoinPrice() {
               {formatDate(bitcoinInfo.last_updated)}
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm mb-2">
-              <div className="bg-blue-50 p-1 rounded">
-                <p className="font-semibold">24h High</p>
-                <p>{formatPrice(bitcoinInfo.high_24h)}</p>
-              </div>
-              <div className="bg-blue-50 p-1 rounded">
-                <p className="font-semibold">24h Low</p>
-                <p>{formatPrice(bitcoinInfo.low_24h)}</p>
-              </div>
-              <div className="col-span-2 bg-gray-50 p-1 rounded">
-                <p className="font-semibold">24h Change</p>
-                {renderPriceChange(
-                  bitcoinInfo.price_change_24h,
-                  bitcoinInfo.price_change_percentage_24h
-                )}
-              </div>
+              {renderPercentChange("1h Change", bitcoinInfo.percent_change_1h)}
+              {renderPercentChange(
+                "24h Change",
+                bitcoinInfo.percent_change_24h
+              )}
+              {renderPercentChange("7d Change", bitcoinInfo.percent_change_7d)}
+              {renderPercentChange(
+                "30d Change",
+                bitcoinInfo.percent_change_30d
+              )}
             </div>
           </>
         ) : (
