@@ -5,7 +5,14 @@ import backgroundImage2 from "@img/background2.webp";
 import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import { api2 } from "./components/api";
-import { FaRegSadTear, FaBolt, FaDatabase, FaRust } from "react-icons/fa";
+import {
+  FaRegSadTear,
+  FaBolt,
+  FaDatabase,
+  FaRust,
+  FaArrowUp,
+  FaArrowDown,
+} from "react-icons/fa";
 
 const sanitizeHTML = (html) => {
   return DOMPurify.sanitize(html);
@@ -18,11 +25,20 @@ function RustNews() {
   const [pagingState, setPagingState] = useState(null);
   const [backgroundIndex, setBackgroundIndex] = useState(0);
   const newContentRef = useRef(null);
+  const [showScrollButtons, setShowScrollButtons] = useState({
+    top: false,
+    bottom: false,
+  });
+  const [clickPattern, setClickPattern] = useState([]);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const danceIntervalRef = useRef(null);
 
   const backgrounds = [backgroundImage1, backgroundImage2];
 
   useEffect(() => {
     fetchNews();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -33,6 +49,79 @@ function RustNews() {
       });
     }
   }, [news]);
+
+  useEffect(() => {
+    if (!showEasterEgg) {
+      setClickPattern([]);
+    }
+  }, [showEasterEgg]);
+
+  const handleScroll = () => {
+    const scrollY = window.scrollY;
+    const pageHeight =
+      document.documentElement.scrollHeight - window.innerHeight;
+
+    setShowScrollButtons({
+      top: scrollY > 300,
+      bottom: scrollY < 300 && pageHeight > 300,
+    });
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "smooth",
+    });
+  };
+
+  const handleScrollButtonClick = (direction) => {
+    const newPattern = [...clickPattern, direction].slice(-6);
+    setClickPattern(newPattern);
+
+    if (newPattern.join("") === "topbottomtopbottom") {
+      setShowEasterEgg(true);
+      setClickPattern([]); // 패턴 초기화
+      startDanceScroll();
+      setTimeout(() => {
+        setShowEasterEgg(false);
+        stopDanceScroll();
+      }, 3000);
+    }
+
+    if (direction === "top") {
+      scrollToTop();
+    } else {
+      scrollToBottom();
+    }
+  };
+
+  const startDanceScroll = () => {
+    if (danceIntervalRef.current) return;
+
+    let direction = 1;
+    const scrollAmount = 50;
+    const interval = 200;
+
+    danceIntervalRef.current = setInterval(() => {
+      window.scrollBy(0, direction * scrollAmount);
+      direction *= -1;
+    }, interval);
+  };
+
+  const stopDanceScroll = () => {
+    if (danceIntervalRef.current) {
+      clearInterval(danceIntervalRef.current);
+      danceIntervalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => stopDanceScroll();
+  }, []);
 
   const fetchNews = async () => {
     try {
@@ -78,8 +167,16 @@ function RustNews() {
 
   return (
     <div
-      className="min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out"
-      style={{ backgroundImage: `url(${backgrounds[backgroundIndex]})` }}
+      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out ${
+        showEasterEgg
+          ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+          : ""
+      }`}
+      style={
+        showEasterEgg
+          ? {}
+          : { backgroundImage: `url(${backgrounds[backgroundIndex]})` }
+      }
     >
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
@@ -180,6 +277,36 @@ function RustNews() {
                 "Load More Rust News"
               )}
             </button>
+          </div>
+        )}
+        <div className="fixed bottom-16 right-8 flex flex-col space-y-2">
+          {showScrollButtons.top && (
+            <button
+              onClick={() => handleScrollButtonClick("top")}
+              className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none opacity-60 hover:opacity-100"
+              aria-label="Scroll to top"
+            >
+              <FaArrowUp className="text-sm" />
+            </button>
+          )}
+
+          {showScrollButtons.bottom && (
+            <button
+              onClick={() => handleScrollButtonClick("bottom")}
+              className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none opacity-60 hover:opacity-100"
+              aria-label="Scroll to bottom"
+            >
+              <FaArrowDown className="text-sm" />
+            </button>
+          )}
+        </div>
+
+        {showEasterEgg && (
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-lg shadow-lg text-center">
+            <p className="text-xl font-bold text-purple-600">
+              Yay! You found an easter egg!
+            </p>
+            <p className="text-gray-600">Let's dance up and down...</p>
           </div>
         )}
       </div>
