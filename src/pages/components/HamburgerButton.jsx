@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
-import Logout from './Logout';
+import Logout from "./Logout";
 
 function HamburgerButton() {
   const [isOpen, setIsOpen] = useState(false);

@@ -9,7 +9,6 @@ import React, {
 import ReactQuill, { Quill } from "react-quill";
 import ImageUploader from "quill-image-uploader";
 import "quill-image-uploader/dist/quill.imageUploader.min.css";
-import CreatableSelect from "react-select/creatable";
 import "react-quill/dist/quill.snow.css";
 import Modal from "react-modal";
 import "tailwindcss/tailwind.css";
@@ -18,10 +17,16 @@ import { trackPromise } from "react-promise-tracker";
 import sanitizeHtml from "sanitize-html";
 import { toast } from "react-toastify";
 import DOMPurify from "dompurify";
+import {
+  DocumentIcon,
+  PhotoIcon,
+  VideoCameraIcon,
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 
 Quill.register("modules/imageUploader", ImageUploader);
 
-function PostUpload({ setIsUploadModalOpen, postId }) {
+function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   const [title, setTitle] = useState("");
   const [editorState, setEditorState] = useState("");
   const [file, setFile] = useState(null);
@@ -31,6 +36,12 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const quillRef = useRef(); // Quill 인스턴스에 접근하기 위한 ref
+  const fileInputRef = useRef(null);
+  const [fileName, setFileName] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const tagInputRef = useRef(null);
+  const [composing, setComposing] = useState(false);
+  const [lastAddedTag, setLastAddedTag] = useState("");
   // TODO : 이미지 리사이즈, 압축 기능 구현
 
   // DOMPurify 설정
@@ -120,10 +131,14 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
         if (response.data.data) {
           setTitle(response.data.data.title);
           setEditorState(response.data.data.content);
+          // 태그 처리 로직 수정
           setTags(
             response.data.data.tags
-              .split(",")
-              .map((tag) => ({ value: tag, label: tag })) || []
+              ? response.data.data.tags
+                  .split(",")
+                  .filter((tag) => tag.trim() !== "")
+                  .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
+              : []
           );
           setFile(response.data.data.file);
         } else {
@@ -202,7 +217,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
         if (response.status === 200) {
           toast.success("Post updated successfully");
           setIsUploadModalOpen(false);
-          window.location.reload();
+          refreshPosts(); // 게시물 목록 새로고침
         } else {
           toast.error("Failed to update post");
         }
@@ -218,7 +233,7 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
         if (response.status === 200) {
           toast.success("Post uploaded successfully");
           setIsUploadModalOpen(false);
-          window.location.reload();
+          refreshPosts(); // 게시물 목록 새로고침
         } else {
           toast.error("Failed to upload post");
         }
@@ -237,25 +252,43 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     setEditorState(content);
   };
 
-  const handleInputTag = useCallback(
-    (newValue, actionMeta) => {
-      if (actionMeta.action === "remove-value") {
-        setTags(newValue);
-      } else if (actionMeta.action === "create-option") {
-        const newTag = newValue[newValue.length - 1];
-        if (newTag.value.trim()) {
-          setTags([...tags, { ...newTag, value: newTag.value.trim() }]);
-        }
+  const handleTagInputChange = (e) => {
+    setTagInput(e.target.value);
+  };
+
+  const handleTagInputKeyDown = (e) => {
+    if (composing) return; // 조합 중일 때는 처리하지 않음
+
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      addTag();
+    } else if (e.key === "Backspace" && tagInput === "" && tags.length > 0) {
+      setTags(tags.slice(0, -1));
+    }
+  };
+
+  const addTag = () => {
+    let newTag = tagInput.trim();
+    if (newTag && newTag !== lastAddedTag) {
+      newTag = newTag.startsWith("#") ? newTag.slice(1) : newTag;
+      if (!tags.some((existingTag) => existingTag.value === newTag)) {
+        setTags([...tags, { value: newTag, label: newTag }]);
+        setLastAddedTag(newTag);
       }
-    },
-    [tags]
-  );
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags(tags.filter((tag) => tag.value !== tagToRemove));
+  };
 
   const handleClose = () => {
     if (isModified) {
       setIsConfirmModalOpen(true);
     } else {
       setIsUploadModalOpen(false);
+      refreshPosts(); // 모달이 닫힐 때 게시물 목록 새로고침
     }
   };
   const titleRef = useRef(null);
@@ -267,12 +300,30 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
     Modal.setAppElement("#root");
   }, []);
 
+  const getFileIcon = (fileType) => {
+    if (fileType.startsWith("image/")) return PhotoIcon;
+    if (fileType.startsWith("video/")) return VideoCameraIcon;
+    if (fileType === "application/pdf") return DocumentTextIcon;
+    return DocumentIcon;
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+    }
+  };
+
   return (
     <Modal
       isOpen={true}
-      onRequestClose={() => setIsUploadModalOpen(false)}
+      onRequestClose={() => {
+        setIsUploadModalOpen(false);
+        refreshPosts();
+      }}
       contentLabel="Post Upload"
-      className="w-11/12 max-w-4xl mx-auto my-4 bg-white rounded-lg shadow-xl overflow-auto"
+      className="w-11/12 max-w-4xl mx-auto my-4 bg-[#f8f5e6] rounded-lg shadow-2xl overflow-hidden"
       overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-2 sm:p-4"
       style={{
         content: {
@@ -281,117 +332,141 @@ function PostUpload({ setIsUploadModalOpen, postId }) {
         },
       }}
     >
-      <div className="p-3 sm:p-4 md:p-6 flex flex-col">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-center text-gray-800">
-          {postId ? "Edit Post" : "Upload a Post"}
-        </h2>
-        <input
-          ref={titleRef}
-          className="w-full mb-2 sm:mb-3 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 text-xs sm:text-sm"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="제목을 입력해주세요"
-          aria-label="Title"
-        />
-        <div className="mb-2 sm:mb-3 flex-grow" style={{ minHeight: "200px" }}>
-          <ReactQuill
-            ref={quillRef}
-            value={editorState}
-            onChange={(content, delta, source, editor) => {
-              const sanitizedContent = DOMPurify.sanitize(
-                editor.getHTML(),
-                purifyConfig
-              );
-              setEditorState(sanitizedContent);
-            }}
-            modules={modules}
-            theme="snow"
-            placeholder="내용을 입력해주세요"
-            className="bg-white rounded-lg h-full text-xs sm:text-sm"
-            aria-label="Content"
-          />
-        </div>
-        <div className="mb-2 sm:mb-3">
+      <div className="flex flex-col h-full">
+        <nav className="bg-[#e6e0cc] py-2 px-4">
+          <h2 className="text-xl font-bold text-center text-gray-800">
+            {postId ? "Edit Your Story" : "Share Your Story"}
+          </h2>
+        </nav>
+        <div className="p-6 flex-grow overflow-y-auto">
           <input
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 text-xs sm:text-sm"
-            type="file"
-            onChange={(e) => setFile(e.target.files[0])}
-            aria-label="File"
+            ref={titleRef}
+            className="w-full mb-4 p-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300 bg-transparent"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter a title"
+            aria-label="Title"
           />
-        </div>
-        <CreatableSelect
-          className="mb-3 sm:mb-4 text-xs sm:text-sm"
-          isMulti
-          placeholder={"# Include tags"}
-          aria-label="Tags"
-          onChange={handleInputTag}
-          options={tags.map((tag) => ({ value: tag.value, label: tag.label }))}
-          value={tags.map((tag) => ({ value: tag.value, label: tag.label }))}
-          styles={{
-            control: (provided) => ({
-              ...provided,
-              borderColor: "#e2e8f0",
-              "&:hover": {
-                borderColor: "#cbd5e0",
-              },
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              backgroundColor: "#ebf4ff",
-            }),
-            multiValueLabel: (provided) => ({
-              ...provided,
-              color: "#4a5568",
-            }),
-            multiValueRemove: (provided) => ({
-              ...provided,
-              color: "#4a5568",
-              "&:hover": {
-                backgroundColor: "#bee3f8",
-                color: "#2b6cb0",
-              },
-            }),
-            placeholder: (provided) => ({
-              ...provided,
-              fontSize: "0.75rem",
-              "@media (min-width: 640px)": {
-                fontSize: "0.875rem",
-              },
-            }),
-          }}
-        />
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <button
-            className={`w-full sm:w-1/2 py-2 px-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300 text-xs sm:text-sm ${
-              isUploading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            onClick={handleUpload}
-            disabled={isUploading}
-            aria-label="Upload"
-          >
-            {isUploading ? (
+          <div className="mb-4" style={{ minHeight: "300px" }}>
+            <ReactQuill
+              ref={quillRef}
+              value={editorState}
+              onChange={(content, delta, source, editor) => {
+                const sanitizedContent = DOMPurify.sanitize(
+                  editor.getHTML(),
+                  purifyConfig
+                );
+                setEditorState(sanitizedContent);
+              }}
+              modules={modules}
+              theme="snow"
+              placeholder="Share your story..."
+              className="bg-white rounded-lg h-full"
+              style={{ height: "250px" }}
+              aria-label="Content"
+            />
+          </div>
+          <div className="mb-4">
+            <div
+              className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-[#f0ead6] hover:bg-[#e6e0cc]"
+              onClick={() => fileInputRef.current.click()}
+            >
               <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                {postId ? "Updating..." : "Uploading..."}
+                {file ? (
+                  <>
+                    {React.createElement(getFileIcon(file.type), {
+                      className: "h-6 w-6 text-blue-500 mr-2",
+                    })}
+                    <span className="text-sm text-gray-700 truncate">
+                      {fileName}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <DocumentIcon className="h-6 w-6 text-gray-400 mr-2" />
+                    <span className="text-sm text-gray-500">
+                      Click to select a file
+                    </span>
+                  </>
+                )}
               </div>
-            ) : postId ? (
-              "Update"
-            ) : (
-              "Upload"
-            )}
-          </button>
-          <button
-            className={`w-full sm:w-1/2 py-2 px-3 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300 text-xs sm:text-sm ${
-              isUploading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            onClick={handleClose}
-            disabled={isUploading}
-            aria-label="Cancel"
-          >
-            Cancel
-          </button>
+            </div>
+            <input
+              ref={fileInputRef}
+              className="hidden"
+              type="file"
+              onChange={handleFileChange}
+              aria-label="File"
+            />
+          </div>
+          <div className="mb-4">
+            <div className="flex flex-wrap items-center gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-[#f0ead6]">
+              {tags.map((tag) => (
+                <span
+                  key={tag.value}
+                  className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center"
+                >
+                  #{tag.value}
+                  <button
+                    onClick={() => removeTag(tag.value)}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+              <input
+                ref={tagInputRef}
+                type="text"
+                value={tagInput}
+                onChange={handleTagInputChange}
+                onKeyDown={handleTagInputKeyDown}
+                onCompositionStart={() => setComposing(true)}
+                onCompositionEnd={() => {
+                  setComposing(false);
+                  // 조합이 끝났을 때 태그를 즉시 추가하지 않음
+                }}
+                placeholder="Add a tag... (Enter to add)"
+                className="flex-grow bg-transparent outline-none text-sm"
+              />
+            </div>
+          </div>
         </div>
+
+        <footer className="bg-[#e6e0cc] p-4">
+          <div className="flex space-x-4">
+            <button
+              className={`flex-1 py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              onClick={handleUpload}
+              disabled={isUploading}
+              aria-label="Upload"
+            >
+              {isUploading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                  {postId ? "Updating..." : "Uploading..."}
+                </div>
+              ) : postId ? (
+                "Update"
+              ) : (
+                "Upload"
+              )}
+            </button>
+            <button
+              className={`flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${
+                isUploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              onClick={handleClose}
+              disabled={isUploading}
+              aria-label="Cancel"
+            >
+              Cancel
+            </button>
+          </div>
+        </footer>
       </div>
     </Modal>
   );

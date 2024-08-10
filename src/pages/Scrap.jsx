@@ -6,7 +6,13 @@ import logger from "../utils/logger";
 import DOMPurify from "dompurify";
 import he from "he";
 import LoadingIndicator from "./components/LoadingIndicator";
-import { FaRegSadTear, FaRegCalendarAlt, FaRegClock, FaServer } from "react-icons/fa";
+import {
+  FaRegSadTear,
+  FaRegCalendarAlt,
+  FaRegClock,
+  FaServer,
+  FaBookmark,
+} from "react-icons/fa";
 import { FaGolang } from "react-icons/fa6";
 
 const formatDate = (seconds) => {
@@ -61,6 +67,17 @@ function Scrap() {
     return window.ENV.GRPC_API_KEY !== "%GRPC_API_KEY%"
       ? window.ENV.GRPC_API_KEY
       : "";
+  };
+
+  const isNewPost = (publishedAt) => {
+    return new Date(publishedAt * 1000) > new Date(Date.now() - 10 * 60 * 1000); // 10 minutes
+  };
+
+  const isRecentPost = (publishedAt) => {
+    return (
+      new Date(publishedAt * 1000) >
+      new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+    ); // 2 days
   };
 
   useEffect(() => {
@@ -127,7 +144,9 @@ function Scrap() {
               <FaGolang className="text-blue-500 mr-2" />
             </div>
             <p className="text-sm text-gray-700">
-              This page leverages gRPC (Go) for efficient, low-latency communication between the client and server, enabling real-time bookmark synchronization and retrieval.
+              This page leverages gRPC (Go) for efficient, low-latency
+              communication between the client and server, enabling real-time
+              bookmark synchronization and retrieval.
             </p>
           </div>
         </div>
@@ -140,19 +159,33 @@ function Scrap() {
             {posts.map((post) => (
               <div
                 key={post.id}
-                className="bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105"
+                className={`bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105 ${
+                  isNewPost(post.publishedat.seconds)
+                    ? "ring-2 ring-green-500"
+                    : ""
+                }`}
               >
                 <div className="p-4 sm:p-6">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition duration-300">
-                    <a
-                      href={post.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline"
-                    >
-                      {post.title}
-                    </a>
-                  </h2>
+                  <div className="flex justify-between items-start mb-2">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800 hover:text-blue-600 transition duration-300">
+                      <a
+                        href={post.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        {post.title}
+                      </a>
+                    </h2>
+                    <div className="flex space-x-1">
+                      {isRecentPost(post.publishedat.seconds) && (
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          New
+                        </span>
+                      )}
+                      <FaBookmark className="text-yellow-500" />
+                    </div>
+                  </div>
                   <p
                     className="text-sm sm:text-base text-gray-600 mb-4"
                     dangerouslySetInnerHTML={{

@@ -37,6 +37,7 @@
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.25.1",
     "react-select": "^5.8.0",
+    "react-spring": "^9.7.4",
     "react-toastify": "^10.0.5",
     "sanitize-html": "^2.13.0",
     "svgo": "^3.3.2",

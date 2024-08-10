@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { api } from "./api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 function SearchComponent({ setSearchResults }) {
   const [query, setQuery] = useState("");
@@ -11,7 +11,7 @@ function SearchComponent({ setSearchResults }) {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!query) {
-      toast.warning("검색어를 입력해주세요.");
+      toast.warning("Please enter a search term.");
       return;
     }
     try {
@@ -33,6 +33,10 @@ function SearchComponent({ setSearchResults }) {
     }
   };
 
+  const clearSearch = () => {
+    setQuery("");
+  };
+
   return (
     <form
       onSubmit={handleSearch}
@@ -49,14 +53,26 @@ function SearchComponent({ setSearchResults }) {
           <option value="content">Content</option>
           <option value="tags">Tags</option>
         </select>
-        <input
-          id="searchInput"
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search..."
-          className="w-full h-10 pl-2 pr-10 text-sm bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-300"
-        />
+        <div className="relative flex-grow">
+          <input
+            id="searchInput"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search..."
+            className="w-full h-10 pl-2 pr-16 text-sm bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-300"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute right-10 top-0 h-10 w-10 flex items-center justify-center text-gray-600 hover:text-red-500"
+              aria-label="Clear search"
+            >
+              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
+          )}
+        </div>
         <button
           type="submit"
           className="absolute right-0 top-0 h-10 w-10 flex items-center justify-center text-gray-600 hover:text-blue-500"

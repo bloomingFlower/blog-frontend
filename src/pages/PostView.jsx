@@ -1,5 +1,5 @@
 // PostView.jsx
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "./components/api";
 import { AuthContext } from "./components/AuthContext";
@@ -9,20 +9,37 @@ import Modal from "react-modal";
 import { trackPromise } from "react-promise-tracker";
 import LoadingIndicator from "./components/LoadingIndicator";
 import { toast } from "react-toastify";
+import { FaUser } from "react-icons/fa";
 
-Modal.setAppElement("#root"); // Add this line
+Modal.setAppElement("#root");
 
 function PostView({
   postId,
   setIsPostViewModalOpen,
   setEditingPostId,
   setIsUploadModalOpen,
+  refreshPosts,
 }) {
   const [post, setPost] = useState(null);
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(AuthContext);
-  const { jwt } = useContext(AuthContext);
   const commentSectionRef = useRef(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const userDataString = sessionStorage.getItem("user");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      setUser(userData);
+    }
+  }, []);
+
+  const canEditOrDelete = useMemo(() => {
+    if (!user || !post || !post.user) {
+      return false;
+    }
+    return user.id === post.user.id;
+  }, [user, post]);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -74,6 +91,7 @@ function PostView({
   if (!post) {
     return <LoadingIndicator />;
   }
+
   const handleEditClick = () => {
     setIsPostViewModalOpen(false); // 현재 모달을 닫습니다.
     setEditingPostId(postId); // 편집 중인 포스트의 ID를 설정합니다.
@@ -82,23 +100,31 @@ function PostView({
 
   const handleHideClick = async () => {
     if (!isLoggedIn) {
-      toast.warning("Please log in to hide posts");
+      toast.warning("Login is required.");
+      return;
+    }
+    if (!canEditOrDelete) {
+      toast.warning("You do not have permission to hide or display this post.");
       return;
     }
     try {
-      // 서버에 요청을 보내어 포스트의 숨김 상태를 업데이트
       await trackPromise(api.put(`/api/v1/post/${postId}/hide`));
-      toast.success("Post hidden successfully");
-      window.location.reload(); // 페이지를 다시 로드합니다.
+      toast.success(post.hidden ? "Post is displayed." : "Post is hidden.");
+      setPost((prevPost) => ({ ...prevPost, hidden: !prevPost.hidden }));
+      setIsPostViewModalOpen(false);
+      refreshPosts();
     } catch (error) {
-      toast.error("Failed to hide post:", error);
+      toast.error("Failed to change post status:", error);
     }
   };
 
   return (
     <Modal
       isOpen={true}
-      onRequestClose={() => setIsPostViewModalOpen(false)}
+      onRequestClose={() => {
+        setIsPostViewModalOpen(false);
+        refreshPosts();
+      }}
       shouldCloseOnOverlayClick={true}
       contentLabel="Post View"
       className="w-11/12 max-w-4xl mx-auto my-4 sm:my-10 bg-white rounded-lg shadow-xl overflow-auto"
@@ -113,6 +139,13 @@ function PostView({
         <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
           {post.title}
         </h2>
+        <p className="text-sm text-gray-600 mb-4 text-center flex items-center justify-center">
+          <FaUser className="mr-1 text-gray-400" />
+          <span className="font-medium">{post.user?.first_name}</span>
+          <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
+            #{post.user?.id}
+          </span>
+        </p>
         <div className="mb-6 bg-gray-50 rounded-lg p-4">
           <ReactQuill
             value={post.content}
@@ -143,25 +176,24 @@ function PostView({
         )}
         <div ref={commentSectionRef} className="mb-6"></div>
         <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
-          {isLoggedIn && (
-            <button
-              className="w-full sm:w-1/3 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-              onClick={handleEditClick}
-            >
-              Edit Post
-            </button>
-          )}
-          {isLoggedIn && (
-            <button
-              className="w-full sm:w-1/3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-              onClick={handleHideClick}
-              aria-label="Hide"
-            >
-              {post.hidden ? "Unhide" : "Hide"}
-            </button>
+          {canEditOrDelete && (
+            <>
+              <button
+                className="w-full sm:w-1/4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                onClick={handleEditClick}
+              >
+                Edit
+              </button>
+              <button
+                className="w-full sm:w-1/4 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                onClick={handleHideClick}
+              >
+                {post.hidden ? "Display" : "Hide"}
+              </button>
+            </>
           )}
           <button
-            className="w-full sm:w-1/3 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+            className="w-full sm:w-1/4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
             onClick={() => setIsPostViewModalOpen(false)}
             aria-label="Close"
           >

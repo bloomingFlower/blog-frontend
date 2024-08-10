@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useSpring, animated, config } from "react-spring";
 
 function BitcoinPrice() {
   const [bitcoinInfo, setBitcoinInfo] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+  const [prevPrice, setPrevPrice] = useState(null);
+
+  const { number } = useSpring({
+    from: { number: prevPrice || 0 },
+    to: { number: bitcoinInfo?.price || 0 },
+    config: config.molasses,
+  });
+
+  useEffect(() => {
+    if (bitcoinInfo?.price) {
+      setPrevPrice(bitcoinInfo.price);
+    }
+  }, [bitcoinInfo?.price]);
 
   const getSSEApiUrl = () => {
     if (process.env.NODE_ENV === "development") {
@@ -56,6 +70,8 @@ function BitcoinPrice() {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(price);
   };
 
@@ -142,11 +158,11 @@ function BitcoinPrice() {
       </h2>
       {bitcoinInfo ? (
         <>
-          <p className="text-2xl md:text-3xl font-semibold mb-1">
-            {formatPrice(bitcoinInfo.price)}
-          </p>
+          <animated.p className="text-2xl md:text-3xl font-semibold mb-1">
+            {number.to((n) => formatPrice(n))}
+          </animated.p>
           <div className="text-sm md:text-base text-gray-600 mb-2">
-            <p className="mb-1">Last updated:</p>
+            <p className="mb-1">Last updated</p>
             <div className="text-xs md:text-sm">
               {formatDate(bitcoinInfo.last_updated)}
             </div>
@@ -185,7 +201,8 @@ function BitcoinPrice() {
         </p>
       </div>
       <p className="text-xs md:text-sm text-gray-500 mt-2">
-        Note: Due to my free API license restrictions, data is updated every 4.5 to 5 minutes.
+        Note: Due to my free API license restrictions, data is updated every 4.5
+        to 5 minutes.
       </p>
     </div>
   );

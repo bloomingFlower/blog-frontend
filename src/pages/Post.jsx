@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import backgroundImage from "@img/background2.webp";
 import PostUpload from "./PostUpload";
 import PostView from "./PostView";
@@ -7,14 +13,20 @@ import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
 import SearchPost from "./components/SearchPost";
 import LoadingIndicator from "./components/LoadingIndicator";
-import { FaRegSadTear, FaServer } from "react-icons/fa";
+import {
+  FaRegSadTear,
+  FaServer,
+  FaUser,
+  FaEdit,
+  FaEyeSlash,
+} from "react-icons/fa";
 import { FaGolang } from "react-icons/fa6";
-
 
 function Post() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     sessionStorage.getItem("isLoggedIn") === "true"
   );
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [isPostViewModalOpen, setIsPostViewModalOpen] = useState(false);
   // PostUpload 모달의 열림/닫힘을 제어하는 상태를 추가
   // 편집 중인 포스트의 ID를 저장하는 상태를 추가
@@ -27,6 +39,8 @@ function Post() {
   const [searchResults, setSearchResults] = useState([]);
   const [imageLoadError, setImageLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCreatePostHint, setShowCreatePostHint] = useState(false);
+  const hintRef = useRef(null);
   const UploadIcon = () => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -57,7 +71,7 @@ function Post() {
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => { }, [isUploadModalOpen]);
+  useEffect(() => {}, [isUploadModalOpen]);
 
   const fetchPosts = useCallback(async (pageNum) => {
     setIsLoading(true);
@@ -183,10 +197,11 @@ function Post() {
               key={pageNumber}
               onClick={() => handlePageChange(pageNumber)}
               disabled={isLoading}
-              className={`w-8 h-8 rounded-full ${pageNumber === page
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`w-8 h-8 rounded-full ${
+                pageNumber === page
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {pageNumber}
             </button>
@@ -218,6 +233,66 @@ function Post() {
     fetchPosts(1);
   }, [fetchPosts]);
 
+  const refreshPosts = useCallback(() => {
+    fetchPosts(page);
+  }, [fetchPosts, page]);
+
+  const isNewPost = (createdAt) => {
+    return new Date(createdAt) > new Date(Date.now() - 10 * 60 * 1000); // 10 minutes
+  };
+
+  const isRecentPost = (createdAt) => {
+    return new Date(createdAt) > new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 2 days
+  };
+
+  const isRecentlyUpdated = (updatedAt, createdAt) => {
+    const updateTime = new Date(updatedAt);
+    const createTime = new Date(createdAt);
+    return (
+      updateTime > createTime &&
+      updateTime > new Date(Date.now() - 24 * 60 * 60 * 1000)
+    ); // 1 day
+  };
+
+  useEffect(() => {
+    // 세션 스토리지에서 사용자 정보를 가져옵니다.
+    const userDataString = sessionStorage.getItem("user");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      setCurrentUserId(userData.first_name + "#" + userData.id);
+    }
+  }, [isLoggedIn]);
+
+  const filteredPosts = useMemo(() => {
+    return (searchResults.length > 0 ? searchResults : posts).filter((post) => {
+      if (!post.hidden) return true;
+      return post.user.first_name + "#" + post.user.id === currentUserId;
+    });
+  }, [searchResults, posts, currentUserId]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      setShowCreatePostHint(true);
+
+      const timer = setTimeout(() => {
+        setShowCreatePostHint(false);
+      }, 3700);
+
+      const handleClickOutside = (event) => {
+        if (hintRef.current && !hintRef.current.contains(event.target)) {
+          setShowCreatePostHint(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isLoggedIn]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow">
@@ -233,6 +308,7 @@ function Post() {
             <PostUpload
               setIsUploadModalOpen={setIsUploadModalOpen}
               postId={editingPostId}
+              refreshPosts={refreshPosts}
             />
           )}
           {isPostViewModalOpen && (
@@ -241,6 +317,7 @@ function Post() {
               setIsPostViewModalOpen={setIsPostViewModalOpen}
               setEditingPostId={setEditingPostId}
               setIsUploadModalOpen={setIsUploadModalOpen}
+              refreshPosts={refreshPosts}
             />
           )}
           <div className="max-w-7xl mx-auto">
@@ -261,7 +338,9 @@ function Post() {
                 <FaGolang className="text-blue-500 mr-2" />
               </div>
               <p className="text-sm text-gray-700 text-center">
-                This robust post management system is built with Go, implementing RESTful APIs for seamless CRUD operations and efficient data handling.
+                This robust post management system is built with Go,
+                implementing RESTful APIs for seamless CRUD operations and
+                efficient data handling.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
@@ -269,13 +348,23 @@ function Post() {
                 <SearchPost setSearchResults={setSearchResults} />
               </div>
               {isLoggedIn && (
-                <button
-                  className="w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
-                  aria-label="Upload"
-                  onClick={handleUploadClick}
-                >
-                  <UploadIcon />
-                </button>
+                <div className="relative">
+                  <button
+                    className="w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
+                    aria-label="Upload"
+                    onClick={handleUploadClick}
+                  >
+                    <UploadIcon />
+                  </button>
+                  {showCreatePostHint && (
+                    <div
+                      ref={hintRef}
+                      className="absolute -top-5 right-0 transform translate-x-1/4 bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-xs font-semibold shadow-sm z-10 whitespace-nowrap animate-pulse"
+                    >
+                      Create a new!
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -283,21 +372,65 @@ function Post() {
               <div className="flex justify-center items-center h-64">
                 <LoadingIndicator />
               </div>
-            ) : (searchResults.length > 0 ? searchResults : posts).length >
-              0 ? (
+            ) : filteredPosts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(searchResults.length > 0 ? searchResults : posts).map(
-                  (post) => (
+                {filteredPosts.map((post) => {
+                  const isNew = isNewPost(post.created_at);
+                  const isRecent = isRecentPost(post.created_at);
+                  const isUpdated = isRecentlyUpdated(
+                    post.updated_at,
+                    post.created_at
+                  );
+                  const isUserPost =
+                    post.user.first_name + "#" + post.user.id === currentUserId;
+
+                  return (
                     <div
-                      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 ${post.hidden ? "opacity-50" : ""
-                        }`}
+                      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 
+                        ${isNew ? "ring-2 ring-green-500" : ""}
+                        ${post.hidden ? "opacity-50 bg-gray-100" : ""}`}
                       onClick={() => handlePostClick(post.id)}
                       key={post.id}
                     >
                       <div className="p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                          {post.title}
-                        </h2>
+                        <div className="flex flex-col mb-2">
+                          <h2 className="text-xl font-semibold text-gray-900 truncate mb-2">
+                            {post.title}
+                          </h2>
+                          <div className="flex flex-wrap gap-1">
+                            {isRecent && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded inline-flex items-center">
+                                New
+                              </span>
+                            )}
+                            {isUpdated && (
+                              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded inline-flex items-center">
+                                <FaEdit className="mr-1" />
+                                Updated
+                              </span>
+                            )}
+                            {isUserPost && (
+                              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded inline-flex items-center">
+                                My Post
+                              </span>
+                            )}
+                            {post.hidden && (
+                              <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded inline-flex items-center">
+                                <FaEyeSlash className="mr-1" />
+                                Hidden
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2 flex items-center">
+                          <FaUser className="mr-1 text-gray-400" />
+                          <span className="font-medium">
+                            {post.user.first_name}
+                          </span>
+                          <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
+                            #{post.user.id}
+                          </span>
+                        </p>
                         <div
                           className="text-gray-600 text-sm mb-4 line-clamp-3"
                           dangerouslySetInnerHTML={{ __html: post.content }}
@@ -314,31 +447,33 @@ function Post() {
                             className="w-full h-48 object-cover mb-4"
                           />
                         )}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {post.tags.split(",").map((tag, index) => (
-                            <span
-                              className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
-                              key={index}
-                            >
-                              #{tag.trim()}
-                            </span>
-                          ))}
-                        </div>
+                        {post.tags && post.tags.trim() !== "" && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {post.tags.split(",").map((tag, index) => (
+                              <span
+                                className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
+                                key={index}
+                              >
+                                #{tag.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <p className="text-xs text-gray-500">
                           {post.created_at === "0001-01-01T00:00:00Z" ||
-                            (post.updated_at &&
-                              post.updated_at !== post.created_at)
+                          (post.updated_at &&
+                            post.updated_at !== post.created_at)
                             ? `Updated at ${new Date(
-                              post.updated_at
-                            ).toLocaleString()}`
+                                post.updated_at
+                              ).toLocaleString()}`
                             : `Created at ${new Date(
-                              post.created_at
-                            ).toLocaleString()}`}
+                                post.created_at
+                              ).toLocaleString()}`}
                         </p>
                       </div>
                     </div>
-                  )
-                )}
+                  );
+                })}
               </div>
             ) : (
               <NoPostsFound />
