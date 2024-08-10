@@ -191,7 +191,7 @@ function RustNews() {
 
   return (
     <div
-      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out ${
+      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${
         showEasterEgg
           ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
           : ""
@@ -267,7 +267,7 @@ function RustNews() {
           <NoNewsFound />
         )}
         {hasMore && news.length > 0 && (
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-8 mb-12">
             <button
               onClick={loadMore}
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 animate-pulse"

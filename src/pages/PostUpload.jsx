@@ -301,6 +301,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   }, []);
 
   const getFileIcon = (fileType) => {
+    if (!fileType) return DocumentIcon;
     if (fileType.startsWith("image/")) return PhotoIcon;
     if (fileType.startsWith("video/")) return VideoCameraIcon;
     if (fileType === "application/pdf") return DocumentTextIcon;

@@ -81,7 +81,7 @@ const Login = () => {
 
   useEffect(() => {
     // Check if there's a remembered login
-    const rememberedLogin = localStorage.getItem('rememberedLogin');
+    const rememberedLogin = localStorage.getItem("rememberedLogin");
     if (rememberedLogin) {
       const { username, password } = JSON.parse(rememberedLogin);
       setUsername(username);
@@ -141,10 +141,13 @@ const Login = () => {
 
         if (rememberMe) {
           // Save login info to localStorage if "Remember me" is checked
-          localStorage.setItem('rememberedLogin', JSON.stringify({ username, password }));
+          localStorage.setItem(
+            "rememberedLogin",
+            JSON.stringify({ username, password })
+          );
         } else {
           // Clear remembered login if not checked
-          localStorage.removeItem('rememberedLogin');
+          localStorage.removeItem("rememberedLogin");
         }
 
         setUsername(data.user.first_name); // username 상태 설정
@@ -167,7 +170,8 @@ const Login = () => {
           });
         } else {
           toast.error(
-            `An error occurred: ${error.response.data.message || "Unknown error"
+            `An error occurred: ${
+              error.response.data.message || "Unknown error"
             }`,
             {
               toastId: "generalError",
@@ -215,7 +219,7 @@ const Login = () => {
     setShowCountdown(false);
     setIsCountdownActive(false);
     try {
-      const response = await api.get('/api/v1/auth/github/login');
+      const response = await api.get("/api/v1/auth/github/login");
       if (response.data && response.data.url) {
         // Redirect to GitHub login page in the current window
         window.location.href = response.data.url;
@@ -232,43 +236,45 @@ const Login = () => {
   useEffect(() => {
     const handleGitHubCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const error = urlParams.get('error');
-      const errorDescription = urlParams.get('error_description');
+      const error = urlParams.get("error");
+      const errorDescription = urlParams.get("error_description");
 
       if (error) {
-        console.error('GitHub login error:', error, errorDescription);
+        console.error("GitHub login error:", error, errorDescription);
         toast.error(`GitHub login error: ${errorDescription || error}`);
         setShowCountdown(true);
         setIsCountdownActive(true);
         return;
       }
 
-      const code = urlParams.get('code');
-      const state = urlParams.get('state');
+      const code = urlParams.get("code");
+      const state = urlParams.get("state");
 
       if (code && state) {
         try {
-          const response = await api.get(`/api/v1/auth/github/callback?code=${code}&state=${state}`);
+          const response = await api.get(
+            `/api/v1/auth/github/callback?code=${code}&state=${state}`
+          );
           const { token, user } = response.data;
 
           if (token && user) {
             // Save information to session storage
-            sessionStorage.setItem('jwt', token);
-            sessionStorage.setItem('user', JSON.stringify(user));
-            sessionStorage.setItem('username', user.first_name || user.login);
-            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem("jwt", token);
+            sessionStorage.setItem("user", JSON.stringify(user));
+            sessionStorage.setItem("username", user.first_name || user.login);
+            sessionStorage.setItem("isLoggedIn", "true");
 
             setUsername(user.first_name || user.login);
             setIsLoggedIn(true);
 
-            toast.success('GitHub login successful!');
-            navigate('/');  // Redirect to the main page
+            toast.success("GitHub login successful!");
+            navigate("/"); // Redirect to the main page
           } else {
-            toast.error('Failed to receive GitHub login information.');
+            toast.error("Failed to receive GitHub login information.");
           }
         } catch (error) {
-          console.error('Error handling GitHub callback:', error);
-          toast.error('An error occurred while handling the GitHub callback.');
+          console.error("Error handling GitHub callback:", error);
+          toast.error("An error occurred while handling the GitHub callback.");
         }
       }
     };
@@ -328,8 +334,9 @@ const Login = () => {
                       name="username"
                       type="text"
                       required
-                      className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${isEmailInvalid ? "border-red-500" : "border-gray-300"
-                        } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
+                      className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                        isEmailInvalid ? "border-red-500" : "border-gray-300"
+                      } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
                       placeholder="Email address"
                       value={username}
                       onChange={handleInputChange}
@@ -430,12 +437,14 @@ const Login = () => {
                     <div className="w-full border-t border-gray-300"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-gray-100 text-gray-500">Sign up with</span>
+                    <span className="px-2 bg-gray-100 text-gray-500">
+                      Sign up with
+                    </span>
                   </div>
                 </div>
                 <div className="mt-6 space-y-4">
                   <button
-                    onClick={() => window.location.href = '/signup'}
+                    onClick={() => (window.location.href = "/signup")}
                     className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
                     <FaEnvelope className="w-5 h-5 mr-2" />

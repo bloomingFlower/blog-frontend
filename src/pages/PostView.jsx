@@ -9,7 +9,17 @@ import Modal from "react-modal";
 import { trackPromise } from "react-promise-tracker";
 import LoadingIndicator from "./components/LoadingIndicator";
 import { toast } from "react-toastify";
-import { FaUser } from "react-icons/fa";
+import {
+  FaUser,
+  FaDownload,
+  FaEdit,
+  FaEye,
+  FaEyeSlash,
+  FaTimes,
+  FaCalendarAlt,
+  FaHistory,
+} from "react-icons/fa";
+import { format } from "date-fns";
 
 Modal.setAppElement("#root");
 
@@ -118,6 +128,10 @@ function PostView({
     }
   };
 
+  const formatDate = (dateString) => {
+    return format(new Date(dateString), "yyyy.MM.dd HH:mm");
+  };
+
   return (
     <Modal
       isOpen={true}
@@ -139,66 +153,104 @@ function PostView({
         <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
           {post.title}
         </h2>
-        <p className="text-sm text-gray-600 mb-4 text-center flex items-center justify-center">
-          <FaUser className="mr-1 text-gray-400" />
-          <span className="font-medium">{post.user?.first_name}</span>
-          <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
-            #{post.user?.id}
-          </span>
-        </p>
-        <div className="mb-6 bg-gray-50 rounded-lg p-4">
+        <div className="flex flex-col items-center justify-center mb-4 text-xs text-gray-500">
+          <div className="flex items-center mb-1">
+            <FaUser className="mr-1" />
+            <span className="font-medium">{post.user?.first_name}</span>
+            <span className="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
+              #{post.user?.id}
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center">
+              <FaCalendarAlt className="mr-1" />
+              <span>{formatDate(post.created_at)}</span>
+            </div>
+            {post.updated_at !== post.created_at && (
+              <div className="flex items-center">
+                <FaHistory className="mr-1" />
+                <span>{formatDate(post.updated_at)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="mb-6 bg-gray-50 rounded-lg p-4 shadow-inner">
           <ReactQuill
             value={post.content}
             readOnly={true}
             theme="bubble"
             modules={{ toolbar: false }}
-            className="prose max-w-none"
+            className="prose max-w-none text-base"
           />
         </div>
-        <div className="mb-6 flex flex-wrap">
-          {post.tags.split(",").map((tag, index) => (
-            <span
-              className="inline-block bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2"
-              key={index}
-            >
-              #{tag.trim()}
-            </span>
-          ))}
-        </div>
-        {post.file && (
-          <a
-            href={post.file}
-            download={post.file.split("/").pop()}
-            className="mb-6 inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-          >
-            Download: {post.file.split("/").pop()}
-          </a>
+        {post.tags && post.tags.split(",").some((tag) => tag.trim() !== "") && (
+          <div className="mb-4 flex flex-wrap">
+            {post.tags.split(",").map(
+              (tag, index) =>
+                tag.trim() !== "" && (
+                  <span
+                    className="inline-block bg-blue-100 text-blue-800 rounded-full px-2 py-0.5 text-xs font-semibold mr-2 mb-2"
+                    key={index}
+                  >
+                    #{tag.trim()}
+                  </span>
+                )
+            )}
+          </div>
         )}
-        <div ref={commentSectionRef} className="mb-6"></div>
-        <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:space-x-4">
-          {canEditOrDelete && (
-            <>
+        {post.file && (
+          <div className="mb-4">
+            <a
+              href={`${api.defaults.baseURL}/api/v1/${post.file}`}
+              download={post.file.split("/").pop()}
+              className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded transition duration-300"
+            >
+              <FaDownload className="mr-1 text-xs" />
+              {post.file.split("/").pop()}
+            </a>
+          </div>
+        )}
+        <div ref={commentSectionRef} className="mb-4"></div>
+        <div className="flex justify-end">
+          {canEditOrDelete ? (
+            <div className="grid grid-cols-3 gap-2 w-full">
               <button
-                className="w-full sm:w-1/4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
                 onClick={handleEditClick}
               >
+                <FaEdit className="mr-1 text-xs" />
                 Edit
               </button>
               <button
-                className="w-full sm:w-1/4 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded transition duration-300"
+                className="bg-amber-500 hover:bg-amber-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
                 onClick={handleHideClick}
               >
+                {post.hidden ? (
+                  <FaEye className="mr-1 text-xs" />
+                ) : (
+                  <FaEyeSlash className="mr-1 text-xs" />
+                )}
                 {post.hidden ? "Display" : "Hide"}
               </button>
-            </>
+              <button
+                className="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
+                onClick={() => setIsPostViewModalOpen(false)}
+                aria-label="Close"
+              >
+                <FaTimes className="mr-1 text-xs" />
+                Close
+              </button>
+            </div>
+          ) : (
+            <button
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded transition duration-300 flex items-center justify-center"
+              onClick={() => setIsPostViewModalOpen(false)}
+              aria-label="Close"
+            >
+              <FaTimes className="mr-1 text-xs" />
+              Close
+            </button>
           )}
-          <button
-            className="w-full sm:w-1/4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-            onClick={() => setIsPostViewModalOpen(false)}
-            aria-label="Close"
-          >
-            Close
-          </button>
         </div>
       </div>
     </Modal>

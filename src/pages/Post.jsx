@@ -19,6 +19,7 @@ import {
   FaUser,
   FaEdit,
   FaEyeSlash,
+  FaPaperclip,
 } from "react-icons/fa";
 import { FaGolang } from "react-icons/fa6";
 
@@ -65,9 +66,8 @@ function Post() {
 
   const handleUploadClick = (e) => {
     e.stopPropagation(); // 이벤트 버블링 방지
-    setIsUploadModalOpen((prev) => {
-      return !prev;
-    });
+    setEditingPostId(null); // Set editingPostId to null when creating a new post
+    setIsUploadModalOpen(true);
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -418,6 +418,12 @@ function Post() {
                               <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded inline-flex items-center">
                                 <FaEyeSlash className="mr-1" />
                                 Hidden
+                              </span>
+                            )}
+                            {post.file && (
+                              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded inline-flex items-center">
+                                <FaPaperclip className="mr-1" />
+                                File
                               </span>
                             )}
                           </div>
