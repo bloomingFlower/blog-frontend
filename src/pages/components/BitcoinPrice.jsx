@@ -10,7 +10,7 @@ function BitcoinPrice() {
   const { number } = useSpring({
     from: { number: prevPrice || 0 },
     to: { number: bitcoinInfo?.price || 0 },
-    config: config.molasses,
+    config: { tension: 300, friction: 10 },
   });
 
   useEffect(() => {
@@ -70,8 +70,8 @@ function BitcoinPrice() {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
     }).format(price);
   };
 
@@ -79,41 +79,28 @@ function BitcoinPrice() {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid Date";
 
-    // UTC time format
     const utcFormatter = new Intl.DateTimeFormat("en-US", {
       timeZone: "UTC",
-      year: "numeric",
       month: "short",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit",
       hour12: false,
     });
 
-    // KST time format
     const kstFormatter = new Intl.DateTimeFormat("ko-KR", {
       timeZone: "Asia/Seoul",
-      year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit",
       hour12: false,
     });
 
-    const utcString = utcFormatter.format(date);
-    const kstString = kstFormatter.format(date);
-
     return (
       <>
-        <span className="block mb-1">
-          <span className="font-semibold">UTC:</span> {utcString}
-        </span>
-        <span className="block">
-          <span className="font-semibold">KST:</span> {kstString}
-        </span>
+        <span className="block">UTC: {utcFormatter.format(date)}</span>
+        <span className="block">KST: {kstFormatter.format(date)}</span>
       </>
     );
   };
@@ -130,9 +117,8 @@ function BitcoinPrice() {
     const color = getChangeColor(change);
     const arrow = change >= 0 ? "▲" : "▼";
     return (
-      <span className={`${color} font-bold`}>
-        {arrow} {formatPrice(Math.abs(change))} ({formatPercentage(percentage)}
-        %)
+      <span className={`${color} text-sm`}>
+        {arrow} {formatPrice(Math.abs(change))} ({percentage.toFixed(2)}%)
       </span>
     );
   };
@@ -152,58 +138,53 @@ function BitcoinPrice() {
   };
 
   return (
-    <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-4 mb-4 max-w-2xl mx-auto">
-      <h2 className="text-xl md:text-2xl font-bold mb-2">
-        Bitcoin Current Price
-      </h2>
-      {bitcoinInfo ? (
-        <>
-          <animated.p className="text-2xl md:text-3xl font-semibold mb-1">
-            {number.to((n) => formatPrice(n))}
-          </animated.p>
-          <div className="text-sm md:text-base text-gray-600 mb-2">
-            <p className="mb-1">Last updated</p>
-            <div className="text-xs md:text-sm">
+    <div className="flex justify-center items-center h-full">
+      <div className="bg-white bg-opacity-90 rounded-lg shadow-md p-3 max-w-sm w-full">
+        <h2 className="text-lg font-bold mb-2">Bitcoin Current Price</h2>
+        {bitcoinInfo ? (
+          <>
+            <animated.p className="text-xl font-semibold mb-1">
+              {number.to((n) => formatPrice(n))}
+            </animated.p>
+            <div className="text-xs text-gray-600 mb-2">
+              <p className="mb-1">Last updated</p>
               {formatDate(bitcoinInfo.last_updated)}
             </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm md:text-base mb-4">
-            <div className="bg-blue-100 p-2 rounded">
-              <p className="font-semibold">24h High</p>
-              <p className="text-lg">{formatPrice(bitcoinInfo.high_24h)}</p>
-            </div>
-            <div className="bg-blue-100 p-2 rounded">
-              <p className="font-semibold">24h Low</p>
-              <p className="text-lg">{formatPrice(bitcoinInfo.low_24h)}</p>
-            </div>
-            <div className="col-span-1 sm:col-span-2 bg-gray-100 p-2 rounded">
-              <p className="font-semibold">24h Change</p>
-              <p className="text-lg">
+            <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+              <div className="bg-blue-50 p-1 rounded">
+                <p className="font-semibold">24h High</p>
+                <p>{formatPrice(bitcoinInfo.high_24h)}</p>
+              </div>
+              <div className="bg-blue-50 p-1 rounded">
+                <p className="font-semibold">24h Low</p>
+                <p>{formatPrice(bitcoinInfo.low_24h)}</p>
+              </div>
+              <div className="col-span-2 bg-gray-50 p-1 rounded">
+                <p className="font-semibold">24h Change</p>
                 {renderPriceChange(
                   bitcoinInfo.price_change_24h,
                   bitcoinInfo.price_change_percentage_24h
                 )}
-              </p>
+              </div>
             </div>
-          </div>
-        </>
-      ) : (
-        <p className="text-lg">Loading...</p>
-      )}
-      <div className="flex items-center mt-2">
-        <div
-          className={`w-3 h-3 rounded-full mr-2 ${getStatusColor(
-            connectionStatus
-          )}`}
-        ></div>
-        <p className="text-sm md:text-base text-gray-600">
-          Stream Status: {connectionStatus}
+          </>
+        ) : (
+          <p className="text-sm">Loading...</p>
+        )}
+        <div className="flex items-center mt-1">
+          <div
+            className={`w-2 h-2 rounded-full mr-2 ${getStatusColor(
+              connectionStatus
+            )}`}
+          ></div>
+          <p className="text-xs text-gray-600">
+            Stream Status: {connectionStatus}
+          </p>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Note: Data updates every 4.5 to 5 minutes due to API restrictions.
         </p>
       </div>
-      <p className="text-xs md:text-sm text-gray-500 mt-2">
-        Note: Due to my free API license restrictions, data is updated every 4.5
-        to 5 minutes.
-      </p>
     </div>
   );
 }

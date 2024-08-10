@@ -20,7 +20,9 @@ function BitcoinPricePage() {
             <FaBolt className="text-yellow-500 mr-2" />
           </div>
           <p className="text-sm text-gray-700 text-center">
-            This high-performance Bitcoin price tracker is built with Rust, utilizing Server-Sent Events (SSE) for real-time updates, Apache Kafka for event streaming, and Redis for ultra-fast caching.
+            This high-performance Bitcoin price tracker is built with Rust,
+            utilizing Server-Sent Events (SSE) for real-time updates, Apache
+            Kafka for event streaming, and Redis for ultra-fast caching.
           </p>
         </div>
       </div>
