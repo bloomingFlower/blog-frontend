@@ -96,8 +96,11 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${backgroundImage})` }}>
-          <div className="flex flex-col min-h-screen">
+        <div
+          className="min-h-screen bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+        >
+          <header>
             <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50">
               <Link to="/" className="text-lg sm:text-xl">
                 Our Journey
@@ -153,60 +156,60 @@ function App() {
                 </Suspense>
               </div>
             </nav>
-            <main className="flex-grow mt-[50px] sm:mt-[60px]">
-              {isSearchOpen && (
-                <div className="w-full md:w-2/3 bg-white shadow-md z-50">
-                  <Suspense fallback={<LoadingIndicator />}>
-                    <SearchResults
-                      results={searchResults}
-                      onClose={() => setIsSearchOpen(false)}
-                    />
-                  </Suspense>
-                </div>
-              )}
-              <Suspense fallback={<LoadingIndicator />}>
-                <ActivityMonitor onTimeUpdate={setRemainingTime} />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/post" element={<Post />} />
-                  <Route path="/post/upload" element={<PostUpload />} />
-                  <Route path="/scrap" element={<Scrap />} />
-                  <Route path="/rust-news" element={<RustNews />} />
-                  <Route path="/bitcoin-price" element={<BitcoinPricePage />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/github-callback" element={<GithubCallback />} />
-                  <Route path="/logout" element={<Logout />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/edit-profile" element={<EditProfile />} />
-                  <Route path="/system-stack" element={<SystemStack />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </main>
-            <ToastContainer
-              position="top-center"
-              autoClose={1000}
-              hideProgressBar={false}
-              newestOnTop={true}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-              className="sm:text-sm md:text-base"
-              toastClassName={() =>
-                "relative flex p-1 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer bg-white bg-clip-padding border border-gray-200 shadow-lg"
-              }
-              bodyClassName={() => "flex text-black font-medium block p-3"}
-            />
-            <footer className="fixed bottom-0 left-0 right-0 bg-white">
-              <Suspense fallback={<LoadingIndicator />}>
-                <Footer />
-              </Suspense>
-            </footer>
-          </div>
+          </header>
+          <main className="flex-grow mt-[50px] sm:mt-[60px]">
+            {isSearchOpen && (
+              <section className="w-full md:w-2/3 bg-white shadow-md z-50">
+                <Suspense fallback={<LoadingIndicator />}>
+                  <SearchResults
+                    results={searchResults}
+                    onClose={() => setIsSearchOpen(false)}
+                  />
+                </Suspense>
+              </section>
+            )}
+            <Suspense fallback={<LoadingIndicator />}>
+              <ActivityMonitor onTimeUpdate={setRemainingTime} />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/post" element={<Post />} />
+                <Route path="/post/upload" element={<PostUpload />} />
+                <Route path="/scrap" element={<Scrap />} />
+                <Route path="/rust-news" element={<RustNews />} />
+                <Route path="/bitcoin-price" element={<BitcoinPricePage />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/github-callback" element={<GithubCallback />} />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/edit-profile" element={<EditProfile />} />
+                <Route path="/system-stack" element={<SystemStack />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
+          <ToastContainer
+            position="top-center"
+            autoClose={1000}
+            hideProgressBar={false}
+            newestOnTop={true}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            className="sm:text-sm md:text-base"
+            toastClassName={() =>
+              "relative flex p-1 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer bg-white bg-clip-padding border border-gray-200 shadow-lg"
+            }
+            bodyClassName={() => "flex text-black font-medium block p-3"}
+          />
+          <footer className="fixed bottom-0 left-0 right-0 bg-white">
+            <Suspense fallback={<LoadingIndicator />}>
+              <Footer />
+            </Suspense>
+          </footer>
         </div>
       </Router>
     </AuthProvider>

@@ -149,32 +149,34 @@ function PostView({
         },
       }}
     >
-      <div className="p-4 sm:p-6 md:p-8">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
-          {post.title}
-        </h2>
-        <div className="flex flex-col items-center justify-center mb-4 text-xs text-gray-500">
-          <div className="flex items-center mb-1">
-            <FaUser className="mr-1" />
-            <span className="font-medium">{post.user?.first_name}</span>
-            <span className="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
-              #{post.user?.id}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center">
-              <FaCalendarAlt className="mr-1" />
-              <span>{formatDate(post.created_at)}</span>
+      <article className="p-4 sm:p-6 md:p-8">
+        <header>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
+            {post.title}
+          </h2>
+          <div className="flex flex-col items-center justify-center mb-4 text-xs text-gray-500">
+            <div className="flex items-center mb-1">
+              <FaUser className="mr-1" />
+              <span className="font-medium">{post.user?.first_name}</span>
+              <span className="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
+                #{post.user?.id}
+              </span>
             </div>
-            {post.updated_at !== post.created_at && (
-              <div className="flex items-center">
-                <FaHistory className="mr-1" />
-                <span>{formatDate(post.updated_at)}</span>
-              </div>
-            )}
+            <div className="flex items-center space-x-2">
+              <time className="flex items-center" dateTime={post.created_at}>
+                <FaCalendarAlt className="mr-1" />
+                <span>{formatDate(post.created_at)}</span>
+              </time>
+              {post.updated_at !== post.created_at && (
+                <time className="flex items-center" dateTime={post.updated_at}>
+                  <FaHistory className="mr-1" />
+                  <span>{formatDate(post.updated_at)}</span>
+                </time>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="mb-6 bg-gray-50 rounded-lg p-4 shadow-inner">
+        </header>
+        <section className="mb-6 bg-gray-50 rounded-lg p-4 shadow-inner">
           <ReactQuill
             value={post.content}
             readOnly={true}
@@ -182,9 +184,9 @@ function PostView({
             modules={{ toolbar: false }}
             className="prose max-w-none text-base"
           />
-        </div>
+        </section>
         {post.tags && post.tags.split(",").some((tag) => tag.trim() !== "") && (
-          <div className="mb-4 flex flex-wrap">
+          <section className="mb-4 flex flex-wrap">
             {post.tags.split(",").map(
               (tag, index) =>
                 tag.trim() !== "" && (
@@ -196,10 +198,10 @@ function PostView({
                   </span>
                 )
             )}
-          </div>
+          </section>
         )}
         {post.file && (
-          <div className="mb-4">
+          <section className="mb-4">
             <a
               href={`${api.defaults.baseURL}/api/v1/${post.file}`}
               download={post.file.split("/").pop()}
@@ -208,51 +210,10 @@ function PostView({
               <FaDownload className="mr-1 text-xs" />
               {post.file.split("/").pop()}
             </a>
-          </div>
+          </section>
         )}
-        <div ref={commentSectionRef} className="mb-4"></div>
-        <div className="flex justify-end">
-          {canEditOrDelete ? (
-            <div className="grid grid-cols-3 gap-2 w-full">
-              <button
-                className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
-                onClick={handleEditClick}
-              >
-                <FaEdit className="mr-1 text-xs" />
-                Edit
-              </button>
-              <button
-                className="bg-amber-500 hover:bg-amber-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
-                onClick={handleHideClick}
-              >
-                {post.hidden ? (
-                  <FaEye className="mr-1 text-xs" />
-                ) : (
-                  <FaEyeSlash className="mr-1 text-xs" />
-                )}
-                {post.hidden ? "Display" : "Hide"}
-              </button>
-              <button
-                className="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
-                onClick={() => setIsPostViewModalOpen(false)}
-                aria-label="Close"
-              >
-                <FaTimes className="mr-1 text-xs" />
-                Close
-              </button>
-            </div>
-          ) : (
-            <button
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded transition duration-300 flex items-center justify-center"
-              onClick={() => setIsPostViewModalOpen(false)}
-              aria-label="Close"
-            >
-              <FaTimes className="mr-1 text-xs" />
-              Close
-            </button>
-          )}
-        </div>
-      </div>
+        <section ref={commentSectionRef} className="mb-4"></section>
+      </article>
     </Modal>
   );
 }

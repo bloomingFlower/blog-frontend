@@ -357,12 +357,12 @@ function Post() {
                     <UploadIcon />
                   </button>
                   {showCreatePostHint && (
-                    <div
+                    <aside
                       ref={hintRef}
                       className="absolute -top-5 right-0 transform translate-x-1/4 bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-xs font-semibold shadow-sm z-10 whitespace-nowrap animate-pulse"
                     >
                       Create a new!
-                    </div>
+                    </aside>
                   )}
                 </div>
               )}

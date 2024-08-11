@@ -303,7 +303,7 @@ function RustNews() {
             </button>
           </div>
         )}
-        <div className="fixed bottom-16 right-8 flex flex-col space-y-2">
+        <div className="fixed bottom-10 right-4 sm:right-8 flex flex-col space-y-2 z-50">
           {showScrollButtons.top && (
             <button
               onClick={() => handleScrollButtonClick("top")}
