@@ -128,7 +128,16 @@ function PostView({
     }
   };
 
+  const isValidDate = (dateString) => {
+    const date = new Date(dateString);
+    // Go return 1970.01.01 00:00:00 UTC when date is null
+    return date instanceof Date && !isNaN(date) && date.getFullYear() > 1970;
+  };
+
   const formatDate = (dateString) => {
+    if (!isValidDate(dateString)) {
+      return 'N/A';
+    }
     return format(new Date(dateString), "yyyy.MM.dd HH:mm");
   };
 
@@ -167,7 +176,7 @@ function PostView({
                 <FaCalendarAlt className="mr-1" />
                 <span>{formatDate(post.created_at)}</span>
               </time>
-              {post.updated_at !== post.created_at && (
+              {isValidDate(post.updated_at) && post.updated_at !== post.created_at && (
                 <time className="flex items-center" dateTime={post.updated_at}>
                   <FaHistory className="mr-1" />
                   <span>{formatDate(post.updated_at)}</span>
