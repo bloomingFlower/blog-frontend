@@ -93,6 +93,19 @@ function App() {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
+  const handleSearchButtonClick = (e) => {
+    e.preventDefault();
+    toggleSearchInput();
+    // Prevent zoom on mobile devices
+    document.body.style.touchAction = 'manipulation';
+  };
+
+  // Hamburger button click handler
+  const handleHamburgerClick = () => {
+    setIsSearchOpen(false);
+    setIsSearchInputVisible(false);
+  };
+
   return (
     <AuthProvider>
       <Router>
@@ -117,7 +130,7 @@ function App() {
                 </AuthContext.Consumer>
                 <div className="relative mr-2 sm:mr-4">
                   <button
-                    onClick={toggleSearchInput}
+                    onClick={handleSearchButtonClick}
                     className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-5000"
                     aria-label="Search"
                   >
@@ -145,14 +158,15 @@ function App() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="ElasticSearch not yet implemented..."
+                        placeholder="ElasticSearch is not yet implemented..."
                         className="w-full px-3 py-1 sm:px-4 sm:py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        style={{ fontSize: '16px' }}
                       />
                     </form>
                   )}
                 </div>
                 <Suspense fallback={<LoadingIndicator />}>
-                  <HamburgerButton />
+                  <HamburgerButton onClick={handleHamburgerClick} />
                 </Suspense>
               </div>
             </nav>

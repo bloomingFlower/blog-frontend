@@ -46,7 +46,7 @@ function SearchComponent({ setSearchResults }) {
         <select
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
-          className="h-10 pl-3 pr-2 text-xs bg-white text-gray-700 border-r border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-10 pl-3 pr-2 text-base bg-white text-gray-700 border-r border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">All</option>
           <option value="title">Title</option>
@@ -60,7 +60,7 @@ function SearchComponent({ setSearchResults }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search..."
-            className="w-full h-10 pl-2 pr-16 text-sm bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-300"
+            className="w-full h-10 pl-2 pr-16 text-base bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-300"
           />
           {query && (
             <button

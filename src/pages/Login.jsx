@@ -14,6 +14,7 @@ import { trackPromise } from "react-promise-tracker";
 import { api } from "./components/api";
 import { FaUser, FaLock, FaGithub, FaEnvelope } from "react-icons/fa";
 import { usePromiseTracker } from "react-promise-tracker";
+import CryptoJS from 'crypto-js';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -33,6 +34,22 @@ const Login = () => {
   const { promiseInProgress } = usePromiseTracker();
   const [showCountdown, setShowCountdown] = useState(true);
   const [isCountdownActive, setIsCountdownActive] = useState(true);
+
+  const encryptionKey = process.env.REACT_APP_ENCRYPTION_KEY || 'fallback-key';
+
+  const encryptPassword = (password) => {
+    return CryptoJS.AES.encrypt(password, encryptionKey).toString();
+  };
+
+  const decryptPassword = (encryptedPassword) => {
+    try {
+      const bytes = CryptoJS.AES.decrypt(encryptedPassword, encryptionKey);
+      return bytes.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      console.error('Failed to decrypt password:', error);
+      return '';
+    }
+  };
 
   const resetCountdown = useCallback(() => {
     setCountdown(10);
@@ -81,12 +98,23 @@ const Login = () => {
 
   useEffect(() => {
     // Check if there's a remembered login
-    const rememberedLogin = localStorage.getItem("rememberedLogin");
+    const rememberedLogin = localStorage.getItem('rememberedLogin');
     if (rememberedLogin) {
-      const { username, password } = JSON.parse(rememberedLogin);
-      setUsername(username);
-      setPassword(password);
-      setRememberMe(true);
+      try {
+        const { username, encryptedPassword } = JSON.parse(rememberedLogin);
+        setUsername(username);
+        const decryptedPassword = decryptPassword(encryptedPassword);
+        if (decryptedPassword) {
+          setPassword(decryptedPassword);
+          setRememberMe(true);
+        } else {
+          // Delete the saved information if decryption fails
+          localStorage.removeItem('rememberedLogin');
+        }
+      } catch (error) {
+        console.error('Failed to parse remembered login:', error);
+        localStorage.removeItem('rememberedLogin');
+      }
     }
   }, []);
 
@@ -140,11 +168,13 @@ const Login = () => {
         sessionStorage.setItem("username", data.user.first_name);
 
         if (rememberMe) {
-          // Save login info to localStorage if "Remember me" is checked
-          localStorage.setItem(
-            "rememberedLogin",
-            JSON.stringify({ username, password })
-          );
+          try {
+            const encryptedPassword = encryptPassword(password);
+            localStorage.setItem('rememberedLogin', JSON.stringify({ username, encryptedPassword }));
+          } catch (error) {
+            console.error('Failed to encrypt password:', error);
+            // Do not save if encryption fails
+          }
         } else {
           // Clear remembered login if not checked
           localStorage.removeItem("rememberedLogin");
@@ -170,8 +200,7 @@ const Login = () => {
           });
         } else {
           toast.error(
-            `An error occurred: ${
-              error.response.data.message || "Unknown error"
+            `An error occurred: ${error.response.data.message || "Unknown error"
             }`,
             {
               toastId: "generalError",
@@ -334,9 +363,8 @@ const Login = () => {
                       name="username"
                       type="text"
                       required
-                      className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                        isEmailInvalid ? "border-red-500" : "border-gray-300"
-                      } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
+                      className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${isEmailInvalid ? "border-red-500" : "border-gray-300"
+                        } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
                       placeholder="Email address"
                       value={username}
                       onChange={handleInputChange}
