@@ -1,277 +1,283 @@
-import React, { useState } from "react";
-import { Helmet } from "react-helmet";
+import React, { useRef } from 'react';
+import { motion, useAnimation } from 'framer-motion';
+import styled, { keyframes } from 'styled-components';
 import backgroundImage from "@img/background2.webp";
+import { useInView } from 'react-intersection-observer';
 
-function Section({ title, children, isOpen, toggleOpen }) {
+// Styled components for Apple-like design
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  color: #1d1d1f;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+`;
+
+const Header = styled.h1`
+  font-size: 56px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+`;
+
+const Section = styled(motion.section)`
+  margin-bottom: 6rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 40px;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1d1d1f;
+`;
+
+const Paragraph = styled.p`
+  font-size: 21px;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  color: #333;
+`;
+
+const List = styled.ul`
+  list-style-type: none;
+  padding: 0;
+`;
+
+const ListItem = styled.li`
+  font-size: 21px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  color: #333;
+
+  &:before {
+    content: '•';
+    color: #0071e3;
+    font-size: 24px;
+    margin-right: 10px;
+  }
+`;
+
+const Image = styled(motion.img)`
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+// Scroll animation component
+const ScrollAnimationItem = ({ children }) => {
+  const controls = useAnimation();
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  React.useEffect(() => {
+    if (inView) {
+      controls.start('visible');
+    }
+  }, [controls, inView]);
+
   return (
-    <div className="mb-4 bg-white bg-opacity-80 rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out">
-      <button
-        className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left text-base sm:text-lg font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none flex justify-between items-center"
-        onClick={toggleOpen}
-        aria-label="Section"
-      >
-        {title}
-        <svg
-          className={`w-5 h-5 sm:w-6 sm:h-6 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            }`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-      {isOpen && (
-        <div className="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base text-gray-700 bg-white">
-          {children}
-        </div>
-      )}
-    </div>
+    <motion.div
+      ref={ref}
+      animate={controls}
+      initial="hidden"
+      variants={{
+        visible: { opacity: 1, y: 0 },
+        hidden: { opacity: 0, y: 50 }
+      }}
+      transition={{ duration: 0.5 }}
+    >
+      {children}
+    </motion.div>
   );
-}
+};
 
-function SocialLinks() {
-  const links = [
-    {
-      name: "GitHub",
-      url: "https://github.com/bloomingFlower",
-      icon: "github",
-    },
-    {
-      name: "Email",
-      url: "mailto:yourrubber@duck.com",
-      icon: "email",
-    },
-    {
-      name: "ORCID",
-      url: "https://orcid.org/0009-0001-5288-7745",
-      icon: "orcid",
-    },
-    {
-      name: "Coursera",
-      url: "https://www.coursera.org/user/6fc30c5f564982f4134e32b619efef76",
-      icon: "coursera",
-    },
-    // {
-    //   name: "LinkedIn",
-    //   url: "https://www.linkedin.com/in/yourusername",
-    //   icon: "linkedin",
-    // },
+const slideAnimation = keyframes`
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+`;
+
+const SlideContainer = styled.div`
+  overflow: hidden;
+  margin-bottom: 4rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px 0;
+`;
+
+const SlideTrack = styled.div`
+  display: flex;
+  animation: ${slideAnimation} 30s linear infinite;
+  &:hover {
+    animation-play-state: paused;
+  }
+`;
+
+const SlideItem = styled.div`
+  flex: 0 0 auto;
+  width: 200px;
+  margin-right: 20px;
+  text-align: center;
+`;
+
+const SlideImage = styled.img`
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+`;
+
+const SlideTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+`;
+
+const WelcomeText = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  line-height: 1.4;
+`;
+
+const About = () => {
+  const containerRef = useRef(null);
+
+  const techFields = [
+    { title: "Web Development", image: "https://via.placeholder.com/200x150?text=Web+Dev" },
+    { title: "Mobile App Development", image: "https://via.placeholder.com/200x150?text=Mobile+Dev" },
+    { title: "Cloud Computing and DevOps", image: "https://via.placeholder.com/200x150?text=Cloud+DevOps" },
+    { title: "AI and Machine Learning", image: "https://via.placeholder.com/200x150?text=AI+ML" },
+    { title: "Cybersecurity", image: "https://via.placeholder.com/200x150?text=Cybersecurity" },
+    { title: "IoT, Blockchain, AR/VR", image: "https://via.placeholder.com/200x150?text=Emerging+Tech" },
   ];
 
   return (
-    <div className="flex justify-center space-x-4 mb-8">
-      {links.map((link) => (
-        <a
-          key={link.name}
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-600 hover:text-gray-800 transition duration-300"
-        >
-          <span className="sr-only">{link.name}</span>
-          <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-            {link.icon === "github" && (
-              <path
-                fillRule="evenodd"
-                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                clipRule="evenodd"
-              />
-            )}
-            {link.icon === "linkedin" && (
-              <path
-                fillRule="evenodd"
-                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
-                clipRule="evenodd"
-              />
-            )}
-            {link.icon === "twitter" && (
-              <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-            )}
-            {link.icon === "email" && (
-              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-            )}
-            {link.icon === "coursera" && (
-              <path d="M11.7 16.7c-3 0-5.5-2.5-5.5-5.5s2.5-5.5 5.5-5.5c1.9 0 3.7 1 4.7 2.6.4.6 1.2.8 1.8.4.6-.4.8-1.2.4-1.8-1.5-2.4-4.1-3.8-6.9-3.8-4.6 0-8.3 3.7-8.3 8.3s3.7 8.3 8.3 8.3c2.8 0 5.4-1.4 6.9-3.8.4-.6.2-1.4-.4-1.8-.6-.4-1.4-.2-1.8.4-1 1.5-2.8 2.5-4.7 2.5zm10.3-5.5c0-2.3-1.9-4.2-4.2-4.2h-2.8c-.8 0-1.4.6-1.4 1.4s.6 1.4 1.4 1.4h2.8c.8 0 1.4.6 1.4 1.4 0 .6-.4 1.1-.9 1.3-.2.1-.3.1-.5.1h-2.8c-.8 0-1.4.6-1.4 1.4s.6 1.4 1.4 1.4h2.8c2.3 0 4.2-1.9 4.2-4.2z" />
-            )}
-            {link.icon === "orcid" && (
-              <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 4.378c.525 0 .947.431.947.947s-.422.954-.947.954-.954-.438-.954-.954.428-.947.954-.947zm-.125 3.409h1.85v8.947h-1.85V7.787zm3.981 0h5.028c2.687 0 4.341 1.525 4.341 3.662 0 2.472-1.878 3.931-4.341 3.931h-3.175v1.353h-1.853V7.787zm1.853 1.541v4.493h3.175c1.506 0 2.625-.872 2.625-2.284 0-1.366-1.078-2.209-2.625-2.209h-3.175z" />
-            )}
-          </svg>
-        </a>
-      ))}
+    <div style={{
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundAttachment: 'fixed',
+      backgroundSize: 'cover',
+      minHeight: '200vh',
+    }}>
+      <Container ref={containerRef}>
+        <WelcomeText>
+          Sharing knowledge, inspiring innovation.<br />
+          Join us on this transformative tech journey.
+        </WelcomeText>
+
+        <SlideContainer>
+          <SlideTrack>
+            {[...techFields, ...techFields].map((field, index) => (
+              <SlideItem key={index}>
+                <SlideImage src={field.image} alt={field.title} />
+                <SlideTitle>{field.title}</SlideTitle>
+              </SlideItem>
+            ))}
+          </SlideTrack>
+        </SlideContainer>
+
+        <ScrollAnimationItem>
+          <Section>
+            <Image
+              src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97"
+              alt="Coding on laptop"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            />
+            <SectionTitle>Empowering Developers, One Post at a Time</SectionTitle>
+            <Paragraph>
+              Our blog is a vibrant hub for technology enthusiasts, developers, and curious minds.
+              We're passionate about sharing cutting-edge insights, practical coding tips, and thought-provoking
+              discussions on the ever-evolving world of technology.
+            </Paragraph>
+          </Section>
+        </ScrollAnimationItem>
+
+        <ScrollAnimationItem>
+          <Section>
+            <SectionTitle>Our Mission</SectionTitle>
+            <Paragraph>
+              We believe in the power of knowledge sharing and collaborative growth. Our mission is to:
+            </Paragraph>
+            <List>
+              <ListItem>Inspire innovation through in-depth technical articles</ListItem>
+              <ListItem>Foster a community of lifelong learners</ListItem>
+              <ListItem>Bridge the gap between complex concepts and practical application</ListItem>
+              <ListItem>Showcase the latest trends and best practices in software development</ListItem>
+            </List>
+          </Section>
+        </ScrollAnimationItem>
+
+        <ScrollAnimationItem>
+          <Section>
+            <SectionTitle>What We Cover</SectionTitle>
+            <Paragraph>
+              Our content spans a wide range of topics, carefully curated to keep you at the forefront of the tech industry:
+            </Paragraph>
+            <List>
+              <ListItem>Web Development (Frontend & Backend)</ListItem>
+              <ListItem>Mobile App Development</ListItem>
+              <ListItem>Cloud Computing and DevOps</ListItem>
+              <ListItem>Artificial Intelligence and Machine Learning</ListItem>
+              <ListItem>Cybersecurity</ListItem>
+              <ListItem>Emerging Technologies (IoT, Blockchain, AR/VR)</ListItem>
+            </List>
+          </Section>
+        </ScrollAnimationItem>
+
+        <ScrollAnimationItem>
+          <Section>
+            <Image
+              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c"
+              alt="Team collaboration"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            />
+            <SectionTitle>Join Our Community</SectionTitle>
+            <Paragraph>
+              We're more than just a blog – we're a thriving community of tech enthusiasts. Here's how you can get involved:
+            </Paragraph>
+            <List>
+              <ListItem>Engage with our content through comments and discussions</ListItem>
+              <ListItem>Share your own experiences and insights</ListItem>
+              <ListItem>Connect with fellow readers and industry professionals</ListItem>
+              <ListItem>Participate in our webinars, coding challenges, and events</ListItem>
+            </List>
+          </Section>
+        </ScrollAnimationItem>
+
+        <ScrollAnimationItem>
+          <Section>
+            <SectionTitle>Stay Connected</SectionTitle>
+            <Paragraph>
+              Don't miss out on our latest articles, tutorials, and tech news. Subscribe to our newsletter
+              and follow us on social media to stay up-to-date with the pulse of the tech world.
+            </Paragraph>
+            <Paragraph>
+              Your journey in technology is our passion. Let's innovate, learn, and grow together!
+            </Paragraph>
+          </Section>
+        </ScrollAnimationItem>
+      </Container>
     </div>
   );
-}
-
-function About() {
-  const [sections, setSections] = useState({
-    Education: false,
-    WorkExperience: false,
-    Skills: false,
-    Projects: false,
-    Certifications: false,
-    Study: false,
-    Travel: false,
-    FoodReviews: false,
-    ElectronicsReviews: false,
-    Economy: false,
-    Others: false,
-  });
-
-  const toggleSection = (section) => {
-    setSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  const expandAll = () => {
-    setSections(
-      Object.fromEntries(Object.keys(sections).map((key) => [key, true]))
-    );
-  };
-
-  const collapseAll = () => {
-    setSections(
-      Object.fromEntries(Object.keys(sections).map((key) => [key, false]))
-    );
-  };
-
-  return (
-    <div
-      className="min-h-screen bg-cover bg-center py-8 px-4 sm:px-6 lg:px-8"
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-      }}
-    >
-      <Helmet>
-        <title>About Me</title>
-        <meta name="description" content="About me page of my website" />
-      </Helmet>
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8 sm:mb-10">
-          About Me
-        </h1>
-        <SocialLinks />
-        <div className="flex justify-center space-x-4 mb-6">
-          <button
-            onClick={expandAll}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
-            aria-label="Expand All"
-          >
-            Expand All
-          </button>
-          <button
-            onClick={collapseAll}
-            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300"
-            aria-label="Collapse All"
-          >
-            Collapse All
-          </button>
-        </div>
-        <div className="space-y-4 sm:space-y-6">
-          <Section
-            title="Education"
-            isOpen={sections.Education}
-            toggleOpen={() => toggleSection("Education")}
-          >
-            <p></p>
-          </Section>
-          <Section
-            title="Work Experience"
-            isOpen={sections.WorkExperience}
-            toggleOpen={() => toggleSection("WorkExperience")}
-          >
-            <p></p>
-          </Section>
-          <Section
-            title="Skills"
-            isOpen={sections.Skills}
-            toggleOpen={() => toggleSection("Skills")}
-          >
-            <p></p>
-          </Section>
-          <Section
-            title="Projects"
-            isOpen={sections.Projects}
-            toggleOpen={() => toggleSection("Projects")}
-          >
-            <p></p>
-          </Section>
-          <Section
-            title="Certifications"
-            isOpen={sections.Certifications}
-            toggleOpen={() => toggleSection("Certifications")}
-          >
-            <p></p>
-          </Section>
-          <Section
-            title="Study"
-            isOpen={sections.Study}
-            toggleOpen={() => toggleSection("Study")}
-          >
-            <p>
-              I am passionate about learning new things. Here, I share my study
-              notes and experiences!
-            </p>
-          </Section>
-          <Section
-            title="Travel"
-            isOpen={sections.Travel}
-            toggleOpen={() => toggleSection("Travel")}
-          >
-            <p>
-              I love to travel and explore new places. Check out my travel
-              diaries.
-            </p>
-          </Section>
-          <Section
-            title="Food Reviews"
-            isOpen={sections.FoodReviews}
-            toggleOpen={() => toggleSection("FoodReviews")}
-          >
-            <p>
-              I enjoy trying out new cuisines and restaurants. Here are some of
-              my food reviews.
-            </p>
-          </Section>
-          <Section title="Study">
-            <p>
-              I am passionate about learning new things. Here, I share my study
-              notes and experiences!
-            </p>
-          </Section>
-          <Section title="Travel">
-            <p>
-              I love to travel and explore new places. Check out my travel
-              diaries.
-            </p>
-          </Section>
-          <Section title="Food Reviews">
-            <p>
-              I enjoy trying out new cuisines and restaurants. Here are some of
-              my food reviews.
-            </p>
-          </Section>
-          <Section title="Electronics Reviews">
-            <p>
-              I love exploring new gadgets and electronics. Here are some of my
-              reviews.
-            </p>
-          </Section>
-          <Section title="Economy">
-            <p></p>
-          </Section>
-          <Section title="Others">
-            <p></p>
-          </Section>
-        </div>
-      </div>
-    </div>
-  );
-}
+};
 
 export default About;

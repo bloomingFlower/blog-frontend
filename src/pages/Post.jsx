@@ -71,7 +71,7 @@ function Post() {
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => {}, [isUploadModalOpen]);
+  useEffect(() => { }, [isUploadModalOpen]);
 
   const fetchPosts = useCallback(async (pageNum) => {
     setIsLoading(true);
@@ -197,11 +197,10 @@ function Post() {
               key={pageNumber}
               onClick={() => handlePageChange(pageNumber)}
               disabled={isLoading}
-              className={`w-8 h-8 rounded-full ${
-                pageNumber === page
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`w-8 h-8 rounded-full ${pageNumber === page
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {pageNumber}
             </button>
@@ -467,14 +466,14 @@ function Post() {
                         )}
                         <p className="text-xs text-gray-500">
                           {post.created_at === "0001-01-01T00:00:00Z" ||
-                          (post.updated_at &&
-                            post.updated_at !== post.created_at)
+                            (post.updated_at &&
+                              post.updated_at !== post.created_at)
                             ? `Updated at ${new Date(
-                                post.updated_at
-                              ).toLocaleString()}`
+                              post.updated_at
+                            ).toLocaleString()}`
                             : `Created at ${new Date(
-                                post.created_at
-                              ).toLocaleString()}`}
+                              post.created_at
+                            ).toLocaleString()}`}
                         </p>
                       </div>
                     </div>

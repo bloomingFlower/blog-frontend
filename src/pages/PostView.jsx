@@ -35,6 +35,7 @@ function PostView({
   const { isLoggedIn } = useContext(AuthContext);
   const commentSectionRef = useRef(null);
   const [user, setUser] = useState(null);
+  const [isPostStatusChanged, setIsPostStatusChanged] = useState(false);
 
   useEffect(() => {
     const userDataString = sessionStorage.getItem("user");
@@ -121,8 +122,7 @@ function PostView({
       await trackPromise(api.put(`/api/v1/post/${postId}/hide`));
       toast.success(post.hidden ? "Post is displayed." : "Post is hidden.");
       setPost((prevPost) => ({ ...prevPost, hidden: !prevPost.hidden }));
-      setIsPostViewModalOpen(false);
-      refreshPosts();
+      setIsPostStatusChanged(true);
     } catch (error) {
       toast.error("Failed to change post status:", error);
     }
@@ -146,7 +146,9 @@ function PostView({
       isOpen={true}
       onRequestClose={() => {
         setIsPostViewModalOpen(false);
-        refreshPosts();
+        if (isPostStatusChanged) {
+          refreshPosts();
+        }
       }}
       shouldCloseOnOverlayClick={true}
       contentLabel="Post View"
@@ -222,8 +224,50 @@ function PostView({
           </section>
         )}
         <section ref={commentSectionRef} className="mb-4"></section>
+        <div ref={commentSectionRef} className="mb-4"></div>
+        <div className="flex justify-end">
+          {canEditOrDelete ? (
+            <div className="grid grid-cols-3 gap-2 w-full">
+              <button
+                className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
+                onClick={handleEditClick}
+              >
+                <FaEdit className="mr-1 text-xs" />
+                Edit
+              </button>
+              <button
+                className="bg-amber-500 hover:bg-amber-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
+                onClick={handleHideClick}
+              >
+                {post.hidden ? (
+                  <FaEye className="mr-1 text-xs" />
+                ) : (
+                  <FaEyeSlash className="mr-1 text-xs" />
+                )}
+                {post.hidden ? "Display" : "Hide"}
+              </button>
+              <button
+                className="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
+                onClick={() => setIsPostViewModalOpen(false)}
+                aria-label="Close"
+              >
+                <FaTimes className="mr-1 text-xs" />
+                Close
+              </button>
+            </div>
+          ) : (
+            <button
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded transition duration-300 flex items-center justify-center"
+              onClick={() => setIsPostViewModalOpen(false)}
+              aria-label="Close"
+            >
+              <FaTimes className="mr-1 text-xs" />
+              Close
+            </button>
+          )}
+        </div>
       </article>
-    </Modal>
+    </Modal >
   );
 }
 

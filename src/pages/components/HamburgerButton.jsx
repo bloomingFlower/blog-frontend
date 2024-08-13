@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 import Logout from "./Logout";
 
-function HamburgerButton() {
+function HamburgerButton({ onClick }) {
   const [isOpen, setIsOpen] = useState(false);
   const [clickTimes, setClickTimes] = useState([]);
   const navigate = useNavigate();
@@ -30,6 +30,9 @@ function HamburgerButton() {
   const handleHamburgerClick = () => {
     setIsOpen(!isOpen);
     setClickTimes((prevTimes) => [...prevTimes.slice(-2), Date.now()]);
+    if (onClick) {
+      onClick();
+    }
   };
 
   return (

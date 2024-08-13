@@ -13,6 +13,7 @@ import "./styles/loading.css";
 // Lazy load components
 const Home = lazy(() => import("./pages/Home"));
 const About = lazy(() => import("./pages/About"));
+const AboutMe = lazy(() => import("./pages/AboutMe"));
 const Post = lazy(() => import("./pages/Post"));
 const PostUpload = lazy(() => import("./pages/PostUpload"));
 const Scrap = lazy(() => import("./pages/Scrap"));
@@ -41,12 +42,18 @@ function App() {
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
   const [remainingTime, setRemainingTime] = useState(30 * 60 * 1000); // 30분
+  const [isSearchAnimating, setIsSearchAnimating] = useState(false);
+
+  const resetSearchState = () => {
+    setIsSearchInputVisible(false);
+    setIsSearchOpen(false);
+    setSearchQuery('');
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setIsSearchOpen(false);
-        setIsSearchInputVisible(false);
+        resetSearchState();
       }
     }
 
@@ -57,10 +64,22 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (isSearchInputVisible && searchInputRef.current) {
-      searchInputRef.current.focus();
+    if (isSearchInputVisible) {
+      setIsSearchAnimating(true);
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    } else {
+      const timer = setTimeout(() => {
+        setIsSearchAnimating(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [isSearchInputVisible]);
+
+  const toggleSearchInput = () => {
+    setIsSearchInputVisible((prev) => !prev);
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -80,21 +99,9 @@ function App() {
     }
   };
 
-  const toggleSearchInput = () => {
-    setIsSearchInputVisible(!isSearchInputVisible);
-    if (!isSearchInputVisible) {
-      setIsSearchOpen(false);
-    }
-  };
-
-  const formatTime = (ms) => {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
-
   const handleSearchButtonClick = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     toggleSearchInput();
     // Prevent zoom on mobile devices
     document.body.style.touchAction = 'manipulation';
@@ -102,8 +109,13 @@ function App() {
 
   // Hamburger button click handler
   const handleHamburgerClick = () => {
-    setIsSearchOpen(false);
-    setIsSearchInputVisible(false);
+    resetSearchState();
+  };
+
+  const formatTime = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(0);
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   return (
@@ -131,7 +143,7 @@ function App() {
                 <div className="relative mr-2 sm:mr-4">
                   <button
                     onClick={handleSearchButtonClick}
-                    className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-5000"
+                    className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     aria-label="Search"
                   >
                     <svg
@@ -148,10 +160,14 @@ function App() {
                       />
                     </svg>
                   </button>
-                  {isSearchInputVisible && (
+                  <div
+                    className={`absolute right-0 mt-2 overflow-hidden transition-all duration-300 ease-out
+                      ${isSearchInputVisible ? 'w-64' : 'w-0'}`}
+                  >
                     <form
                       onSubmit={handleSearch}
-                      className="absolute right-0 mt-2 w-64"
+                      className={`w-64 transition-opacity duration-300 ease-out
+                        ${isSearchAnimating ? 'opacity-100' : 'opacity-0'}`}
                     >
                       <input
                         ref={searchInputRef}
@@ -163,7 +179,7 @@ function App() {
                         style={{ fontSize: '16px' }}
                       />
                     </form>
-                  )}
+                  </div>
                 </div>
                 <Suspense fallback={<LoadingIndicator />}>
                   <HamburgerButton onClick={handleHamburgerClick} />
@@ -192,6 +208,7 @@ function App() {
                 <Route path="/rust-news" element={<RustNews />} />
                 <Route path="/bitcoin-price" element={<BitcoinPricePage />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/about-me" element={<AboutMe />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/github-callback" element={<GithubCallback />} />
                 <Route path="/logout" element={<Logout />} />
