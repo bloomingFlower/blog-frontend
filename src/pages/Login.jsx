@@ -15,6 +15,32 @@ import { api } from "./components/api";
 import { FaUser, FaLock, FaGithub, FaEnvelope } from "react-icons/fa";
 import { usePromiseTracker } from "react-promise-tracker";
 import CryptoJS from 'crypto-js';
+import GoogleLogo from '../static/img/google-logo.svg';
+
+const Modal = ({ isOpen, onClose, title, content }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-3xl shadow-lg rounded-md bg-white">
+        <div className="mt-3">
+          <h3 className="text-2xl font-bold mb-4 text-gray-900">{title}</h3>
+          <div className="mt-2 px-7 py-3 max-h-96 overflow-y-auto">
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+          </div>
+          <div className="items-center px-4 py-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Login = () => {
   const navigate = useNavigate();
@@ -143,18 +169,18 @@ const Login = () => {
         )
       );
       if (response.status === 200) {
-        const data = response.data; // 응답 본문을 data 변수에 저장
+        const data = response.data; // Save the response body to the data variable
         const jwtCookie = document.cookie
           .split("; ")
           .find((row) => row.startsWith("jwt="));
 
         if (jwtCookie) {
           const jwt = jwtCookie.split("=")[1];
-          // 이후 jwt를 사용하는 코드
+          // Use the jwt after this
         } else {
           console.error("JWT cookie is missing");
         }
-        // 세션 생성
+        // Create a session
         const jwt = document.cookie
           .split("; ")
           .find((row) => row.startsWith("jwt="))
@@ -163,7 +189,7 @@ const Login = () => {
           toast.error("jwt is undefined");
           return;
         }
-        sessionStorage.setItem("jwt", jwt); // JWT를 세션 스토리지에 저장
+        sessionStorage.setItem("jwt", jwt); // Save JWT to session storage
         sessionStorage.setItem("user", JSON.stringify(data.user));
         sessionStorage.setItem("username", data.user.first_name);
 
@@ -180,9 +206,9 @@ const Login = () => {
           localStorage.removeItem("rememberedLogin");
         }
 
-        setUsername(data.user.first_name); // username 상태 설정
-        setIsLoggedIn(true); // set isLoggedIn state to true
-        sessionStorage.setItem("isLoggedIn", true); // 세션 스토리지에 isLoggedIn 상태 저장
+        setUsername(data.user.first_name); // Set username state
+        setIsLoggedIn(true); // Set isLoggedIn state to true
+        sessionStorage.setItem("isLoggedIn", true); // Save isLoggedIn state to session storage
 
         navigate(-1);
       } else {
@@ -243,34 +269,34 @@ const Login = () => {
     }
   }, [username, password]);
 
-  // GitHub login handler
-  const handleGitHubLogin = async () => {
+  // Unified OAuth login handler
+  const handleOAuthLogin = async (provider) => {
     setShowCountdown(false);
     setIsCountdownActive(false);
     try {
-      const response = await api.get("/api/v1/auth/github/login");
+      const response = await api.get(`/api/v1/auth/${provider}/login`);
       if (response.data && response.data.url) {
-        // Redirect to GitHub login page in the current window
+        // Redirect to OAuth login page in the current window
         window.location.href = response.data.url;
       } else {
-        toast.error("Failed to receive GitHub authentication URL.");
+        toast.error(`Failed to receive ${provider} authentication URL.`);
       }
     } catch (error) {
-      console.error("GitHub login error:", error);
-      toast.error(`GitHub login error: ${error.message}`);
+      console.error(`${provider} login error:`, error);
+      toast.error(`${provider} login error: ${error.message}`);
     }
   };
 
-  // GitHub callback handling
+  // OAuth callback handling
   useEffect(() => {
-    const handleGitHubCallback = async () => {
+    const handleOAuthCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get("error");
       const errorDescription = urlParams.get("error_description");
 
       if (error) {
-        console.error("GitHub login error:", error, errorDescription);
-        toast.error(`GitHub login error: ${errorDescription || error}`);
+        console.error("OAuth login error:", error, errorDescription);
+        toast.error(`OAuth login error: ${errorDescription || error}`);
         setShowCountdown(true);
         setIsCountdownActive(true);
         return;
@@ -282,7 +308,7 @@ const Login = () => {
       if (code && state) {
         try {
           const response = await api.get(
-            `/api/v1/auth/github/callback?code=${code}&state=${state}`
+            `/api/v1/auth/oauth/callback?code=${code}&state=${state}`
           );
           const { token, user } = response.data;
 
@@ -296,201 +322,321 @@ const Login = () => {
             setUsername(user.first_name || user.login);
             setIsLoggedIn(true);
 
-            toast.success("GitHub login successful!");
+            toast.success("OAuth login successful!");
             navigate("/"); // Redirect to the main page
           } else {
-            toast.error("Failed to receive GitHub login information.");
+            toast.error("Failed to receive OAuth login information.");
           }
         } catch (error) {
-          console.error("Error handling GitHub callback:", error);
-          toast.error("An error occurred while handling the GitHub callback.");
+          console.error("Error handling OAuth callback:", error);
+          toast.error("An error occurred while handling the OAuth callback.");
         }
       }
     };
 
-    handleGitHubCallback();
+    handleOAuthCallback();
   }, [location.search]);
+
+  // Modal related state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: "", content: "" });
+
+  // Open modal function
+  const openModal = (title, content) => {
+    setModalContent({ title, content });
+    setModalOpen(true);
+  };
+
+  // Content for each link
+  const privacyContent = `
+    <p class="mb-4 text-gray-600">Last updated: 2024-08-13</p>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">1. Information We Collect</h2>
+    <p class="mb-4 text-gray-700">We collect information you provide directly to us when you:</p>
+    <ul class="list-disc list-inside mb-4 text-gray-700">
+        <li>Create an account</li>
+        <li>Use our services</li>
+        <li>Communicate with us</li>
+    </ul>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. How We Use Your Information</h2>
+    <p class="mb-4 text-gray-700">We use the information we collect to:</p>
+    <ul class="list-disc list-inside mb-4 text-gray-700">
+        <li>Provide, maintain, and improve our services</li>
+        <li>Communicate with you about our services</li>
+        <li>Protect against fraud and abuse</li>
+    </ul>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">3. Data Retention</h2>
+    <p class="mb-4 text-gray-700">We retain your information for as long as necessary to provide our services and comply with our legal obligations.</p>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">4. Your Rights</h2>
+    <p class="mb-4 text-gray-700">You have the right to access, correct, or delete your personal information. Contact us to exercise these rights.</p>
+  `;
+
+  const termsContent = `
+    <p class="mb-4 text-gray-600">Last updated: 2024-08-13</p>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">1. Acceptance of Terms</h2>
+    <p class="mb-4 text-gray-700">By accessing or using our services, you agree to be bound by these Terms of Service.</p>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. User Responsibilities</h2>
+    <p class="mb-4 text-gray-700">You are responsible for:</p>
+    <ul class="list-disc list-inside mb-4 text-gray-700">
+        <li>Maintaining the confidentiality of your account</li>
+        <li>All activities that occur under your account</li>
+        <li>Complying with all applicable laws and regulations</li>
+    </ul>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">3. Intellectual Property</h2>
+    <p class="mb-4 text-gray-700">Our services and their contents are protected by copyright, trademark, and other laws.</p>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">4. Termination</h2>
+    <p class="mb-4 text-gray-700">We may terminate or suspend your account and access to our services at our sole discretion, without notice, for conduct that we believe violates these Terms of Service or is harmful to other users, us, or third parties, or for any other reason.</p>
+  `;
+
+  const dataHandlingContent = `
+    <p class="mb-4 text-gray-600">Last updated: 2024-08-13</p>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Email Login</h2>
+    <p class="mb-4 text-gray-700">When you sign up with email, we collect:</p>
+    <ul class="list-disc list-inside mb-4 text-gray-700">
+        <li>Your email address</li>
+        <li>A securely hashed version of your password</li>
+    </ul>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Google Login</h2>
+    <p class="mb-4 text-gray-700">When you sign in with Google, we may access:</p>
+    <ul class="list-disc list-inside mb-4 text-gray-700">
+        <li>Your name</li>
+        <li>Your email address</li>
+        <li>Your Google profile picture (if available)</li>
+    </ul>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">GitHub Login</h2>
+    <p class="mb-4 text-gray-700">When you sign in with GitHub, we may access:</p>
+    <ul class="list-disc list-inside mb-4 text-gray-700">
+        <li>Your GitHub username</li>
+        <li>Your email address associated with your GitHub account</li>
+        <li>Your GitHub profile picture (if available)</li>
+    </ul>
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Data Storage and Security</h2>
+    <p class="mb-4 text-gray-700">We store all user data securely in encrypted databases. We never share your personal information with third parties without your explicit consent, except as required by law.</p>
+  `;
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover py-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen flex flex-col justify-between bg-cover py-12 px-4 sm:px-6 lg:px-8"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="max-w-md w-full space-y-8 bg-white bg-opacity-80 p-6 sm:p-10 rounded-xl shadow-2xl">
-        <div>
-          {isLoggedIn ? (
-            <>
-              <h1 className="text-2xl font-bold mb-4">
-                What can we help you? {storedUsername}
-              </h1>
-              <div className="flex items-center space-x-4">
-                <a
-                  href="/edit-profile"
-                  className="text-indigo-600 text-sm hover:text-indigo-500"
-                >
-                  Edit your profile
-                </a>
-                <button
-                  onClick={handleLogout}
-                  className="text-indigo-600 text-sm hover:text-indigo-500"
-                  aria-label="Logout"
-                >
-                  Logout
-                </button>
-                <DeleteAccountButton />
-              </div>
-            </>
-          ) : (
-            <>
-              <h2 className="mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
-                Sign in
-              </h2>
-              {!isInputActive && showCountdown && (
-                <p className="mt-2 text-center text-sm text-gray-600">
-                  Auto-redirecting to home page in {countdown} seconds.
-                </p>
-              )}
-              <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-                <input type="hidden" name="remember" value="true" />
-                <div className="rounded-md shadow-sm -space-y-px">
-                  <div className="relative">
-                    <label htmlFor="username" className="sr-only">
-                      Email address
-                    </label>
-                    <FaUser className="absolute top-3 left-3 text-gray-400 z-10" />
-                    <input
-                      id="username"
-                      name="username"
-                      type="text"
-                      required
-                      className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${isEmailInvalid ? "border-red-500" : "border-gray-300"
-                        } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
-                      placeholder="Email address"
-                      value={username}
-                      onChange={handleInputChange}
-                      onBlur={handleInputBlur}
-                      onFocus={handleFocus}
-                      aria-label="Email address"
-                    />
-                  </div>
-                  <div className="relative">
-                    <label htmlFor="password" className="sr-only">
-                      Password
-                    </label>
-                    <FaLock className="absolute top-3 left-3 text-gray-400 z-10" />
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10"
-                      placeholder="Password"
-                      value={password}
-                      onChange={handleInputChange}
-                      onBlur={handleInputBlur}
-                      aria-label="Password"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      aria-label="Remember me"
-                    />
-                    <label
-                      htmlFor="remember-me"
-                      className="ml-2 block text-sm text-gray-900"
-                    >
-                      Remember me
-                    </label>
-                  </div>
-
-                  {/* <div className="text-sm">
-                    <a
-                      href="#"
-                      className="font-medium text-indigo-6000 hover:text-indigo-500"
-                      aria-label="Forgot your password?"
-                    >
-                      Forgot your password?
-                    </a>
-                  </div> */}
-                </div>
-
-                <div>
-                  <button
-                    type="submit"
-                    className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    disabled={promiseInProgress}
+      <div className="flex-grow flex items-center justify-center">
+        <div className="max-w-md w-full space-y-8 bg-white bg-opacity-80 p-6 sm:p-10 rounded-xl shadow-2xl">
+          <div>
+            {isLoggedIn ? (
+              <>
+                <h1 className="text-2xl font-bold mb-4">
+                  What can we help you? {storedUsername}
+                </h1>
+                <div className="flex items-center space-x-4">
+                  <a
+                    href="/edit-profile"
+                    className="text-indigo-600 text-sm hover:text-indigo-500"
                   >
-                    {promiseInProgress ? (
-                      <span className="flex items-center justify-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Signing in...
+                    Edit your profile
+                  </a>
+                  <button
+                    onClick={handleLogout}
+                    className="text-indigo-600 text-sm hover:text-indigo-500"
+                    aria-label="Logout"
+                  >
+                    Logout
+                  </button>
+                  <DeleteAccountButton />
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
+                  Sign in
+                </h2>
+                {!isInputActive && showCountdown && (
+                  <p className="mt-2 text-center text-sm text-gray-600">
+                    Auto-redirecting to home page in {countdown} seconds.
+                  </p>
+                )}
+                <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+                  <input type="hidden" name="remember" value="true" />
+                  <div className="rounded-md shadow-sm -space-y-px">
+                    <div className="relative">
+                      <label htmlFor="username" className="sr-only">
+                        Email address
+                      </label>
+                      <FaUser className="absolute top-3 left-3 text-gray-400 z-10" />
+                      <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        required
+                        className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${isEmailInvalid ? "border-red-500" : "border-gray-300"
+                          } placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10`}
+                        placeholder="Email address"
+                        value={username}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        onFocus={handleFocus}
+                        aria-label="Email address"
+                      />
+                    </div>
+                    <div className="relative">
+                      <label htmlFor="password" className="sr-only">
+                        Password
+                      </label>
+                      <FaLock className="absolute top-3 left-3 text-gray-400 z-10" />
+                      <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 text-sm sm:text-base pl-10"
+                        placeholder="Password"
+                        value={password}
+                        onChange={handleInputChange}
+                        onBlur={handleInputBlur}
+                        aria-label="Password"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <input
+                        id="remember-me"
+                        name="remember-me"
+                        type="checkbox"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        aria-label="Remember me"
+                      />
+                      <label
+                        htmlFor="remember-me"
+                        className="ml-2 block text-sm text-gray-900"
+                      >
+                        Remember me
+                      </label>
+                    </div>
+
+                    {/* <div className="text-sm">
+                      <a
+                        href="#"
+                        className="font-medium text-indigo-6000 hover:text-indigo-500"
+                        aria-label="Forgot your password?"
+                      >
+                        Forgot your password?
+                      </a>
+                    </div> */}
+                  </div>
+
+                  <div>
+                    <button
+                      type="submit"
+                      className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      disabled={promiseInProgress}
+                    >
+                      {promiseInProgress ? (
+                        <span className="flex items-center justify-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Signing in...
+                        </span>
+                      ) : (
+                        "Sign in"
+                      )}
+                    </button>
+                  </div>
+                </form>
+                <div className="mt-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-gray-100 text-gray-500">
+                        Sign up with
                       </span>
-                    ) : (
-                      "Sign in"
-                    )}
-                  </button>
-                </div>
-              </form>
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-gray-100 text-gray-500">
-                      Sign up with
-                    </span>
+                  <div className="mt-6 space-y-4">
+                    <button
+                      onClick={() => (window.location.href = "/signup")}
+                      className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      <FaEnvelope className="w-5 h-5 mr-2" />
+                      Sign up with Email
+                    </button>
+                    <button
+                      onClick={() => handleOAuthLogin('github')}
+                      className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-gray-800 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 relative"
+                    >
+                      <FaGithub className="w-5 h-5 mr-2" />
+                      Continue with GitHub
+                      <span className="ml-2 text-xs text-gray-300 hover:text-gray-100 cursor-help" title="We access your GitHub profile information. Click for more info.">ⓘ</span>
+                    </button>
+                    <button
+                      onClick={() => handleOAuthLogin('google')}
+                      className="w-full inline-flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 relative"
+                    >
+                      <img src={GoogleLogo} alt="Google logo" className="w-5 h-5 mr-2" />
+                      Continue with Google
+                      <span className="ml-2 text-xs text-gray-500 hover:text-gray-700 cursor-help" title="We access your name and email from Google. Click for more info.">ⓘ</span>
+                      <span className="absolute top-0 right-0 -mt-2 -mr-2 px-2 py-1 bg-yellow-400 text-xs font-bold rounded-full">Testing...</span>
+                    </button>
                   </div>
                 </div>
-                <div className="mt-6 space-y-4">
-                  <button
-                    onClick={() => (window.location.href = "/signup")}
-                    className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <FaEnvelope className="w-5 h-5 mr-2" />
-                    Sign up with Email
-                  </button>
-                  <button
-                    onClick={handleGitHubLogin}
-                    className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm bg-gray-800 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  >
-                    <FaGithub className="w-5 h-5 mr-2" />
-                    Continue with GitHub
-                  </button>
+                <div className="mt-4 text-center text-xs text-gray-600">
+                  <p>
+                    By signing in, you agree to our{' '}
+                    <button onClick={() => openModal("Terms of Service", termsContent)} className="text-indigo-600 hover:text-indigo-500">
+                      Terms of Service
+                    </button>{' '}
+                    and{' '}
+                    <button onClick={() => openModal("Privacy Policy", privacyContent)} className="text-indigo-600 hover:text-indigo-500">
+                      Privacy Policy
+                    </button>
+                    .
+                  </p>
+                  <p className="mt-2">
+                    Learn more about how we handle your data for{' '}
+                    <button onClick={() => openModal("Data Handling", dataHandlingContent)} className="text-indigo-600 hover:text-indigo-500">
+                      each login method
+                    </button>
+                    .
+                  </p>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        content={modalContent.content}
+      />
+
+      <footer className="mt-8 text-center text-xs text-gray-500">
+        <button onClick={() => openModal("Privacy Policy", privacyContent)} className="hover:text-gray-700 mr-4">Privacy Policy</button>
+        <button onClick={() => openModal("Terms of Service", termsContent)} className="hover:text-gray-700 mr-4">Terms of Service</button>
+        <button onClick={() => openModal("Data Handling", dataHandlingContent)} className="hover:text-gray-700">Data Handling</button>
+      </footer>
     </div>
   );
 };

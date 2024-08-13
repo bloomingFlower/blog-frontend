@@ -3,8 +3,8 @@ import { motion, useAnimation } from 'framer-motion';
 import styled, { keyframes } from 'styled-components';
 import backgroundImage from "@img/background2.webp";
 import { useInView } from 'react-intersection-observer';
+import { useMediaQuery } from 'react-responsive';
 
-// Styled components for Apple-like design
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -20,6 +20,9 @@ const Header = styled.h1`
   margin-bottom: 2rem;
   color: #ffffff;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
 `;
 
 const Section = styled(motion.section)`
@@ -35,6 +38,9 @@ const SectionTitle = styled.h2`
   font-weight: 600;
   margin-bottom: 1.5rem;
   color: #1d1d1f;
+  @media (max-width: 768px) {
+    font-size: 28px;
+  }
 `;
 
 const Paragraph = styled.p`
@@ -42,6 +48,9 @@ const Paragraph = styled.p`
   line-height: 1.5;
   margin-bottom: 1.5rem;
   color: #333;
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 `;
 
 const List = styled.ul`
@@ -55,6 +64,9 @@ const ListItem = styled.li`
   display: flex;
   align-items: center;
   color: #333;
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 
   &:before {
     content: '•';
@@ -106,7 +118,7 @@ const slideAnimation = keyframes`
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 `;
 
@@ -115,11 +127,17 @@ const SlideContainer = styled.div`
   margin-bottom: 4rem;
   background: rgba(255, 255, 255, 0.1);
   padding: 20px 0;
+  @media (max-width: 768px) {
+    padding: 10px 0;
+  }
 `;
 
 const SlideTrack = styled.div`
   display: flex;
   animation: ${slideAnimation} 30s linear infinite;
+  @media (max-width: 768px) {
+    animation-duration: 15s;
+  }
   &:hover {
     animation-play-state: paused;
   }
@@ -130,6 +148,9 @@ const SlideItem = styled.div`
   width: 200px;
   margin-right: 20px;
   text-align: center;
+  @media (max-width: 768px) {
+    width: 150px;
+  }
 `;
 
 const SlideImage = styled.img`
@@ -155,39 +176,46 @@ const WelcomeText = styled.h1`
   color: #ffffff;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   line-height: 1.4;
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
 `;
+
+const collaborationImage1 = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80";
+const collaborationImage2 = "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80";
 
 const About = () => {
   const containerRef = useRef(null);
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
-  const techFields = [
-    { title: "Web Development", image: "https://via.placeholder.com/200x150?text=Web+Dev" },
-    { title: "Mobile App Development", image: "https://via.placeholder.com/200x150?text=Mobile+Dev" },
-    { title: "Cloud Computing and DevOps", image: "https://via.placeholder.com/200x150?text=Cloud+DevOps" },
-    { title: "AI and Machine Learning", image: "https://via.placeholder.com/200x150?text=AI+ML" },
-    { title: "Cybersecurity", image: "https://via.placeholder.com/200x150?text=Cybersecurity" },
-    { title: "IoT, Blockchain, AR/VR", image: "https://via.placeholder.com/200x150?text=Emerging+Tech" },
+  const openSourceValues = [
+    { title: "Collaboration", image: "https://via.placeholder.com/200x150?text=Collaboration" },
+    { title: "Transparency", image: "https://via.placeholder.com/200x150?text=Transparency" },
+    { title: "Innovation", image: "https://via.placeholder.com/200x150?text=Innovation" },
+    { title: "Community", image: "https://via.placeholder.com/200x150?text=Community" },
+    { title: "Accessibility", image: "https://via.placeholder.com/200x150?text=Accessibility" },
+    { title: "Sustainability", image: "https://via.placeholder.com/200x150?text=Sustainability" },
   ];
 
   return (
     <div style={{
       backgroundImage: `url(${backgroundImage})`,
-      backgroundAttachment: 'fixed',
+      backgroundAttachment: isMobile ? 'scroll' : 'fixed',
       backgroundSize: 'cover',
       minHeight: '200vh',
     }}>
       <Container ref={containerRef}>
         <WelcomeText>
-          Sharing knowledge, inspiring innovation.<br />
-          Join us on this transformative tech journey.
+          Empowering Innovation Through Open Collaboration.<br />
+          Join Our Journey in Building Impactful Open Source Products.
         </WelcomeText>
 
         <SlideContainer>
           <SlideTrack>
-            {[...techFields, ...techFields].map((field, index) => (
+            {[...openSourceValues, ...openSourceValues].map((value, index) => (
               <SlideItem key={index}>
-                <SlideImage src={field.image} alt={field.title} />
-                <SlideTitle>{field.title}</SlideTitle>
+                <SlideImage src={value.image} alt={value.title} />
+                <SlideTitle>{value.title}</SlideTitle>
               </SlideItem>
             ))}
           </SlideTrack>
@@ -196,16 +224,16 @@ const About = () => {
         <ScrollAnimationItem>
           <Section>
             <Image
-              src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97"
-              alt="Coding on laptop"
+              src={collaborationImage1}
+              alt="Open source collaboration"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             />
-            <SectionTitle>Empowering Developers, One Post at a Time</SectionTitle>
+            <SectionTitle>Collaborative Product Development</SectionTitle>
             <Paragraph>
-              Our blog is a vibrant hub for technology enthusiasts, developers, and curious minds.
-              We're passionate about sharing cutting-edge insights, practical coding tips, and thought-provoking
-              discussions on the ever-evolving world of technology.
+              We believe in the power of open source to create products that truly matter.
+              Our community-driven approach focuses on developing solutions that address
+              real-world challenges, fostering innovation through collaboration and shared knowledge.
             </Paragraph>
           </Section>
         </ScrollAnimationItem>
@@ -214,13 +242,13 @@ const About = () => {
           <Section>
             <SectionTitle>Our Mission</SectionTitle>
             <Paragraph>
-              We believe in the power of knowledge sharing and collaborative growth. Our mission is to:
+              We're committed to driving positive change through open source. Our mission is to:
             </Paragraph>
             <List>
-              <ListItem>Inspire innovation through in-depth technical articles</ListItem>
-              <ListItem>Foster a community of lifelong learners</ListItem>
-              <ListItem>Bridge the gap between complex concepts and practical application</ListItem>
-              <ListItem>Showcase the latest trends and best practices in software development</ListItem>
+              <ListItem>Create impactful products that solve real-world problems</ListItem>
+              <ListItem>Foster a global community of contributors and innovators</ListItem>
+              <ListItem>Promote transparency and knowledge sharing in product development</ListItem>
+              <ListItem>Ensure accessibility and inclusivity in technology</ListItem>
             </List>
           </Section>
         </ScrollAnimationItem>
@@ -229,15 +257,15 @@ const About = () => {
           <Section>
             <SectionTitle>What We Cover</SectionTitle>
             <Paragraph>
-              Our content spans a wide range of topics, carefully curated to keep you at the forefront of the tech industry:
+              Our content spans the entire spectrum of open source product development:
             </Paragraph>
             <List>
-              <ListItem>Web Development (Frontend & Backend)</ListItem>
-              <ListItem>Mobile App Development</ListItem>
-              <ListItem>Cloud Computing and DevOps</ListItem>
-              <ListItem>Artificial Intelligence and Machine Learning</ListItem>
-              <ListItem>Cybersecurity</ListItem>
-              <ListItem>Emerging Technologies (IoT, Blockchain, AR/VR)</ListItem>
+              <ListItem>Open Source Project Management and Governance</ListItem>
+              <ListItem>Collaborative Design and Development Practices</ListItem>
+              <ListItem>Community Building and Engagement Strategies</ListItem>
+              <ListItem>Open Source Business Models and Sustainability</ListItem>
+              <ListItem>Ethical Considerations in Open Source Development</ListItem>
+              <ListItem>Impact Assessment of Open Source Projects</ListItem>
             </List>
           </Section>
         </ScrollAnimationItem>
@@ -245,20 +273,20 @@ const About = () => {
         <ScrollAnimationItem>
           <Section>
             <Image
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c"
-              alt="Team collaboration"
+              src={collaborationImage2}
+              alt="Open source community"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             />
-            <SectionTitle>Join Our Community</SectionTitle>
+            <SectionTitle>Join Our Open Source Community</SectionTitle>
             <Paragraph>
-              We're more than just a blog – we're a thriving community of tech enthusiasts. Here's how you can get involved:
+              We're more than just a blog – we're a thriving open source community. Here's how you can get involved:
             </Paragraph>
             <List>
-              <ListItem>Engage with our content through comments and discussions</ListItem>
-              <ListItem>Share your own experiences and insights</ListItem>
-              <ListItem>Connect with fellow readers and industry professionals</ListItem>
-              <ListItem>Participate in our webinars, coding challenges, and events</ListItem>
+              <ListItem>Contribute to our open source projects on GitHub</ListItem>
+              <ListItem>Share your experiences and insights through guest posts</ListItem>
+              <ListItem>Participate in community discussions and code reviews</ListItem>
+              <ListItem>Attend or organize local open source meetups and hackathons</ListItem>
             </List>
           </Section>
         </ScrollAnimationItem>
@@ -267,11 +295,11 @@ const About = () => {
           <Section>
             <SectionTitle>Stay Connected</SectionTitle>
             <Paragraph>
-              Don't miss out on our latest articles, tutorials, and tech news. Subscribe to our newsletter
-              and follow us on social media to stay up-to-date with the pulse of the tech world.
+              Don't miss out on the latest in open source product development. Subscribe to our newsletter
+              and follow us on social media to stay at the forefront of collaborative innovation.
             </Paragraph>
             <Paragraph>
-              Your journey in technology is our passion. Let's innovate, learn, and grow together!
+              Your contributions can shape the future of technology. Let's innovate, share, and build together!
             </Paragraph>
           </Section>
         </ScrollAnimationItem>

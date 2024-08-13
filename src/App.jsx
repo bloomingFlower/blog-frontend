@@ -29,8 +29,9 @@ const HamburgerButton = lazy(() =>
   import("./pages/components/HamburgerButton")
 );
 const SearchResults = lazy(() => import("./pages/components/SearchResults"));
-const GithubCallback = lazy(() => import("./pages/components/GithubCallback"));
+const OAuthCallback = lazy(() => import("./pages/components/OAuthCallback"));
 const SystemStack = lazy(() => import("./pages/SystemStack"));
+
 const ActivityMonitor = lazy(() =>
   import("./pages/components/ActivityMonitor")
 );
@@ -210,7 +211,8 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/about-me" element={<AboutMe />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/github-callback" element={<GithubCallback />} />
+                <Route path="/auth/github/callback" element={<OAuthCallback />} />
+                <Route path="/auth/google/callback" element={<OAuthCallback />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/edit-profile" element={<EditProfile />} />
