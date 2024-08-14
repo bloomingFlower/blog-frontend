@@ -22,24 +22,21 @@ function ActivityMonitor({ onTimeUpdate, isSuperMode, setSuperMode }) {
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     setTimeLeft(INACTIVITY_TIMEOUT);
-    onTimeUpdate(INACTIVITY_TIMEOUT);
 
     timeoutRef.current = setTimeout(handleInactivityLogout, INACTIVITY_TIMEOUT);
 
-    const intervalTime = isSuperMode ? 10 : 1000;
     intervalRef.current = setInterval(() => {
       setTimeLeft((prevTime) => {
         const newTime = prevTime - 1000;
         const updatedTime = Math.max(newTime, 0);
-        onTimeUpdate(updatedTime);
         if (updatedTime <= 0) {
           clearInterval(intervalRef.current);
           handleInactivityLogout();
         }
         return updatedTime;
       });
-    }, intervalTime);
-  }, [isSuperMode, onTimeUpdate, handleInactivityLogout]);
+    }, isSuperMode ? 10 : 1000);
+  }, [isSuperMode, handleInactivityLogout]);
 
   useEffect(() => {
     const handleActivity = () => {
@@ -61,6 +58,15 @@ function ActivityMonitor({ onTimeUpdate, isSuperMode, setSuperMode }) {
       });
     };
   }, [resetTimer]);
+
+  useEffect(() => {
+    resetTimer();
+  }, [isSuperMode, resetTimer]);
+
+  // timeLeft가 변경될 때마다 onTimeUpdate를 호출합니다.
+  useEffect(() => {
+    onTimeUpdate(timeLeft);
+  }, [timeLeft, onTimeUpdate]);
 
   return null;
 }
