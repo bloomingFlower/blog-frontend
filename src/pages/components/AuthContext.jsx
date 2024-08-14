@@ -1,23 +1,37 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useCallback } from "react";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
-  // 애플리케이션 로드 시 세션 스토리지에서 isLoggedIn 상태 가져오기
   useEffect(() => {
-    const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn");
-    setIsLoggedIn(storedIsLoggedIn === "true");
+    const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+
+    setIsLoggedIn(storedIsLoggedIn);
+    if (storedUser) {
+      setUser(storedUser);
+    }
   }, []);
 
-  // isLoggedIn 상태가 변경될 때마다 세션 스토리지에 저장하기
-  useEffect(() => {
-    sessionStorage.setItem("isLoggedIn", isLoggedIn.toString());
-  }, [isLoggedIn]);
+  const login = useCallback((userData) => {
+    setIsLoggedIn(true);
+    setUser(userData);
+    sessionStorage.setItem("isLoggedIn", "true");
+    sessionStorage.setItem("user", JSON.stringify(userData));
+  }, []);
+
+  const logout = useCallback(() => {
+    setIsLoggedIn(false);
+    setUser(null);
+    sessionStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("user");
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

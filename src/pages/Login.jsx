@@ -50,7 +50,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [storedUsername, setStoredUsername] = useState(""); // Generate a state to store the username of the logged-in user
-  const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext); // get setIsLoggedIn function
+  const { isLoggedIn, setIsLoggedIn, setUser } = useContext(AuthContext); // get setIsLoggedIn function
   const [inputCompleted, setInputCompleted] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState("white");
   const [isEmailInvalid, setIsEmailInvalid] = useState(false);
@@ -208,9 +208,10 @@ const Login = () => {
 
         setUsername(data.user.first_name); // Set username state
         setIsLoggedIn(true); // Set isLoggedIn state to true
+        setUser(data.user); // Update user state in AuthContext
         sessionStorage.setItem("isLoggedIn", true); // Save isLoggedIn state to session storage
 
-        navigate(-1);
+        navigate("/", { replace: true });
       } else {
         toast.error("Failed to log in: " + response.status);
       }
@@ -321,6 +322,7 @@ const Login = () => {
 
             setUsername(user.first_name || user.login);
             setIsLoggedIn(true);
+            setUser(user);
 
             toast.success("OAuth login successful!");
             navigate("/"); // Redirect to the main page

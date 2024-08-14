@@ -48,9 +48,12 @@ function RustNews() {
 
   useEffect(() => {
     if (newContentRef.current && news.length > 12) {
-      newContentRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+      const navHeight = 60; // nav bar height (mobile: 50px, desktop: 60px)
+      const yOffset = newContentRef.current.getBoundingClientRect().top + window.scrollY - navHeight;
+
+      window.scrollTo({
+        top: yOffset,
+        behavior: "smooth"
       });
     }
   }, [news]);
@@ -191,11 +194,10 @@ function RustNews() {
 
   return (
     <div
-      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${
-        showEasterEgg
-          ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
-          : ""
-      }`}
+      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${showEasterEgg
+        ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+        : ""
+        }`}
       style={
         showEasterEgg
           ? {}

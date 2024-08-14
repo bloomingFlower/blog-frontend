@@ -49,7 +49,9 @@ function Home() {
         fontFamily: "PlayfairDisplay, serif",
       }}
     >
-      <WelcomeMessage username={username} />
+      <div className="max-w-full w-full">
+        <WelcomeMessage username={username} />
+      </div>
       <p className="text-base sm:text-sm md:text-md lg:text-lg mb-4">
         Hello, my name is Jaeyoung Yun. I am a computer engineer.
         <br />

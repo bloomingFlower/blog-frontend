@@ -9,6 +9,7 @@ import { api } from "./components/api";
 import { FaPhone } from "react-icons/fa";
 import { isValidPhoneNumber, getExampleNumber } from "libphonenumber-js/max";
 import examples from "libphonenumber-js/examples.mobile.json";
+import DeleteAccountButton from "./components/DeleteAccountButton";
 
 const EditProfile = () => {
   const [firstName, setFirstName] = useState("");
@@ -210,6 +211,10 @@ const EditProfile = () => {
             </button>
           </div>
         </form>
+
+        <div className="mt-4 text-center">
+          <DeleteAccountButton />
+        </div>
       </div>
     </div>
   );

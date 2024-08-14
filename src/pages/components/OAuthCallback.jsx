@@ -8,7 +8,7 @@ import { AuthContext } from "./AuthContext";
 const OAuthCallback = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setIsLoggedIn } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
@@ -40,10 +40,9 @@ const OAuthCallback = () => {
             sessionStorage.setItem("jwt", token);
             sessionStorage.setItem("user", JSON.stringify(user));
             sessionStorage.setItem("username", user.first_name || user.login || user.email);
-            sessionStorage.setItem("isLoggedIn", "true");
 
             // Update AuthContext
-            setIsLoggedIn(true);
+            login(user);
 
             toast.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} login successful!`);
             navigate("/"); // Redirect to the home page
@@ -65,7 +64,7 @@ const OAuthCallback = () => {
     };
 
     handleOAuthCallback();
-  }, [navigate, setIsLoggedIn, location]);
+  }, [navigate, login, location]);
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600">

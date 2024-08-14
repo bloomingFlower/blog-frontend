@@ -4,15 +4,12 @@ import { AuthContext } from "./AuthContext";
 
 const Logout = () => {
   const [showModal, setShowModal] = useState(true);
-  const { setIsLoggedIn } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     // Logout processing
-    sessionStorage.clear();
-    setIsLoggedIn(false);
-
-    // Redirect to the home page
+    logout(); // AuthContext의 logout 함수 호출
     navigate("/", { replace: true });
   };
 
@@ -34,7 +31,7 @@ const Logout = () => {
           </h3>
           <div className="mt-2 px-7 py-3">
             <p className="text-sm text-gray-500">
-              Are you sure you want to logout?
+              Are you sure you want to logout?🥸
             </p>
           </div>
           <div className="items-center px-4 py-3">

@@ -223,12 +223,6 @@ const About = () => {
 
         <ScrollAnimationItem>
           <Section>
-            <Image
-              src={collaborationImage1}
-              alt="Open source collaboration"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            />
             <SectionTitle>Collaborative Product Development</SectionTitle>
             <Paragraph>
               We believe in the power of open source to create products that truly matter.
@@ -272,12 +266,6 @@ const About = () => {
 
         <ScrollAnimationItem>
           <Section>
-            <Image
-              src={collaborationImage2}
-              alt="Open source community"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
-            />
             <SectionTitle>Join Our Open Source Community</SectionTitle>
             <Paragraph>
               We're more than just a blog – we're a thriving open source community. Here's how you can get involved:
