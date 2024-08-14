@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 
-function Footer() {
+function Footer({ isSuperMode, toggleSuperMode }) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [clickCount, setClickCount] = useState(0);
-  const [isSuperMode, setIsSuperMode] = useState(false);
   const [bgColor, setBgColor] = useState("bg-yellow-500");
   const [fontSize, setFontSize] = useState(12);
   const [score, setScore] = useState(0);
@@ -25,7 +24,7 @@ function Footer() {
     setScore((prevScore) => prevScore + 10);
 
     if (clickCount >= 4) {
-      setIsSuperMode(true);
+      toggleSuperMode();
     }
 
     setTimeout(() => {
@@ -35,7 +34,7 @@ function Footer() {
   };
 
   const handleSuperModeToggle = () => {
-    setIsSuperMode(!isSuperMode);
+    toggleSuperMode();
     if (!isSuperMode) {
       setScore((prevScore) => prevScore + 100);
     }
@@ -59,19 +58,17 @@ function Footer() {
   return (
     <>
       <footer
-        className={`${
-          isSuperMode
+        className={`${isSuperMode
             ? bgColor + " text-white"
             : "bg-white bg-opacity-90 text-gray-600"
-        } border-t border-gray-200 transition-all duration-300`}
+          } border-t border-gray-200 transition-all duration-300`}
       >
         <div className="container mx-auto px-4">
           <div className="flex justify-center items-center h-8">
             <span
               onClick={handleClick}
-              className={`transition-all duration-1000 ${
-                clickCount > 0 ? "text-red-500 scale-110 rotate-180" : ""
-              }`}
+              className={`transition-all duration-1000 ${clickCount > 0 ? "text-red-500 scale-110 rotate-180" : ""
+                }`}
               style={{ fontSize: `${fontSize}px`, cursor: "pointer" }}
             >
               © {year} JaeyoungYun

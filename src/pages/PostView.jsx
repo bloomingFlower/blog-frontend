@@ -1,5 +1,4 @@
-// PostView.jsx
-import React, { useEffect, useState, useContext, useRef, useMemo } from "react";
+import React, { useEffect, useReducer, useContext, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "./components/api";
 import { AuthContext } from "./components/AuthContext";
@@ -23,41 +22,59 @@ import { format } from "date-fns";
 
 Modal.setAppElement("#root");
 
+const initialState = {
+  post: null,
+  user: null,
+  isPostStatusChanged: false,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "SET_POST":
+      return { ...state, post: action.payload };
+    case "SET_USER":
+      return { ...state, user: action.payload };
+    case "SET_POST_STATUS_CHANGED":
+      return { ...state, isPostStatusChanged: action.payload };
+    default:
+      return state;
+  }
+}
+
 function PostView({
   postId,
   setIsPostViewModalOpen,
   setEditingPostId,
   setIsUploadModalOpen,
   refreshPosts,
+  setIsPostStatusChanged,
 }) {
-  const [post, setPost] = useState(null);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(AuthContext);
   const commentSectionRef = useRef(null);
-  const [user, setUser] = useState(null);
-  const [isPostStatusChanged, setIsPostStatusChanged] = useState(false);
 
   useEffect(() => {
     const userDataString = sessionStorage.getItem("user");
     if (userDataString) {
       const userData = JSON.parse(userDataString);
-      setUser(userData);
+      dispatch({ type: "SET_USER", payload: userData });
     }
   }, []);
 
   const canEditOrDelete = useMemo(() => {
-    if (!user || !post || !post.user) {
+    if (!state.user || !state.post || !state.post.user) {
       return false;
     }
-    return user.id === post.user.id;
-  }, [user, post]);
+    return state.user.id === state.post.user.id;
+  }, [state.user, state.post]);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await trackPromise(api.get(`/api/v1/post/${postId}`));
         if (response.data.data) {
-          setPost(response.data.data);
+          dispatch({ type: "SET_POST", payload: response.data.data });
         } else {
           throw new Error("Post not found");
         }
@@ -71,7 +88,7 @@ function PostView({
   }, [postId, navigate]);
 
   useEffect(() => {
-    if (post) {
+    if (state.post) {
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/npm/remark42@latest/web/embed.js";
       script.async = true;
@@ -97,16 +114,16 @@ function PostView({
         }
       };
     }
-  }, [post]);
+  }, [state.post]);
 
-  if (!post) {
+  if (!state.post) {
     return <LoadingIndicator />;
   }
 
   const handleEditClick = () => {
-    setIsPostViewModalOpen(false); // 현재 모달을 닫습니다.
-    setEditingPostId(postId); // 편집 중인 포스트의 ID를 설정합니다.
-    setIsUploadModalOpen(true); // PostUpload 모달을 엽니다.
+    setIsPostViewModalOpen(false);
+    setEditingPostId(postId);
+    setIsUploadModalOpen(true);
   };
 
   const handleHideClick = async () => {
@@ -120,8 +137,9 @@ function PostView({
     }
     try {
       await trackPromise(api.put(`/api/v1/post/${postId}/hide`));
-      toast.success(post.hidden ? "Post is displayed." : "Post is hidden.");
-      setPost((prevPost) => ({ ...prevPost, hidden: !prevPost.hidden }));
+      toast.success(state.post.hidden ? "Post is displayed." : "Post is hidden.");
+      dispatch({ type: "SET_POST", payload: { ...state.post, hidden: !state.post.hidden } });
+      dispatch({ type: "SET_POST_STATUS_CHANGED", payload: true });
       setIsPostStatusChanged(true);
     } catch (error) {
       toast.error("Failed to change post status:", error);
@@ -130,7 +148,6 @@ function PostView({
 
   const isValidDate = (dateString) => {
     const date = new Date(dateString);
-    // Go return 1970.01.01 00:00:00 UTC when date is null
     return date instanceof Date && !isNaN(date) && date.getFullYear() > 1970;
   };
 
@@ -141,15 +158,17 @@ function PostView({
     return format(new Date(dateString), "yyyy.MM.dd HH:mm");
   };
 
+  const closeModal = () => {
+    if (state.isPostStatusChanged) {
+      refreshPosts();
+    }
+    setIsPostViewModalOpen(false);
+  };
+
   return (
     <Modal
       isOpen={true}
-      onRequestClose={() => {
-        setIsPostViewModalOpen(false);
-        if (isPostStatusChanged) {
-          refreshPosts();
-        }
-      }}
+      onRequestClose={closeModal}
       shouldCloseOnOverlayClick={true}
       contentLabel="Post View"
       className="w-11/12 max-w-4xl mx-auto my-4 sm:my-10 bg-white rounded-lg shadow-xl overflow-auto"
@@ -163,25 +182,25 @@ function PostView({
       <article className="p-4 sm:p-6 md:p-8">
         <header>
           <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
-            {post.title}
+            {state.post.title}
           </h2>
           <div className="flex flex-col items-center justify-center mb-4 text-xs text-gray-500">
             <div className="flex items-center mb-1">
               <FaUser className="mr-1" />
-              <span className="font-medium">{post.user?.first_name}</span>
+              <span className="font-medium">{state.post.user?.first_name}</span>
               <span className="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
-                #{post.user?.id}
+                #{state.post.user?.id}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <time className="flex items-center" dateTime={post.created_at}>
+              <time className="flex items-center" dateTime={state.post.created_at}>
                 <FaCalendarAlt className="mr-1" />
-                <span>{formatDate(post.created_at)}</span>
+                <span>{formatDate(state.post.created_at)}</span>
               </time>
-              {isValidDate(post.updated_at) && post.updated_at !== post.created_at && (
-                <time className="flex items-center" dateTime={post.updated_at}>
+              {isValidDate(state.post.updated_at) && state.post.updated_at !== state.post.created_at && (
+                <time className="flex items-center" dateTime={state.post.updated_at}>
                   <FaHistory className="mr-1" />
-                  <span>{formatDate(post.updated_at)}</span>
+                  <span>{formatDate(state.post.updated_at)}</span>
                 </time>
               )}
             </div>
@@ -189,16 +208,16 @@ function PostView({
         </header>
         <section className="mb-6 bg-gray-50 rounded-lg p-4 shadow-inner">
           <ReactQuill
-            value={post.content}
+            value={state.post.content}
             readOnly={true}
             theme="bubble"
             modules={{ toolbar: false }}
             className="prose max-w-none text-base"
           />
         </section>
-        {post.tags && post.tags.split(",").some((tag) => tag.trim() !== "") && (
+        {state.post.tags && state.post.tags.split(",").some((tag) => tag.trim() !== "") && (
           <section className="mb-4 flex flex-wrap">
-            {post.tags.split(",").map(
+            {state.post.tags.split(",").map(
               (tag, index) =>
                 tag.trim() !== "" && (
                   <span
@@ -211,20 +230,19 @@ function PostView({
             )}
           </section>
         )}
-        {post.file && (
+        {state.post.file && (
           <section className="mb-4">
             <a
-              href={`${api.defaults.baseURL}/api/v1/${post.file}`}
-              download={post.file.split("/").pop()}
+              href={`${api.defaults.baseURL}/api/v1/${state.post.file}`}
+              download={state.post.file.split("/").pop()}
               className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded transition duration-300"
             >
               <FaDownload className="mr-1 text-xs" />
-              {post.file.split("/").pop()}
+              {state.post.file.split("/").pop()}
             </a>
           </section>
         )}
         <section ref={commentSectionRef} className="mb-4"></section>
-        <div ref={commentSectionRef} className="mb-4"></div>
         <div className="flex justify-end">
           {canEditOrDelete ? (
             <div className="grid grid-cols-3 gap-2 w-full">
@@ -239,16 +257,16 @@ function PostView({
                 className="bg-amber-500 hover:bg-amber-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
                 onClick={handleHideClick}
               >
-                {post.hidden ? (
+                {state.post.hidden ? (
                   <FaEye className="mr-1 text-xs" />
                 ) : (
                   <FaEyeSlash className="mr-1 text-xs" />
                 )}
-                {post.hidden ? "Display" : "Hide"}
+                {state.post.hidden ? "Display" : "Hide"}
               </button>
               <button
                 className="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
-                onClick={() => setIsPostViewModalOpen(false)}
+                onClick={closeModal}
                 aria-label="Close"
               >
                 <FaTimes className="mr-1 text-xs" />
@@ -258,7 +276,7 @@ function PostView({
           ) : (
             <button
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded transition duration-300 flex items-center justify-center"
-              onClick={() => setIsPostViewModalOpen(false)}
+              onClick={closeModal}
               aria-label="Close"
             >
               <FaTimes className="mr-1 text-xs" />
@@ -267,7 +285,7 @@ function PostView({
           )}
         </div>
       </article>
-    </Modal >
+    </Modal>
   );
 }
 

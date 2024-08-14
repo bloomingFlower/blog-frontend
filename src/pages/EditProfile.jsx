@@ -7,7 +7,7 @@ import backgroundImage from "@img/background2.webp";
 import { trackPromise } from "react-promise-tracker";
 import { api } from "./components/api";
 import { FaPhone } from "react-icons/fa";
-import { isValidPhoneNumber, getExampleNumber } from "libphonenumber-js/max";
+import { parsePhoneNumber, isValidPhoneNumber, getExampleNumber } from "libphonenumber-js/max";
 import examples from "libphonenumber-js/examples.mobile.json";
 import DeleteAccountButton from "./components/DeleteAccountButton";
 
@@ -21,6 +21,10 @@ const EditProfile = () => {
   const [initialUser, setInitialUser] = useState(null);
   const [username, setUsername] = useState("");
   const [countryCode, setCountryCode] = useState("KR");
+  const [showModal, setShowModal] = useState(false);
+  const [showNoChangesModal, setShowNoChangesModal] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: "", message: "" });
+  const [updatedUser, setUpdatedUser] = useState(null);
 
   const countryCodes = [
     { code: "US", country: "US", dialCode: "+1" },
@@ -44,7 +48,7 @@ const EditProfile = () => {
     const fetchUser = async () => {
       try {
         const user = JSON.parse(sessionStorage.getItem("user"));
-        setInitialUser(user); // 초기 상태 저장
+        setInitialUser(user); // Save the initial state
         setUser(user);
         setFirstName(user.first_name);
         setLastName(user.last_name);
@@ -57,11 +61,25 @@ const EditProfile = () => {
     fetchUser().catch((error) => console.error(error));
   }, []);
 
+  const handlePhoneChange = (e) => {
+    const input = e.target.value.replace(/\D/g, "");
+    try {
+      const phoneNumber = parsePhoneNumber(input, countryCode);
+      if (phoneNumber) {
+        setPhone(phoneNumber.formatNational());
+      } else {
+        setPhone(input);
+      }
+    } catch (error) {
+      setPhone(input);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // user 객체 업데이트
-    const updatedUser = {
+    // Update the user object
+    const newUpdatedUser = {
       ...user,
       first_name: firstName,
       last_name: lastName,
@@ -69,29 +87,45 @@ const EditProfile = () => {
       phone: phone,
     };
 
-    if (isEqual(updatedUser, initialUser)) {
-      alert("No changes were made");
+    setUpdatedUser(newUpdatedUser);
+
+    if (isEqual(newUpdatedUser, initialUser)) {
+      setModalContent({
+        title: "Notification",
+        message: "No changes have been made.",
+      });
+      setShowNoChangesModal(true);
       return;
     }
 
-    // 전화번호 유효성 검사
-    if (!isValidPhoneNumber(updatedUser.phone, countryCode)) {
+    // Check if the phone number is valid for the selected country
+    if (!isValidPhoneNumber(newUpdatedUser.phone, countryCode)) {
       toast.error(
         "Invalid phone number. Please enter a valid phone number for the selected country."
       );
       return;
     }
 
+    // Display modal if all validation checks pass
+    setModalContent({
+      title: "Profile Update Confirmation",
+      message: "Are you sure you want to update your profile with the new information?",
+    });
+    setShowModal(true);
+  };
+
+  const submitProfileUpdate = async () => {
+    setShowModal(false);
     const jwt = sessionStorage.getItem("jwt");
     try {
       const response = await trackPromise(
         api.put(
           "/api/v1/user",
           {
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-            phone: phone,
+            first_name: updatedUser.first_name,
+            last_name: updatedUser.last_name,
+            email: updatedUser.email,
+            phone: updatedUser.phone,
           },
           {
             headers: {
@@ -102,17 +136,23 @@ const EditProfile = () => {
         )
       );
       if (response.status === 200) {
-        toast.success("Profile updated successfully");
+        toast.success("Profile updated successfully.");
         sessionStorage.setItem("user", JSON.stringify(updatedUser));
         sessionStorage.setItem("username", updatedUser.first_name);
-        setUsername(updatedUser.first_name); // username 상태 설정
+        setUsername(updatedUser.first_name);
         navigate("/");
       } else {
-        toast.error("Failed to update profile");
+        toast.error("Profile update failed.");
       }
     } catch (error) {
-      console.error("Failed to update profile:", error);
+      console.error("Profile update failed:", error);
+      toast.error("An error occurred while updating your profile.");
     }
+  };
+
+  const handleCancel = () => {
+    setShowModal(false);
+    setShowNoChangesModal(false);
   };
 
   return (
@@ -188,8 +228,8 @@ const EditProfile = () => {
                   id="phone-number"
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  maxLength={10}
+                  onChange={handlePhoneChange}
+                  maxLength={13}
                   className="appearance-none rounded-r-md relative block w-3/5 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="Phone number"
                   required
@@ -216,6 +256,48 @@ const EditProfile = () => {
           <DeleteAccountButton />
         </div>
       </div>
+
+      {(showModal || showNoChangesModal) && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                {modalContent.title}
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  {modalContent.message}
+                </p>
+              </div>
+              <div className="items-center px-4 py-3">
+                {showModal ? (
+                  <>
+                    <button
+                      onClick={submitProfileUpdate}
+                      className="px-4 py-2 bg-indigo-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-24 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleCancel}
+                    className="px-4 py-2 bg-indigo-500 text-white text-base font-medium rounded-md w-24 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    Confirm
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

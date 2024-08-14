@@ -31,7 +31,6 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   const [editorState, setEditorState] = useState("");
   const [file, setFile] = useState(null);
   const [tags, setTags] = useState([]);
-  const [isModified, setIsModified] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -42,7 +41,13 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   const tagInputRef = useRef(null);
   const [composing, setComposing] = useState(false);
   const [lastAddedTag, setLastAddedTag] = useState("");
-  // TODO : 이미지 리사이즈, 압축 기능 구현
+  const [confirmAction, setConfirmAction] = useState(null);
+  const initialStateRef = useRef({ title: "", editorState: "", file: null, tags: [] });
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [confirmModalType, setConfirmModalType] = useState('');
+  const [lastUploadTime, setLastUploadTime] = useState(0);
+  const [cooldownMessage, setCooldownMessage] = useState('');
+  const UPLOAD_COOLDOWN = 60000; // 1분 (밀리초 단위)
 
   // DOMPurify 설정
   const purifyConfig = {
@@ -129,18 +134,31 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
       try {
         const response = await trackPromise(api.get(`/api/v1/post/${postId}`));
         if (response.data.data) {
-          setTitle(response.data.data.title);
-          setEditorState(response.data.data.content);
-          // 태그 처리 로직 수정
+          const postData = response.data.data;
+          setTitle(postData.title);
+          setEditorState(postData.content);
           setTags(
-            response.data.data.tags
-              ? response.data.data.tags
-                  .split(",")
-                  .filter((tag) => tag.trim() !== "")
-                  .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
+            postData.tags
+              ? postData.tags
+                .split(",")
+                .filter((tag) => tag.trim() !== "")
+                .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
               : []
           );
-          setFile(response.data.data.file);
+          setFile(postData.file);
+
+          // Save initial state
+          initialStateRef.current = {
+            title: postData.title,
+            editorState: postData.content,
+            file: postData.file,
+            tags: postData.tags
+              ? postData.tags
+                .split(",")
+                .filter((tag) => tag.trim() !== "")
+                .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
+              : []
+          };
         } else {
           throw new Error("Post not found");
         }
@@ -151,104 +169,152 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
 
     if (postId) {
       fetchPost();
+    } else {
+      // Set initial state for new post
+      initialStateRef.current = { title: "", editorState: "", file: null, tags: [] };
     }
   }, [postId]);
 
+  // Check if there are changes
+  const checkModified = () => {
+    const initialState = initialStateRef.current;
+    return (
+      title !== initialState.title ||
+      editorState !== initialState.editorState ||
+      file !== initialState.file ||
+      JSON.stringify(tags) !== JSON.stringify(initialState.tags)
+    );
+  };
+
+  // Handle close modal
+  const handleClose = () => {
+    if (checkModified()) {
+      setConfirmAction(() => () => {
+        setIsUploadModalOpen(false);
+        refreshPosts();
+      });
+      setConfirmModalType('close');
+      setIsConfirmModalOpen(true);
+    } else {
+      setIsUploadModalOpen(false);
+      refreshPosts();
+    }
+  };
+
+  // Handle upload or update
   const handleUpload = async (e) => {
     e.preventDefault();
     if (isUploading) return;
 
-    // title과 content가 비어있는지 확인
-    if (!title.trim() || !editorState.trim()) {
-      toast.error("Title or content cannot be empty");
+    const currentTime = Date.now();
+    if (currentTime - lastUploadTime < UPLOAD_COOLDOWN) {
+      const remainingTime = Math.ceil((UPLOAD_COOLDOWN - (currentTime - lastUploadTime)) / 1000);
+      setCooldownMessage(`다시 업로드하기까지 ${remainingTime}초 남았습니다.`);
       return;
     }
 
-    setIsUploading(true);
+    setCooldownMessage(''); // 메시지 초기화
 
-    // DOMPurify를 사용하여 에디터 내용 살균 (이미지 태그 허용)
-    const sanitizedContent = DOMPurify.sanitize(editorState, purifyConfig);
-
-    // HTML Sanitization (기존 코드 유지, 추가적인 보안 층으로 사용)
-    const cleanContent = sanitizeHtml(sanitizedContent, {
-      allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-        "img",
-        "p",
-        "b",
-        "i",
-        "u",
-        "s",
-        "a",
-        "br",
-        "video",
-      ]),
-      allowedAttributes: {
-        a: ["href", "target"],
-        img: ["src", "alt", "width", "height"],
-        video: [
-          "src",
-          "controls",
-          "autoplay",
-          "muted",
-          "loop",
-          "width",
-          "height",
-        ],
-      },
-    });
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", cleanContent);
-    const tagValues = tags.map((tag) => tag.value).join(",");
-    formData.append("tags", tagValues);
-    if (file) {
-      formData.append("file", file);
+    // Check if title and content are not empty
+    if (!title.trim() || !editorState.trim()) {
+      setUpdateMessage("Title or content cannot be empty");
+      return;
     }
-    try {
-      if (postId) {
-        // If postId is provided, update the existing post
-        const response = await trackPromise(
-          api.put(`/api/v1/post/${postId}`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
-        );
-        if (response.status === 200) {
-          toast.success("Post updated successfully");
-          setIsUploadModalOpen(false);
-          refreshPosts(); // 게시물 목록 새로고침
-        } else {
-          toast.error("Failed to update post");
-        }
-      } else {
-        const response = await trackPromise(
-          api.post("/api/v1/posts", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
-        );
 
-        if (response.status === 200) {
-          toast.success("Post uploaded successfully");
-          setIsUploadModalOpen(false);
-          refreshPosts(); // 게시물 목록 새로고침
-        } else {
-          toast.error("Failed to upload post");
-        }
+    if (postId && !checkModified()) {
+      setUpdateMessage("No changes to update");
+      return;
+    }
+
+    setUpdateMessage(""); // Reset message
+    setConfirmAction(() => async () => {
+      setIsUploading(true);
+
+      // DOMPurify를 사용하여 에디터 내용 살균 (이미지 태그 허용)
+      const sanitizedContent = DOMPurify.sanitize(editorState, purifyConfig);
+
+      // HTML Sanitization (기존 코드 유지, 추가적인 보안 층으로 사용)
+      const cleanContent = sanitizeHtml(sanitizedContent, {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+          "img",
+          "p",
+          "b",
+          "i",
+          "u",
+          "s",
+          "a",
+          "br",
+          "video",
+        ]),
+        allowedAttributes: {
+          a: ["href", "target"],
+          img: ["src", "alt", "width", "height"],
+          video: [
+            "src",
+            "controls",
+            "autoplay",
+            "muted",
+            "loop",
+            "width",
+            "height",
+          ],
+        },
+      });
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", cleanContent);
+      const tagValues = tags.map((tag) => tag.value).join(",");
+      formData.append("tags", tagValues);
+      if (file) {
+        formData.append("file", file);
       }
-    } catch (error) {
-      toast.error(
-        `Failed to ${postId ? "update" : "upload"} post: ${error.message}`
-      );
-    } finally {
-      setIsUploading(false);
-    }
+      try {
+        if (postId) {
+          // If postId is provided, update the existing post
+          const response = await trackPromise(
+            api.put(`/api/v1/post/${postId}`, formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            })
+          );
+          if (response.status === 200) {
+            toast.success("Post updated successfully");
+            setIsUploadModalOpen(false);
+            refreshPosts(); // Refresh the post list
+            setLastUploadTime(Date.now()); // Update the last upload time
+          } else {
+            toast.error("Failed to update post");
+          }
+        } else {
+          const response = await trackPromise(
+            api.post("/api/v1/posts", formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            })
+          );
+
+          if (response.status === 200) {
+            toast.success("Post uploaded successfully");
+            setIsUploadModalOpen(false);
+            refreshPosts(); // Refresh the post list
+            setLastUploadTime(Date.now()); // Update the last upload time
+          } else {
+            toast.error("Failed to upload post");
+          }
+        }
+      } catch (error) {
+        setUpdateMessage(`${postId ? "Update" : "Upload"} failed: ${error.message}`);
+      } finally {
+        setIsUploading(false);
+      }
+    });
+    setConfirmModalType('save');
+    setIsConfirmModalOpen(true);
   };
 
   const handleInputChange = (content) => {
-    setIsModified(true);
     setEditorState(content);
   };
 
@@ -283,14 +349,6 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
     setTags(tags.filter((tag) => tag.value !== tagToRemove));
   };
 
-  const handleClose = () => {
-    if (isModified) {
-      setIsConfirmModalOpen(true);
-    } else {
-      setIsUploadModalOpen(false);
-      refreshPosts(); // 모달이 닫힐 때 게시물 목록 새로고침
-    }
-  };
   const titleRef = useRef(null);
 
   useEffect(() => {
@@ -317,159 +375,197 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onRequestClose={() => {
-        setIsUploadModalOpen(false);
-        refreshPosts();
-      }}
-      contentLabel="Post Upload"
-      className="w-11/12 max-w-4xl mx-auto my-4 bg-[#f8f5e6] rounded-lg shadow-2xl overflow-hidden"
-      overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-2 sm:p-4"
-      style={{
-        content: {
-          maxHeight: "90vh",
-          height: "auto",
-        },
-      }}
-    >
-      <div className="flex flex-col h-full">
-        <nav className="bg-[#e6e0cc] py-2 px-4">
-          <h2 className="text-xl font-bold text-center text-gray-800">
-            {postId ? "Edit Your Story" : "Share Your Story"}
-          </h2>
-        </nav>
-        <div className="p-6 flex-grow overflow-y-auto">
-          <input
-            ref={titleRef}
-            className="w-full mb-4 p-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300 bg-transparent"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter a title"
-            aria-label="Title"
-          />
-          <div className="mb-4" style={{ minHeight: "300px" }}>
-            <ReactQuill
-              ref={quillRef}
-              value={editorState}
-              onChange={(content, delta, source, editor) => {
-                const sanitizedContent = DOMPurify.sanitize(
-                  editor.getHTML(),
-                  purifyConfig
-                );
-                setEditorState(sanitizedContent);
-              }}
-              modules={modules}
-              theme="snow"
-              placeholder="Share your story..."
-              className="bg-white rounded-lg h-full"
-              style={{ height: "250px" }}
-              aria-label="Content"
-            />
-          </div>
-          <div className="mb-4">
-            <div
-              className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-[#f0ead6] hover:bg-[#e6e0cc]"
-              onClick={() => fileInputRef.current.click()}
-            >
-              <div className="flex items-center justify-center">
-                {file ? (
-                  <>
-                    {React.createElement(getFileIcon(file.type), {
-                      className: "h-6 w-6 text-blue-500 mr-2",
-                    })}
-                    <span className="text-sm text-gray-700 truncate">
-                      {fileName}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <DocumentIcon className="h-6 w-6 text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-500">
-                      Click to select a file
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
+    <>
+      <Modal
+        isOpen={true}
+        onRequestClose={handleClose}
+        contentLabel="Post Upload"
+        className="w-11/12 max-w-4xl mx-auto my-4 bg-[#f8f5e6] rounded-lg shadow-2xl overflow-hidden"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-2 sm:p-4"
+        style={{
+          content: {
+            maxHeight: "90vh",
+            height: "auto",
+          },
+        }}
+      >
+        <div className="flex flex-col h-full">
+          <nav className="bg-[#e6e0cc] py-2 px-4">
+            <h2 className="text-xl font-bold text-center text-gray-800">
+              {postId ? "Edit Your Story" : "Share Your Story"}
+            </h2>
+          </nav>
+          <div className="p-6 flex-grow overflow-y-auto">
             <input
-              ref={fileInputRef}
-              className="hidden"
-              type="file"
-              onChange={handleFileChange}
-              aria-label="File"
+              ref={titleRef}
+              className="w-full mb-4 p-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300 bg-transparent"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter a title"
+              aria-label="Title"
             />
-          </div>
-          <div className="mb-4">
-            <div className="flex flex-wrap items-center gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-[#f0ead6]">
-              {tags.map((tag) => (
-                <span
-                  key={tag.value}
-                  className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center"
-                >
-                  #{tag.value}
-                  <button
-                    onClick={() => removeTag(tag.value)}
-                    className="ml-1 text-gray-500 hover:text-gray-700"
-                  >
-                    &times;
-                  </button>
-                </span>
-              ))}
-              <input
-                ref={tagInputRef}
-                type="text"
-                value={tagInput}
-                onChange={handleTagInputChange}
-                onKeyDown={handleTagInputKeyDown}
-                onCompositionStart={() => setComposing(true)}
-                onCompositionEnd={() => {
-                  setComposing(false);
-                  // 조합이 끝났을 때 태그를 즉시 추가하지 않음
+            <div className="mb-4" style={{ minHeight: "300px" }}>
+              <ReactQuill
+                ref={quillRef}
+                value={editorState}
+                onChange={(content, delta, source, editor) => {
+                  const sanitizedContent = DOMPurify.sanitize(
+                    editor.getHTML(),
+                    purifyConfig
+                  );
+                  setEditorState(sanitizedContent);
                 }}
-                placeholder="Add a tag... (Enter to add)"
-                className="flex-grow bg-transparent outline-none text-sm"
+                modules={modules}
+                theme="snow"
+                placeholder="Share your story..."
+                className="bg-white rounded-lg h-full"
+                style={{ height: "250px" }}
+                aria-label="Content"
               />
             </div>
-          </div>
-        </div>
-
-        <footer className="bg-[#e6e0cc] p-4">
-          <div className="flex space-x-4">
-            <button
-              className={`flex-1 py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleUpload}
-              disabled={isUploading}
-              aria-label="Upload"
-            >
-              {isUploading ? (
+            <div className="mb-4">
+              <div
+                className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-[#f0ead6] hover:bg-[#e6e0cc]"
+                onClick={() => fileInputRef.current.click()}
+              >
                 <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                  {postId ? "Updating..." : "Uploading..."}
+                  {file ? (
+                    <>
+                      {React.createElement(getFileIcon(file.type), {
+                        className: "h-6 w-6 text-blue-500 mr-2",
+                      })}
+                      <span className="text-sm text-gray-700 truncate">
+                        {fileName}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <DocumentIcon className="h-6 w-6 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-500">
+                        Click to select a file
+                      </span>
+                    </>
+                  )}
                 </div>
-              ) : postId ? (
-                "Update"
-              ) : (
-                "Upload"
-              )}
-            </button>
-            <button
-              className={`flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${
-                isUploading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={handleClose}
-              disabled={isUploading}
-              aria-label="Cancel"
-            >
-              Cancel
-            </button>
+              </div>
+              <input
+                ref={fileInputRef}
+                className="hidden"
+                type="file"
+                onChange={handleFileChange}
+                aria-label="File"
+              />
+            </div>
+            <div className="mb-4">
+              <div className="flex flex-wrap items-center gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-[#f0ead6]">
+                {tags.map((tag) => (
+                  <span
+                    key={tag.value}
+                    className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center"
+                  >
+                    #{tag.value}
+                    <button
+                      onClick={() => removeTag(tag.value)}
+                      className="ml-1 text-gray-500 hover:text-gray-700"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+                <input
+                  ref={tagInputRef}
+                  type="text"
+                  value={tagInput}
+                  onChange={handleTagInputChange}
+                  onKeyDown={handleTagInputKeyDown}
+                  onCompositionStart={() => setComposing(true)}
+                  onCompositionEnd={() => {
+                    setComposing(false);
+                    // 조합이 끝났을 때 태그를 즉시 추가하지 않음
+                  }}
+                  placeholder="Add a tag... (Enter to add)"
+                  className="flex-grow bg-transparent outline-none text-sm"
+                />
+              </div>
+            </div>
           </div>
-        </footer>
-      </div>
-    </Modal>
+
+          <footer className="bg-[#e6e0cc] p-4">
+            <div className="flex flex-col space-y-2">
+              {updateMessage && (
+                <p className="text-sm text-red-500 mb-2">{updateMessage}</p>
+              )}
+              {cooldownMessage && (
+                <p className="text-sm text-orange-500 mb-2">{cooldownMessage}</p>
+              )}
+              <div className="flex space-x-4">
+                <button
+                  className={`flex-1 py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${isUploading || cooldownMessage ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  onClick={handleUpload}
+                  disabled={isUploading || !!cooldownMessage}
+                  aria-label="Upload"
+                >
+                  {isUploading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                      {postId ? "Updating..." : "Uploading..."}
+                    </div>
+                  ) : postId ? (
+                    "Update"
+                  ) : (
+                    "Upload"
+                  )}
+                </button>
+                <button
+                  className={`flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${isUploading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  onClick={handleClose}
+                  disabled={isUploading}
+                  aria-label="Cancel"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </Modal>
+
+      {/* Confirmation Modal */}
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onRequestClose={() => setIsConfirmModalOpen(false)}
+        contentLabel="Confirm Action"
+        className="w-96 mx-auto my-20 bg-white rounded-lg shadow-xl p-6"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+      >
+        <h2 className="text-xl font-bold mb-4">Confirm Action</h2>
+        <p className="mb-6">
+          {confirmModalType === 'close'
+            ? "You have unsaved changes. Are you sure you want to close without saving?"
+            : "Are you sure you want to save these changes?"}
+        </p>
+        <div className="flex justify-end space-x-4">
+          <button
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            onClick={() => setIsConfirmModalOpen(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={() => {
+              setIsConfirmModalOpen(false);
+              confirmAction();
+            }}
+          >
+            Confirm
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 }
 

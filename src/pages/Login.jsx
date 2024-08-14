@@ -46,11 +46,13 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // AuthContext에서 user와 isLoggedIn을 가져옵니다.
+  const { user, isLoggedIn, setUser, login } = useContext(AuthContext);
+
   const [rememberMe, setRememberMe] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [storedUsername, setStoredUsername] = useState(""); // Generate a state to store the username of the logged-in user
-  const { isLoggedIn, setIsLoggedIn, setUser } = useContext(AuthContext); // get setIsLoggedIn function
+  const [storedUsername, setStoredUsername] = useState("");
   const [inputCompleted, setInputCompleted] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState("white");
   const [isEmailInvalid, setIsEmailInvalid] = useState(false);
@@ -207,10 +209,7 @@ const Login = () => {
         }
 
         setUsername(data.user.first_name); // Set username state
-        setIsLoggedIn(true); // Set isLoggedIn state to true
-        setUser(data.user); // Update user state in AuthContext
-        sessionStorage.setItem("isLoggedIn", true); // Save isLoggedIn state to session storage
-
+        login(data.user); // Update user state in AuthContext
         navigate("/", { replace: true });
       } else {
         toast.error("Failed to log in: " + response.status);
@@ -321,7 +320,6 @@ const Login = () => {
             sessionStorage.setItem("isLoggedIn", "true");
 
             setUsername(user.first_name || user.login);
-            setIsLoggedIn(true);
             setUser(user);
 
             toast.success("OAuth login successful!");
@@ -415,6 +413,13 @@ const Login = () => {
     <p class="mb-4 text-gray-700">We store all user data securely in encrypted databases. We never share your personal information with third parties without your explicit consent, except as required by law.</p>
   `;
 
+  // 사용자 이니셜을 생성하는 함수
+  const getUserInitials = (name) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    return names.map(n => n[0]).join('').toUpperCase();
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col justify-between bg-cover py-12 px-4 sm:px-6 lg:px-8"
@@ -423,12 +428,27 @@ const Login = () => {
       <div className="flex-grow flex items-center justify-center">
         <div className="max-w-md w-full space-y-8 bg-white bg-opacity-80 p-6 sm:p-10 rounded-xl shadow-2xl">
           <div>
-            {isLoggedIn ? (
+            {isLoggedIn && user ? (
               <>
                 <h1 className="text-2xl font-bold mb-4">
-                  What can we help you? {storedUsername}
+                  What can we help you? {user.first_name || storedUsername}
                 </h1>
                 <div className="flex items-center space-x-4">
+                  {user.picture ? (
+                    <img
+                      src={user.picture}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full cursor-pointer"
+                      onClick={() => navigate('/edit-profile')}
+                    />
+                  ) : (
+                    <div
+                      className="w-8 h-8 rounded-full cursor-pointer flex items-center justify-center bg-indigo-600 text-white text-sm font-bold"
+                      onClick={() => navigate('/edit-profile')}
+                    >
+                      {getUserInitials(user.first_name || storedUsername)}
+                    </div>
+                  )}
                   <a
                     href="/edit-profile"
                     className="text-indigo-600 text-sm hover:text-indigo-500"
@@ -633,12 +653,6 @@ const Login = () => {
         title={modalContent.title}
         content={modalContent.content}
       />
-
-      <footer className="mt-8 text-center text-xs text-gray-500">
-        <button onClick={() => openModal("Privacy Policy", privacyContent)} className="hover:text-gray-700 mr-4">Privacy Policy</button>
-        <button onClick={() => openModal("Terms of Service", termsContent)} className="hover:text-gray-700 mr-4">Terms of Service</button>
-        <button onClick={() => openModal("Data Handling", dataHandlingContent)} className="hover:text-gray-700">Data Handling</button>
-      </footer>
     </div>
   );
 };

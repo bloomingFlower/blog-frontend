@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { AuthContext } from "./AuthContext";
 
-function WelcomeMessage({ username }) {
+function WelcomeMessage() {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   const messageRef = useRef(null);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    const fullMessage = username
-      ? `Welcome to Over Engineered blog, ${username} :)`
+    const fullMessage = user
+      ? `Welcome to Over Engineered blog, ${user.first_name || 'Anonymous'} :)`
       : "Welcome to Over Engineered blog :)";
 
     let currentIndex = 0;
@@ -22,7 +24,7 @@ function WelcomeMessage({ username }) {
     }, 100);
 
     return () => clearInterval(typingInterval);
-  }, [username]);
+  }, [user]);
 
   return (
     <h1

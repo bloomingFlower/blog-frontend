@@ -232,8 +232,11 @@ function Post() {
     fetchPosts(1);
   }, [fetchPosts]);
 
+  const [isPostStatusChanged, setIsPostStatusChanged] = useState(false);
+
   const refreshPosts = useCallback(() => {
     fetchPosts(page);
+    setIsPostStatusChanged(false);
   }, [fetchPosts, page]);
 
   const isNewPost = (createdAt) => {
@@ -254,7 +257,7 @@ function Post() {
   };
 
   useEffect(() => {
-    // 세션 스토리지에서 사용자 정보를 가져옵니다.
+    // Get user information from session storage
     const userDataString = sessionStorage.getItem("user");
     if (userDataString) {
       const userData = JSON.parse(userDataString);
@@ -317,6 +320,7 @@ function Post() {
               setEditingPostId={setEditingPostId}
               setIsUploadModalOpen={setIsUploadModalOpen}
               refreshPosts={refreshPosts}
+              setIsPostStatusChanged={setIsPostStatusChanged}
             />
           )}
           <div className="max-w-7xl mx-auto">

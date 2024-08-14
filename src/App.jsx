@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, lazy, Suspense, useContext } from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense, useContext, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -42,9 +42,12 @@ function AppContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
-  const [remainingTime, setRemainingTime] = useState(30 * 60 * 1000); // 30 minutes
+  const [remainingTime, setRemainingTime] = useState(30 * 60 * 1000); // 초기값으로 30분 설정
   const [isSearchAnimating, setIsSearchAnimating] = useState(false);
   const { user, isLoggedIn } = useContext(AuthContext); // Get user information from AuthContext
+  const [isSuperMode, setIsSuperMode] = useState(false);
+  const [timerColor, setTimerColor] = useState("text-black");
+  const [profileImageFilter, setProfileImageFilter] = useState('');
 
   const navigate = useNavigate();
 
@@ -131,11 +134,73 @@ function AppContent() {
     navigate('/edit-profile');
   };
 
+  // Super mode toggle function
+  const toggleSuperMode = () => {
+    setIsSuperMode(!isSuperMode);
+  };
+
+  const colors = [
+    "text-red-500",
+    "text-yellow-500",
+    "text-green-500",
+    "text-blue-500",
+    "text-indigo-500",
+    "text-purple-500",
+    "text-pink-500",
+  ];
+
+  const colorFilters = [
+    'hue-rotate(0deg)',
+    'hue-rotate(60deg)',
+    'hue-rotate(120deg)',
+    'hue-rotate(180deg)',
+    'hue-rotate(240deg)',
+    'hue-rotate(300deg)',
+  ];
+
+  // Super mode effect
+  useEffect(() => {
+    let timerColorInterval;
+    let profileFilterInterval;
+
+    if (isSuperMode) {
+      // Change timer color
+      timerColorInterval = setInterval(() => {
+        setTimerColor(colors[Math.floor(Math.random() * colors.length)]);
+      }, 200);
+
+      // Change profile image color filter
+      profileFilterInterval = setInterval(() => {
+        setProfileImageFilter(colorFilters[Math.floor(Math.random() * colorFilters.length)]);
+      }, 200);
+    } else {
+      setTimerColor("text-black");
+      setProfileImageFilter('');
+    }
+
+    return () => {
+      clearInterval(timerColorInterval);
+      clearInterval(profileFilterInterval);
+    };
+  }, [isSuperMode]);
+
+  const handleTimeUpdate = useCallback((newTime) => {
+    setRemainingTime(newTime);
+  }, []);
+
+  // 사용자 이니셜을 생성하는 함수
+  const getUserInitials = (name) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    return names.map(n => n[0]).join('').toUpperCase();
+  };
+
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
+      <ActivityMonitor onTimeUpdate={handleTimeUpdate} isSuperMode={isSuperMode} setSuperMode={setIsSuperMode} />
       <header>
         <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50">
           <Link to="/" className="text-lg sm:text-xl">
@@ -144,19 +209,27 @@ function AppContent() {
           <div className="flex items-center" ref={searchRef}>
             {isLoggedIn && user && (
               <>
-                <span className="hidden md:inline-block mr-4 text-xs sm:text-sm">
+                <span className={`hidden md:inline-block mr-4 text-xs sm:text-sm ${timerColor} transition-colors duration-200`}>
                   Remaining login time: {formatTime(remainingTime)}
                 </span>
-                <span className="md:hidden mr-2 text-xs">
+                <span className={`md:hidden mr-2 text-xs ${timerColor} transition-colors duration-200`}>
                   {formatTimeForMobile(remainingTime)}
                 </span>
-                {user.picture && (
+                {user.picture ? (
                   <img
                     src={user.picture}
                     alt="Profile"
-                    className="w-8 h-8 rounded-full cursor-pointer mr-2"
+                    className="w-8 h-8 rounded-full cursor-pointer mr-2 transition-all duration-200"
+                    style={{ filter: profileImageFilter }}
                     onClick={handleProfileClick}
                   />
+                ) : (
+                  <div
+                    className="w-8 h-8 rounded-full cursor-pointer mr-2 flex items-center justify-center bg-indigo-600 text-white text-sm font-bold"
+                    onClick={handleProfileClick}
+                  >
+                    {getUserInitials(user.first_name)}
+                  </div>
                 )}
               </>
             )}
@@ -219,7 +292,6 @@ function AppContent() {
           </section>
         )}
         <Suspense fallback={<LoadingIndicator />}>
-          <ActivityMonitor onTimeUpdate={setRemainingTime} />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/post" element={<Post />} />
@@ -259,7 +331,7 @@ function AppContent() {
       />
       <footer className="fixed bottom-0 left-0 right-0 bg-white">
         <Suspense fallback={<LoadingIndicator />}>
-          <Footer />
+          <Footer isSuperMode={isSuperMode} toggleSuperMode={toggleSuperMode} />
         </Suspense>
       </footer>
     </div>

@@ -25,6 +25,7 @@ const Signup = () => {
   const [countryCode, setCountryCode] = useState("KR"); // 국가 코드 상태 추가
   const [emailExists, setEmailExists] = useState(false); // 이메일 존재 상태 추가
   const emailRef = useRef(); // 이메일 입력 필드 참조 생성
+  const [showModal, setShowModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -55,10 +56,9 @@ const Signup = () => {
   const { promiseInProgress } = usePromiseTracker();
 
   const handleSubmit = async (e) => {
-    // Add async keyword here
     e.preventDefault();
 
-    // 패스워드 복잡도 검사
+    // Password complexity check
     const passwordRegex =
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
 
@@ -69,7 +69,7 @@ const Signup = () => {
       return;
     }
 
-    // 패스워드 확인 검사
+    // Password confirmation check
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -82,7 +82,12 @@ const Signup = () => {
       return;
     }
 
-    // 회원가입 로직 구현
+    // If all validation checks pass, display the modal
+    setShowModal(true);
+  };
+
+  const submitSignup = async () => {
+    setShowModal(false);
     try {
       const response = await trackPromise(
         api.post("/api/v1/register", {
@@ -95,24 +100,28 @@ const Signup = () => {
       );
 
       if (response.status === 201) {
-        // 회원가입 성공 후 홈페이지로 이동
+        toast.success("회원가입이 완료되었습니다.");
         navigate("/");
       } else {
-        // 에러 메시지 표시
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
       if (
         error.response &&
         error.response.data.message === "Email already exists"
       ) {
-        setEmailExists(true); // 이메일이 이미 존재하면 상태를 true로 설정
+        setEmailExists(true); // If the email already exists, set the state to true
       } else {
         console.error("Signup failed:", error);
       }
     }
   };
-  // 이메일이 이미 존재하면 이메일 입력 필드에 포커스
+
+  const handleCancel = () => {
+    setShowModal(false);
+  };
+
+  // If the email already exists, focus on the email input field
   useEffect(() => {
     if (emailExists) {
       emailRef.current.focus();
@@ -227,8 +236,8 @@ const Signup = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 maxLength={50}
                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${password !== confirmPassword && password && confirmPassword
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  ? "border-red-500"
+                  : "border-gray-300"
                   } placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10`}
                 placeholder="Confirm Password"
                 required
@@ -283,6 +292,36 @@ const Signup = () => {
           </a>
         </div>
       </div>
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Sign Up Confirmation
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to sign up with the information you entered?
+                </p>
+              </div>
+              <div className="items-center px-4 py-3">
+                <button
+                  onClick={submitSignup}
+                  className="px-4 py-2 bg-indigo-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-24 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

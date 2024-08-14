@@ -1,37 +1,47 @@
-import { useEffect, useContext, useRef } from "react";
+import React, { useEffect, useContext, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30분
 
-function ActivityMonitor({ onTimeUpdate }) {
+function ActivityMonitor({ onTimeUpdate, isSuperMode, setSuperMode }) {
   const navigate = useNavigate();
-  const { setIsLoggedIn } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
+  const [timeLeft, setTimeLeft] = useState(INACTIVITY_TIMEOUT);
   const timeoutRef = useRef(null);
   const intervalRef = useRef(null);
 
+  const handleInactivityLogout = useCallback(() => {
+    logout(); // AuthContext의 logout 함수 호출
+    setSuperMode(false); // 슈퍼모드 해제
+    navigate("/", { replace: true });
+  }, [logout, navigate, setSuperMode]);
+
+  const resetTimer = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    setTimeLeft(INACTIVITY_TIMEOUT);
+    onTimeUpdate(INACTIVITY_TIMEOUT);
+
+    timeoutRef.current = setTimeout(handleInactivityLogout, INACTIVITY_TIMEOUT);
+
+    const intervalTime = isSuperMode ? 10 : 1000;
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        const newTime = prevTime - 1000;
+        const updatedTime = Math.max(newTime, 0);
+        onTimeUpdate(updatedTime);
+        if (updatedTime <= 0) {
+          clearInterval(intervalRef.current);
+          handleInactivityLogout();
+        }
+        return updatedTime;
+      });
+    }, intervalTime);
+  }, [isSuperMode, onTimeUpdate, handleInactivityLogout]);
+
   useEffect(() => {
-    const logout = () => {
-      setIsLoggedIn(false);
-      sessionStorage.clear();
-      navigate("/");
-    };
-
-    const resetTimer = () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (intervalRef.current) clearInterval(intervalRef.current);
-
-      let timeLeft = INACTIVITY_TIMEOUT;
-      onTimeUpdate(timeLeft);
-
-      timeoutRef.current = setTimeout(logout, INACTIVITY_TIMEOUT);
-      intervalRef.current = setInterval(() => {
-        timeLeft -= 1000;
-        onTimeUpdate(Math.max(timeLeft, 0));
-        if (timeLeft <= 0) clearInterval(intervalRef.current);
-      }, 1000);
-    };
-
     const handleActivity = () => {
       resetTimer();
     };
@@ -41,7 +51,7 @@ function ActivityMonitor({ onTimeUpdate }) {
       document.addEventListener(event, handleActivity);
     });
 
-    resetTimer(); // 초기 타이머 설정
+    resetTimer();
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -50,9 +60,9 @@ function ActivityMonitor({ onTimeUpdate }) {
         document.removeEventListener(event, handleActivity);
       });
     };
-  }, [navigate, setIsLoggedIn, onTimeUpdate]);
+  }, [resetTimer]);
 
   return null;
 }
 
-export default ActivityMonitor;
+export default React.memo(ActivityMonitor);
