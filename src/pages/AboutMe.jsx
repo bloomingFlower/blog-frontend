@@ -116,12 +116,11 @@ function AboutMe() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Helmet>
-        <title>About Me</title>
+        <title>Jaeyoung Yun</title>
         <meta name="description" content="About me page of my website" />
       </Helmet>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">About Me</h1>
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <Link
             to="/"
             className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -130,6 +129,10 @@ function AboutMe() {
             블로그 둘러보기
           </Link>
         </div>
+
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">Jaeyoung Yun</h1>
+        <p className="text-xl text-center text-gray-600 mb-2">Passionate Computer Engineer</p>
+        <p className="text-lg text-center text-gray-600 mb-6">Crafting Products and Generating Business Value with Code</p>
 
         <div className="flex flex-col md:flex-row">
           {/* left sidebar */}

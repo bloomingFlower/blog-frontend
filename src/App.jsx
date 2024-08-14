@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, lazy, Suspense, useContext, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingIndicator from "./pages/components/LoadingIndicator";
@@ -36,6 +36,16 @@ const ActivityMonitor = lazy(() =>
   import("./pages/components/ActivityMonitor")
 );
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function AppContent() {
   const [isSearchInputVisible, setIsSearchInputVisible] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -59,7 +69,7 @@ function AppContent() {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+      if (event && event.target && searchRef.current && !searchRef.current.contains(event.target)) {
         resetSearchState();
       }
     }
@@ -200,9 +210,10 @@ function AppContent() {
       className="min-h-screen bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
+      <ScrollToTop />
       <ActivityMonitor onTimeUpdate={handleTimeUpdate} isSuperMode={isSuperMode} setSuperMode={setIsSuperMode} />
       <header>
-        <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50">
+        <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50 shadow-sm">
           <Link to="/" className="text-lg sm:text-xl">
             Our Journey
           </Link>

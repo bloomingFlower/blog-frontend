@@ -87,45 +87,41 @@ function PostView({
     };
 
     fetchPost();
-  }, [postId, navigate]);
+  }, [postId]);
 
-  useEffect(() => {
-    if (state.post) {
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/remark42@latest/web/embed.js";
-      script.async = true;
+  // useEffect(() => {
+  //   if (state.post) {
+  //     const script = document.createElement("script");
+  //     script.src = "https://cdn.jsdelivr.net/npm/remark42@latest/web/embed.js";
+  //     script.async = true;
 
-      script.onload = () => {
-        if (window.REMARK42) {
-          window.REMARK42.createInstance({
-            host: "YOUR_REMARK42_HOST",
-            siteId: "YOUR_SITE_ID",
-            url: window.location.origin + window.location.pathname,
-            componentName: "remark42",
-            container: commentSectionRef.current,
-          });
-        }
-      };
+  //     script.onload = () => {
+  //       if (window.REMARK42) {
+  //         window.REMARK42.createInstance({
+  //           host: "YOUR_REMARK42_HOST",
+  //           siteId: "YOUR_SITE_ID",
+  //           url: window.location.origin + window.location.pathname,
+  //           componentName: "remark42",
+  //           container: commentSectionRef.current,
+  //         });
+  //       }
+  //     };
 
-      document.body.appendChild(script);
+  //     document.body.appendChild(script);
 
-      return () => {
-        document.body.removeChild(script);
-        if (window.REMARK42) {
-          window.REMARK42.destroy();
-        }
-      };
-    }
-  }, [state.post]);
+  //     return () => {
+  //       document.body.removeChild(script);
+  //       if (window.REMARK42) {
+  //         window.REMARK42.destroy();
+  //       }
+  //     };
+  //   }
+  // }, [state.post]);
 
   useEffect(() => {
     // Release loading state when data is loaded
     return () => setLoadingPostId(null);
   }, [postId, setLoadingPostId]);
-
-  if (!state.post) {
-    return <LoadingIndicator />;
-  }
 
   const handleEditClick = () => {
     setIsPostViewModalOpen(false);
@@ -171,6 +167,10 @@ function PostView({
     }
     setIsPostViewModalOpen(false);
   };
+
+  if (!state.post) {
+    return null;
+  }
 
   return (
     <Modal
