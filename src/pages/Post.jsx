@@ -20,8 +20,10 @@ import {
   FaEdit,
   FaEyeSlash,
   FaPaperclip,
+  FaFolder,
 } from "react-icons/fa";
 import { FaGolang } from "react-icons/fa6";
+import { ClipLoader } from "react-spinners";
 
 function Post() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -59,7 +61,10 @@ function Post() {
     </svg>
   );
 
+  const [loadingPostId, setLoadingPostId] = useState(null);
+
   const handlePostClick = (postId) => {
+    setLoadingPostId(postId);
     setSelectedPostId(postId);
     setIsPostViewModalOpen(true);
   };
@@ -265,12 +270,34 @@ function Post() {
     }
   }, [isLoggedIn]);
 
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  // Get unique categories
+  const getUniqueCategories = useMemo(() => {
+    const categories = new Set(posts.map(post => post.category || 'Uncategorized'));
+    return ['All', ...Array.from(categories)];
+  }, [posts]);
+
+  // Category selection handler
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+  };
+
+  // Filter posts by category
   const filteredPosts = useMemo(() => {
-    return (searchResults.length > 0 ? searchResults : posts).filter((post) => {
+    let filtered = (searchResults.length > 0 ? searchResults : posts).filter((post) => {
       if (!post.hidden) return true;
       return post.user.first_name + "#" + post.user.id === currentUserId;
     });
-  }, [searchResults, posts, currentUserId]);
+
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(post =>
+        (post.category || 'Uncategorized') === selectedCategory
+      );
+    }
+
+    return filtered;
+  }, [searchResults, posts, currentUserId, selectedCategory]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -321,6 +348,7 @@ function Post() {
               setIsUploadModalOpen={setIsUploadModalOpen}
               refreshPosts={refreshPosts}
               setIsPostStatusChanged={setIsPostStatusChanged}
+              setLoadingPostId={setLoadingPostId}
             />
           )}
           <div className="max-w-7xl mx-auto">
@@ -371,6 +399,21 @@ function Post() {
               )}
             </div>
 
+            <div className="mb-6 flex flex-wrap justify-center gap-2">
+              {getUniqueCategories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => handleCategorySelect(category)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${selectedCategory === category
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <LoadingIndicator />
@@ -391,10 +434,16 @@ function Post() {
                     <div
                       className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 
                         ${isNew ? "ring-2 ring-green-500" : ""}
-                        ${post.hidden ? "opacity-50 bg-gray-100" : ""}`}
+                        ${post.hidden ? "opacity-50 bg-gray-100" : ""}
+                        ${loadingPostId === post.id ? "relative" : ""}`}
                       onClick={() => handlePostClick(post.id)}
                       key={post.id}
                     >
+                      {loadingPostId === post.id && (
+                        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+                          <ClipLoader color="#4A90E2" size={50} />
+                        </div>
+                      )}
                       <div className="p-6">
                         <div className="flex flex-col mb-2">
                           <h2 className="text-xl font-semibold text-gray-900 truncate mb-2">
@@ -427,6 +476,12 @@ function Post() {
                               <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded inline-flex items-center">
                                 <FaPaperclip className="mr-1" />
                                 File
+                              </span>
+                            )}
+                            {post.category && (
+                              <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded inline-flex items-center">
+                                <FaFolder className="mr-1" />
+                                {post.category}
                               </span>
                             )}
                           </div>

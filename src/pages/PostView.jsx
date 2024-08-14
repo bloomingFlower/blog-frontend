@@ -17,6 +17,7 @@ import {
   FaTimes,
   FaCalendarAlt,
   FaHistory,
+  FaFolder,
 } from "react-icons/fa";
 import { format } from "date-fns";
 
@@ -48,6 +49,7 @@ function PostView({
   setIsUploadModalOpen,
   refreshPosts,
   setIsPostStatusChanged,
+  setLoadingPostId,
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
@@ -115,6 +117,11 @@ function PostView({
       };
     }
   }, [state.post]);
+
+  useEffect(() => {
+    // Release loading state when data is loaded
+    return () => setLoadingPostId(null);
+  }, [postId, setLoadingPostId]);
 
   if (!state.post) {
     return <LoadingIndicator />;
@@ -204,6 +211,13 @@ function PostView({
                 </time>
               )}
             </div>
+
+            {state.post.category && (
+              <div className="flex items-center mt-1">
+                <FaFolder className="mr-1" />
+                <span className="font-medium">{state.post.category}</span>
+              </div>
+            )}
           </div>
         </header>
         <section className="mb-6 bg-gray-50 rounded-lg p-4 shadow-inner">

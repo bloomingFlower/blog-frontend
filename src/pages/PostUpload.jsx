@@ -23,6 +23,7 @@ import {
   VideoCameraIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
+import { FaFolder } from "react-icons/fa";
 
 Quill.register("modules/imageUploader", ImageUploader);
 
@@ -42,14 +43,20 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   const [composing, setComposing] = useState(false);
   const [lastAddedTag, setLastAddedTag] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
-  const initialStateRef = useRef({ title: "", editorState: "", file: null, tags: [] });
+  const initialStateRef = useRef({ title: "", editorState: "", file: null, tags: [], category: "" });
   const [updateMessage, setUpdateMessage] = useState("");
   const [confirmModalType, setConfirmModalType] = useState('');
   const [lastUploadTime, setLastUploadTime] = useState(0);
   const [cooldownMessage, setCooldownMessage] = useState('');
   const UPLOAD_COOLDOWN = 60000; // 1분 (밀리초 단위)
+  const [category, setCategory] = useState("");
 
-  // DOMPurify 설정
+  // Category options
+  const categoryOptions = [
+    "Tech", "Travel", "Book", "Secret", "Food", "Sports", "Movie", "Music"
+  ];
+
+  // DOMPurify configuration
   const purifyConfig = {
     ADD_TAGS: ["img"],
     ADD_ATTR: ["src", "alt", "width", "height"],
@@ -146,6 +153,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
               : []
           );
           setFile(postData.file);
+          setCategory(postData.category || "");
 
           // Save initial state
           initialStateRef.current = {
@@ -157,7 +165,8 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                 .split(",")
                 .filter((tag) => tag.trim() !== "")
                 .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
-              : []
+              : [],
+            category: postData.category || ""
           };
         } else {
           throw new Error("Post not found");
@@ -171,7 +180,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
       fetchPost();
     } else {
       // Set initial state for new post
-      initialStateRef.current = { title: "", editorState: "", file: null, tags: [] };
+      initialStateRef.current = { title: "", editorState: "", file: null, tags: [], category: "" };
     }
   }, [postId]);
 
@@ -182,7 +191,8 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
       title !== initialState.title ||
       editorState !== initialState.editorState ||
       file !== initialState.file ||
-      JSON.stringify(tags) !== JSON.stringify(initialState.tags)
+      JSON.stringify(tags) !== JSON.stringify(initialState.tags) ||
+      category !== initialState.category
     );
   };
 
@@ -213,7 +223,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
       return;
     }
 
-    setCooldownMessage(''); // 메시지 초기화
+    setCooldownMessage(''); // Reset message
 
     // Check if title and content are not empty
     if (!title.trim() || !editorState.trim()) {
@@ -230,10 +240,10 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
     setConfirmAction(() => async () => {
       setIsUploading(true);
 
-      // DOMPurify를 사용하여 에디터 내용 살균 (이미지 태그 허용)
+      // DOMPurify to sanitize the editor content (allowing image tags)
       const sanitizedContent = DOMPurify.sanitize(editorState, purifyConfig);
 
-      // HTML Sanitization (기존 코드 유지, 추가적인 보안 층으로 사용)
+      // HTML Sanitization (keeping the original code, using as an additional security layer)
       const cleanContent = sanitizeHtml(sanitizedContent, {
         allowedTags: sanitizeHtml.defaults.allowedTags.concat([
           "img",
@@ -265,6 +275,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
       formData.append("content", cleanContent);
       const tagValues = tags.map((tag) => tag.value).join(",");
       formData.append("tags", tagValues);
+      formData.append("category", category || "Others"); // Add category or set to "Others" if not selected
       if (file) {
         formData.append("file", file);
       }
@@ -374,6 +385,11 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
     }
   };
 
+  // Category selection handler
+  const handleCategorySelect = (selectedCategory) => {
+    setCategory(selectedCategory === category ? "" : selectedCategory);
+  };
+
   return (
     <>
       <Modal
@@ -389,13 +405,14 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
           },
         }}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full max-h-full">
           <nav className="bg-[#e6e0cc] py-2 px-4">
             <h2 className="text-xl font-bold text-center text-gray-800">
               {postId ? "Edit Your Story" : "Share Your Story"}
             </h2>
           </nav>
-          <div className="p-6 flex-grow overflow-y-auto">
+
+          <div className="p-4 sm:p-6 flex-grow flex flex-col overflow-y-auto">
             <input
               ref={titleRef}
               className="w-full mb-4 p-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300 bg-transparent"
@@ -405,7 +422,9 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
               placeholder="Enter a title"
               aria-label="Title"
             />
-            <div className="mb-4" style={{ minHeight: "300px" }}>
+
+            {/* ReactQuill editor area */}
+            <div className="mb-4 h-64 sm:h-96 overflow-y-auto">
               <ReactQuill
                 ref={quillRef}
                 value={editorState}
@@ -419,11 +438,13 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                 modules={modules}
                 theme="snow"
                 placeholder="Share your story..."
-                className="bg-white rounded-lg h-full"
-                style={{ height: "250px" }}
+                className="h-full"
+                style={{ height: "100%" }}
                 aria-label="Content"
               />
             </div>
+
+            {/* file upload area */}
             <div className="mb-4">
               <div
                 className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-[#f0ead6] hover:bg-[#e6e0cc]"
@@ -435,7 +456,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                       {React.createElement(getFileIcon(file.type), {
                         className: "h-6 w-6 text-blue-500 mr-2",
                       })}
-                      <span className="text-sm text-gray-700 truncate">
+                      <span className="text-sm text-gray-700 truncate max-w-[200px]">
                         {fileName}
                       </span>
                     </>
@@ -457,12 +478,14 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                 aria-label="File"
               />
             </div>
+
+            {/* tag input area */}
             <div className="mb-4">
               <div className="flex flex-wrap items-center gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-[#f0ead6]">
                 {tags.map((tag) => (
                   <span
                     key={tag.value}
-                    className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center"
+                    className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center mb-1"
                   >
                     #{tag.value}
                     <button
@@ -485,9 +508,40 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                     // 조합이 끝났을 때 태그를 즉시 추가하지 않음
                   }}
                   placeholder="Add a tag... (Enter to add)"
-                  className="flex-grow bg-transparent outline-none text-sm"
+                  className="flex-grow bg-transparent outline-none text-sm w-full"
                 />
               </div>
+            </div>
+
+            {/* category selection area */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {categoryOptions.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleCategorySelect(option)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium mb-1 ${category === option
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+              {category && (
+                <p className="mt-2 text-sm text-gray-600">
+                  Selected category: {category}
+                </p>
+              )}
+              {!category && (
+                <p className="mt-2 text-sm text-gray-600">
+                  No category selected (will be set as "Others")
+                </p>
+              )}
             </div>
           </div>
 
@@ -499,9 +553,9 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
               {cooldownMessage && (
                 <p className="text-sm text-orange-500 mb-2">{cooldownMessage}</p>
               )}
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                 <button
-                  className={`flex-1 py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${isUploading || cooldownMessage ? "opacity-50 cursor-not-allowed" : ""
+                  className={`w-full sm:w-auto py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${isUploading || cooldownMessage ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   onClick={handleUpload}
                   disabled={isUploading || !!cooldownMessage}
@@ -519,7 +573,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                   )}
                 </button>
                 <button
-                  className={`flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${isUploading ? "opacity-50 cursor-not-allowed" : ""
+                  className={`w-full sm:w-auto py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${isUploading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   onClick={handleClose}
                   disabled={isUploading}
