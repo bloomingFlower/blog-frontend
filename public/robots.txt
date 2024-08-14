@@ -1,6 +1,6 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow: /private
+Disallow: /about-me
 
 Sitemap: https://blog.yourrubber.duckdns.org/sitemap.xml
 Crawl-delay: 10

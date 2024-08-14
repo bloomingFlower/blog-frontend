@@ -58,6 +58,18 @@ function TableOfContents({ sections, scrollTo }) {
   );
 }
 
+// Section content data
+const sectionContents = {
+  Education: [
+    { title: "Master's Degree in Computer Science", institution: "UNIST(Ulsan National Institute of Science and Technology)", year: "20xx-20xx" },
+    { title: "Bachelor's Degree in Electronic Engineering", institution: "Kyungpook National University", year: "20xx-20xx" },
+  ],
+  "Work Experience": [
+    { title: "Senior Software Engineer", company: "Tech Corp", period: "20xx-Present" },
+  ],
+  // ... Add more sections here ...
+};
+
 // Section component
 function Section({ title, children, icon }) {
   return (
@@ -66,7 +78,22 @@ function Section({ title, children, icon }) {
         <span className="mr-2 text-gray-600">{icon}</span>
         {title}
       </h2>
-      <div className="text-gray-700">{children}</div>
+      <div className="text-gray-700">
+        {children}
+        {sectionContents[title] && (
+          <ul className="list-disc pl-5 mt-2">
+            {sectionContents[title].map((item, index) => (
+              <li key={index} className="mb-2">
+                <strong>{item.title}</strong>
+                {item.institution && ` - ${item.institution}`}
+                {item.company && ` - ${item.company}`}
+                {item.year && ` (${item.year})`}
+                {item.period && ` (${item.period})`}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
@@ -118,6 +145,7 @@ function AboutMe() {
       <Helmet>
         <title>Jaeyoung Yun</title>
         <meta name="description" content="About me page of my website" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
@@ -150,7 +178,7 @@ function AboutMe() {
                   title={section.title}
                   icon={section.icon}
                 >
-                  <p>{/* add content here */}</p>
+                  {/* Content will be automatically rendered from sectionContents */}
                 </Section>
               </div>
             ))}
