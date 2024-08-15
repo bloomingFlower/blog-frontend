@@ -412,201 +412,199 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
         isOpen={true}
         onRequestClose={handleClose}
         contentLabel="Post Upload"
-        className="w-11/12 max-w-4xl mx-auto my-4 bg-[#f8f5e6] rounded-lg shadow-2xl overflow-hidden"
+        className="w-11/12 max-w-4xl mx-auto mt-16 bg-[#f8f5e6] rounded-lg shadow-2xl overflow-hidden flex flex-col"
         overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-2 sm:p-4"
         style={{
           content: {
-            maxHeight: "90vh",
-            height: "auto",
+            maxHeight: "calc(100vh - 4rem)",
+            height: "calc(100vh - 4rem)",
           },
         }}
       >
-        <div className="flex flex-col h-full max-h-full">
-          <nav className="bg-[#e6e0cc] py-2 px-4">
-            <h2 className="text-xl font-bold text-center text-gray-800">
-              {postId ? "Edit Your Story" : "Share Your Story"}
-            </h2>
-          </nav>
-
-          <div className="p-4 sm:p-6 flex-grow flex flex-col overflow-y-auto">
-            <input
-              ref={titleRef}
-              className="w-full mb-4 p-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300 bg-transparent"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter a title"
-              aria-label="Title"
-            />
-
-            {/* ReactQuill editor area */}
-            <div className="mb-4 h-64 sm:h-96 overflow-y-auto">
-              <ReactQuill
-                ref={quillRef}
-                value={editorState}
-                onChange={(content, delta, source, editor) => {
-                  const sanitizedContent = DOMPurify.sanitize(
-                    editor.getHTML(),
-                    purifyConfig
-                  );
-                  setEditorState(sanitizedContent);
-                }}
-                modules={modules}
-                theme="snow"
-                placeholder="Share your story..."
-                className="h-full"
-                style={{ height: "100%" }}
-                aria-label="Content"
-              />
-            </div>
-
-            {/* file upload area */}
-            <div className="mb-4">
-              <div
-                className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-[#f0ead6] hover:bg-[#e6e0cc]"
-                onClick={() => fileInputRef.current.click()}
-              >
+        <nav className="bg-[#e6e0cc] py-2 px-4 flex-shrink-0 flex items-center justify-between">
+          <h2 className="text-sm font-medium text-gray-600">
+            {postId ? "Editing post" : "New post"}
+          </h2>
+          <div className="flex items-center space-x-2">
+            <button
+              className="py-1 px-3 text-sm bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300"
+              onClick={handleUpload}
+              disabled={isUploading || !!cooldownMessage}
+              aria-label="Upload"
+            >
+              {isUploading ? (
                 <div className="flex items-center justify-center">
-                  {file ? (
-                    <>
-                      {React.createElement(getFileIcon(file.type), {
-                        className: "h-6 w-6 text-blue-500 mr-2",
-                      })}
-                      <span className="text-sm text-gray-700 truncate max-w-[200px]">
-                        {fileName}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <DocumentIcon className="h-6 w-6 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-500">
-                        Click to select a file
-                      </span>
-                    </>
-                  )}
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                  {postId ? "Updating..." : "Uploading..."}
                 </div>
-              </div>
-              <input
-                ref={fileInputRef}
-                className="hidden"
-                type="file"
-                onChange={handleFileChange}
-                aria-label="File"
-              />
-            </div>
-
-            {/* tag input area */}
-            <div className="mb-4">
-              <div className="flex flex-wrap items-center gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-[#f0ead6]">
-                {tags.map((tag) => (
-                  <span
-                    key={tag.value}
-                    className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center mb-1"
-                  >
-                    #{tag.value}
-                    <button
-                      onClick={() => removeTag(tag.value)}
-                      className="ml-1 text-gray-500 hover:text-gray-700"
-                    >
-                      &times;
-                    </button>
-                  </span>
-                ))}
-                <input
-                  ref={tagInputRef}
-                  type="text"
-                  value={tagInput}
-                  onChange={handleTagInputChange}
-                  onKeyDown={handleTagInputKeyDown}
-                  onCompositionStart={() => setComposing(true)}
-                  onCompositionEnd={() => {
-                    setComposing(false);
-                    // 조합이 끝났을 때 태그를 즉시 추가하지 않음
-                  }}
-                  placeholder="Add a tag... (Enter to add)"
-                  className="flex-grow bg-transparent outline-none text-sm w-full"
+              ) : postId ? (
+                "Update"
+              ) : (
+                "Upload"
+              )}
+            </button>
+            <button
+              className="text-gray-500 hover:text-gray-700 transition duration-300"
+              onClick={handleClose}
+              aria-label="Close"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
                 />
+              </svg>
+            </button>
+          </div>
+        </nav>
+
+        <div className="p-4 sm:p-6 flex-grow overflow-y-auto">
+          <input
+            ref={titleRef}
+            className="w-full mb-4 p-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300 bg-transparent"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter a title"
+            aria-label="Title"
+          />
+
+          {/* ReactQuill editor area */}
+          <div className="mb-4 h-64 sm:h-[calc(100vh-24rem)] overflow-y-auto">
+            <ReactQuill
+              ref={quillRef}
+              value={editorState}
+              onChange={(content, delta, source, editor) => {
+                const sanitizedContent = DOMPurify.sanitize(
+                  editor.getHTML(),
+                  purifyConfig
+                );
+                setEditorState(sanitizedContent);
+              }}
+              modules={modules}
+              theme="snow"
+              placeholder="Share your story..."
+              className="h-full"
+              style={{ height: "100%" }}
+              aria-label="Content"
+            />
+          </div>
+
+          {/* file upload area */}
+          <div className="mb-4">
+            <div
+              className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-[#f0ead6] hover:bg-[#e6e0cc]"
+              onClick={() => fileInputRef.current.click()}
+            >
+              <div className="flex items-center justify-center">
+                {file ? (
+                  <>
+                    {React.createElement(getFileIcon(file.type), {
+                      className: "h-6 w-6 text-blue-500 mr-2",
+                    })}
+                    <span className="text-sm text-gray-700 truncate max-w-[200px]">
+                      {fileName}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <DocumentIcon className="h-6 w-6 text-gray-400 mr-2" />
+                    <span className="text-sm text-gray-500">
+                      Click to select a file
+                    </span>
+                  </>
+                )}
               </div>
             </div>
+            <input
+              ref={fileInputRef}
+              className="hidden"
+              type="file"
+              onChange={handleFileChange}
+              aria-label="File"
+            />
+          </div>
 
-            {/* category selection area */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {uploadCategoryOptions.map((option) => (
+          {/* tag input area */}
+          <div className="mb-4">
+            <div className="flex flex-wrap items-center gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-[#f0ead6]">
+              {tags.map((tag) => (
+                <span
+                  key={tag.value}
+                  className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center mb-1"
+                >
+                  #{tag.value}
                   <button
-                    key={option}
-                    onClick={() => handleCategorySelect(option)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium mb-1 ${
-                      category === option
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
+                    onClick={() => removeTag(tag.value)}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
                   >
-                    {option}
+                    &times;
                   </button>
-                ))}
-              </div>
-              {category && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Selected category: {category}
-                </p>
-              )}
-              {!category && (
-                <p className="mt-2 text-sm text-gray-600">
-                  No category selected (will be set as "Others")
-                </p>
-              )}
+                </span>
+              ))}
+              <input
+                ref={tagInputRef}
+                type="text"
+                value={tagInput}
+                onChange={handleTagInputChange}
+                onKeyDown={handleTagInputKeyDown}
+                onCompositionStart={() => setComposing(true)}
+                onCompositionEnd={() => {
+                  setComposing(false);
+                  // 조합이 끝났을 때 태그를 즉시 추가하지 않음
+                }}
+                placeholder="Add a tag... (Enter to add)"
+                className="flex-grow bg-transparent outline-none text-sm w-full"
+              />
             </div>
           </div>
 
-          <footer className="bg-[#e6e0cc] p-4">
-            <div className="flex flex-col space-y-2">
-              {updateMessage && (
-                <p className="text-sm text-red-500 mb-2">{updateMessage}</p>
-              )}
-              {cooldownMessage && (
-                <p className="text-sm text-orange-500 mb-2">
-                  {cooldownMessage}
-                </p>
-              )}
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+          {/* category selection area */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {uploadCategoryOptions.map((option) => (
                 <button
-                  className={`w-full sm:w-auto py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${
-                    isUploading || cooldownMessage
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
+                  key={option}
+                  onClick={() => handleCategorySelect(option)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium mb-1 ${
+                    category === option
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
-                  onClick={handleUpload}
-                  disabled={isUploading || !!cooldownMessage}
-                  aria-label="Upload"
                 >
-                  {isUploading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                      {postId ? "Updating..." : "Uploading..."}
-                    </div>
-                  ) : postId ? (
-                    "Update"
-                  ) : (
-                    "Upload"
-                  )}
+                  {option}
                 </button>
-                <button
-                  className={`w-full sm:w-auto py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${
-                    isUploading ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  onClick={handleClose}
-                  disabled={isUploading}
-                  aria-label="Cancel"
-                >
-                  Cancel
-                </button>
-              </div>
+              ))}
             </div>
-          </footer>
+            {category && (
+              <p className="mt-2 text-sm text-gray-600">
+                Selected category: {category}
+              </p>
+            )}
+            {!category && (
+              <p className="mt-2 text-sm text-gray-600">
+                No category selected (will be set as "Others")
+              </p>
+            )}
+          </div>
+
+          {updateMessage && (
+            <p className="text-sm text-red-500 mb-2">{updateMessage}</p>
+          )}
+          {cooldownMessage && (
+            <p className="text-sm text-orange-500 mb-2">{cooldownMessage}</p>
+          )}
         </div>
       </Modal>
 

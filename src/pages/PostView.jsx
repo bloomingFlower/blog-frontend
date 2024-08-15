@@ -394,19 +394,21 @@ function PostView({
                   className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-2 rounded transition duration-300 flex items-center"
                   onClick={handleEditClick}
                 >
-                  <FaEdit className="mr-1 text-xs" />
-                  Edit
+                  <FaEdit className="text-xs sm:mr-1" />
+                  <span className="hidden sm:inline">Edit</span>
                 </button>
                 <button
                   className="bg-amber-500 hover:bg-amber-600 text-white text-xs py-1 px-2 rounded transition duration-300 flex items-center"
                   onClick={handleHideClick}
                 >
                   {state.post.hidden ? (
-                    <FaEye className="mr-1 text-xs" />
+                    <FaEye className="text-xs sm:mr-1" />
                   ) : (
-                    <FaEyeSlash className="mr-1 text-xs" />
+                    <FaEyeSlash className="text-xs sm:mr-1" />
                   )}
-                  {state.post.hidden ? "Display" : "Hide"}
+                  <span className="hidden sm:inline">
+                    {state.post.hidden ? "Display" : "Hide"}
+                  </span>
                 </button>
               </>
             )}
@@ -414,8 +416,8 @@ function PostView({
               onClick={closeModal}
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded inline-flex items-center"
             >
-              <FaTimes className="mr-1" />
-              Close
+              <FaTimes className="text-xs sm:mr-1" />
+              <span className="hidden sm:inline">Close</span>
             </button>
           </div>
         </div>

@@ -355,6 +355,17 @@ function Post() {
     }
   }, []);
 
+  const RSSButton = () => (
+    <button
+      onClick={handleRSSClick}
+      className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-2 py-1 rounded-full flex items-center transition-colors duration-300 touch-manipulation"
+      title="RSS Feed"
+    >
+      <FaRss className="text-sm sm:mr-1" />
+      <span className="hidden sm:inline text-sm">RSS</span>
+    </button>
+  );
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow">
@@ -394,17 +405,10 @@ function Post() {
               </div>
             )}
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-xl sm:text-3xl font-bold text-white">
                 Go-Powered RESTful Post Management System
               </h1>
-              <button
-                onClick={handleRSSClick}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full flex items-center transition-colors duration-300"
-                title="RSS Feed"
-              >
-                <FaRss className="mr-1" />
-                <span className="text-sm">RSS</span>
-              </button>
+              <RSSButton />
             </div>
             <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-center mb-2">
