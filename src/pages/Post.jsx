@@ -358,8 +358,11 @@ function Post() {
   const RSSButton = () => (
     <button
       onClick={handleRSSClick}
+      onTouchStart={handleRSSClick}
       className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-2 py-1 rounded-full flex items-center transition-colors duration-300 touch-manipulation"
       title="RSS Feed"
+      role="button"
+      style={{ touchAction: "manipulation" }}
     >
       <FaRss className="text-sm sm:mr-1" />
       <span className="hidden sm:inline text-sm">RSS</span>
