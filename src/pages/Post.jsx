@@ -21,9 +21,13 @@ import {
   FaEyeSlash,
   FaPaperclip,
   FaFolder,
+  FaRss,
 } from "react-icons/fa";
 import { FaGolang } from "react-icons/fa6";
 import { ClipLoader } from "react-spinners";
+import { calculateReadingTime } from "../utils/readingTime.js";
+import { FaClock } from "react-icons/fa";
+import { categoryOptions } from "../constants/categories";
 
 function Post() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -76,24 +80,39 @@ function Post() {
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => { }, [isUploadModalOpen]);
+  useEffect(() => {}, [isUploadModalOpen]);
 
-  const fetchPosts = useCallback(async (pageNum) => {
-    setIsLoading(true);
-    try {
-      const response = await trackPromise(
-        api.get(`/api/v1/posts?page=${pageNum}`)
-      );
-      setPosts(response.data.data);
-      setLastPage(response.data.meta.last_page);
-      setPage(pageNum);
-    } catch (error) {
-      console.error(`Error fetching posts for page ${pageNum}:`, error);
-      toast.error("Failed to fetch posts:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const handleCategorySelect = useCallback((category) => {
+    setSelectedCategory(category);
+    setPage(1);
+    fetchPosts(1, category);
   }, []);
+
+  const fetchPosts = useCallback(
+    async (pageNum, category = selectedCategory) => {
+      setIsLoading(true);
+      try {
+        const response = await trackPromise(
+          api.get(
+            `/api/v1/posts?page=${pageNum}&category=${
+              category === "All" ? "" : category
+            }`
+          )
+        );
+        setPosts(response.data.data);
+        setLastPage(response.data.meta.last_page);
+        setPage(pageNum);
+      } catch (error) {
+        console.error(`Error fetching posts for page ${pageNum}:`, error);
+        toast.error("게시물을 가져오는 데 실패했습니다:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [selectedCategory]
+  );
 
   const handlePageChange = useCallback(
     (newPage) => {
@@ -202,10 +221,11 @@ function Post() {
               key={pageNumber}
               onClick={() => handlePageChange(pageNumber)}
               disabled={isLoading}
-              className={`w-8 h-8 rounded-full ${pageNumber === page
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`w-8 h-8 rounded-full ${
+                pageNumber === page
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {pageNumber}
             </button>
@@ -235,7 +255,7 @@ function Post() {
 
   useEffect(() => {
     fetchPosts(1);
-  }, [fetchPosts]);
+  }, [fetchPosts, selectedCategory]);
 
   const [isPostStatusChanged, setIsPostStatusChanged] = useState(false);
 
@@ -270,29 +290,18 @@ function Post() {
     }
   }, [isLoggedIn]);
 
-  const [selectedCategory, setSelectedCategory] = useState('All');
-
-  // Get unique categories
-  const getUniqueCategories = useMemo(() => {
-    const categories = new Set(posts.map(post => post.category || 'Uncategorized'));
-    return ['All', ...Array.from(categories)];
-  }, [posts]);
-
-  // Category selection handler
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-  };
-
   // Filter posts by category
   const filteredPosts = useMemo(() => {
-    let filtered = (searchResults.length > 0 ? searchResults : posts).filter((post) => {
-      if (!post.hidden) return true;
-      return post.user.first_name + "#" + post.user.id === currentUserId;
-    });
+    let filtered = (searchResults.length > 0 ? searchResults : posts).filter(
+      (post) => {
+        if (!post.hidden) return true;
+        return post.user.first_name + "#" + post.user.id === currentUserId;
+      }
+    );
 
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter(post =>
-        (post.category || 'Uncategorized') === selectedCategory
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(
+        (post) => (post.category || "Uncategorized") === selectedCategory
       );
     }
 
@@ -321,6 +330,30 @@ function Post() {
       };
     }
   }, [isLoggedIn]);
+
+  const handleRSSClick = useCallback(async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.get("/api/v1/rss", {
+        responseType: "text",
+        headers: {
+          Accept: "application/rss+xml, application/xml, text/xml",
+        },
+      });
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(response.data, "text/xml");
+
+      const xmlString = new XMLSerializer().serializeToString(xmlDoc);
+
+      const blob = new Blob([xmlString], {
+        type: "application/xml;charset=utf-8",
+      });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (error) {
+      toast.error("Failed to fetch RSS feed. Please try again later.");
+    }
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -360,9 +393,19 @@ function Post() {
                 </p>
               </div>
             )}
-            <h1 className="text-2xl sm:text-3xl font-bold text-center my-6 text-white">
-              Go-Powered RESTful Post Management System
-            </h1>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                Go-Powered RESTful Post Management System
+              </h1>
+              <button
+                onClick={handleRSSClick}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full flex items-center transition-colors duration-300"
+                title="RSS Feed"
+              >
+                <FaRss className="mr-1" />
+                <span className="text-sm">RSS</span>
+              </button>
+            </div>
             <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-center mb-2">
                 <FaServer className="text-green-500 mr-2" />
@@ -378,7 +421,26 @@ function Post() {
               <div className="w-full mb-4 sm:mb-0 sm:mr-4">
                 <SearchPost setSearchResults={setSearchResults} />
               </div>
-              {isLoggedIn && (
+            </div>
+
+            <div className="mb-6 flex flex-wrap justify-center gap-2">
+              {categoryOptions.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => handleCategorySelect(category)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${
+                    selectedCategory === category
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            {isLoggedIn && (
+              <div className="flex justify-center mb-6">
                 <div className="relative">
                   <button
                     className="w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center transition duration-300"
@@ -396,23 +458,8 @@ function Post() {
                     </aside>
                   )}
                 </div>
-              )}
-            </div>
-
-            <div className="mb-6 flex flex-wrap justify-center gap-2">
-              {getUniqueCategories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => handleCategorySelect(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${selectedCategory === category
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+              </div>
+            )}
 
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
@@ -429,10 +476,11 @@ function Post() {
                   );
                   const isUserPost =
                     post.user.first_name + "#" + post.user.id === currentUserId;
+                  const readingTime = calculateReadingTime(post.content);
 
                   return (
                     <div
-                      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 
+                      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 flex flex-col h-80 sm:h-96 w-full
                         ${isNew ? "ring-2 ring-green-500" : ""}
                         ${post.hidden ? "opacity-50 bg-gray-100" : ""}
                         ${loadingPostId === post.id ? "relative" : ""}`}
@@ -444,60 +492,61 @@ function Post() {
                           <ClipLoader color="#4A90E2" size={50} />
                         </div>
                       )}
-                      <div className="p-6">
-                        <div className="flex flex-col mb-2">
-                          <h2 className="text-xl font-semibold text-gray-900 truncate mb-2">
+                      <div className="p-4 flex flex-col flex-grow">
+                        <div className="mb-2">
+                          <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                             {post.title}
                           </h2>
-                          <div className="flex flex-wrap gap-1">
-                            {isRecent && (
-                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded inline-flex items-center">
-                                New
-                              </span>
-                            )}
-                            {isUpdated && (
-                              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded inline-flex items-center">
-                                <FaEdit className="mr-1" />
-                                Updated
-                              </span>
-                            )}
-                            {isUserPost && (
-                              <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded inline-flex items-center">
-                                My Post
-                              </span>
-                            )}
-                            {post.hidden && (
-                              <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded inline-flex items-center">
-                                <FaEyeSlash className="mr-1" />
-                                Hidden
-                              </span>
-                            )}
-                            {post.file && (
-                              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded inline-flex items-center">
-                                <FaPaperclip className="mr-1" />
-                                File
-                              </span>
-                            )}
-                            {post.category && (
-                              <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded inline-flex items-center">
-                                <FaFolder className="mr-1" />
-                                {post.category}
-                              </span>
-                            )}
-                          </div>
+                          <p className="text-xs text-gray-600 flex items-center">
+                            <FaUser className="mr-1 text-gray-400" />
+                            <span className="font-medium">
+                              {post.user.first_name}
+                            </span>
+                            <span className="ml-1 bg-gray-200 text-gray-700 px-1 rounded">
+                              #{post.user.id}
+                            </span>
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2 flex items-center">
-                          <FaUser className="mr-1 text-gray-400" />
-                          <span className="font-medium">
-                            {post.user.first_name}
-                          </span>
-                          <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
-                            #{post.user.id}
-                          </span>
-                        </p>
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {isRecent && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded inline-flex items-center">
+                              New
+                            </span>
+                          )}
+                          {isUpdated && (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded inline-flex items-center">
+                              <FaEdit className="mr-1" />
+                              Updated
+                            </span>
+                          )}
+                          {isUserPost && (
+                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded inline-flex items-center">
+                              My Post
+                            </span>
+                          )}
+                          {post.hidden && (
+                            <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded inline-flex items-center">
+                              <FaEyeSlash className="mr-1" />
+                              Hidden
+                            </span>
+                          )}
+                          {post.file && (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded inline-flex items-center">
+                              <FaPaperclip className="mr-1" />
+                              File
+                            </span>
+                          )}
+                          {post.category && (
+                            <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded inline-flex items-center">
+                              <FaFolder className="mr-1" />
+                              {post.category}
+                            </span>
+                          )}
+                        </div>
                         <div
-                          className="text-gray-600 text-sm mb-4 line-clamp-3"
+                          className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2 sm:line-clamp-3 flex-grow overflow-hidden"
                           dangerouslySetInnerHTML={{ __html: post.content }}
+                          onClick={(e) => e.preventDefault()}
                         />
                         {post.image && (
                           <img
@@ -508,31 +557,45 @@ function Post() {
                               e.target.src = `${process.env.REACT_APP_API_URL}${post.image}`;
                               setImageLoadError(true);
                             }}
-                            className="w-full h-48 object-cover mb-4"
+                            className="w-full h-24 sm:h-32 object-cover mb-2"
                           />
                         )}
                         {post.tags && post.tags.trim() !== "" && (
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {post.tags.split(",").map((tag, index) => (
-                              <span
-                                className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
-                                key={index}
-                              >
-                                #{tag.trim()}
+                          <div className="flex flex-wrap gap-1 mb-2 overflow-hidden h-6">
+                            {post.tags
+                              .split(",")
+                              .slice(0, 3)
+                              .map((tag, index) => (
+                                <span
+                                  className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded"
+                                  key={index}
+                                >
+                                  #{tag.trim()}
+                                </span>
+                              ))}
+                            {post.tags.split(",").length > 3 && (
+                              <span className="text-xs text-gray-500">
+                                +{post.tags.split(",").length - 3} more
                               </span>
-                            ))}
+                            )}
                           </div>
                         )}
-                        <p className="text-xs text-gray-500">
+                      </div>
+                      <div className="p-4 bg-gray-50 flex justify-between items-center text-xs text-gray-500">
+                        <p className="flex items-center">
+                          <FaClock className="mr-1" />
+                          {readingTime} min read
+                        </p>
+                        <p>
                           {post.created_at === "0001-01-01T00:00:00Z" ||
-                            (post.updated_at &&
-                              post.updated_at !== post.created_at)
-                            ? `Updated at ${new Date(
-                              post.updated_at
-                            ).toLocaleString()}`
-                            : `Created at ${new Date(
-                              post.created_at
-                            ).toLocaleString()}`}
+                          (post.updated_at &&
+                            post.updated_at !== post.created_at)
+                            ? `Updated ${new Date(
+                                post.updated_at
+                              ).toLocaleDateString()}`
+                            : `Created ${new Date(
+                                post.created_at
+                              ).toLocaleDateString()}`}
                         </p>
                       </div>
                     </div>

@@ -17,7 +17,11 @@ const TechStackSection = ({ title, description, items }) => (
 const OverviewImage = ({ src, alt }) => (
   <div className="mb-8 text-center">
     {src ? (
-      <img src={src} alt={alt} className="max-w-full h-auto rounded-lg shadow-md" />
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-full h-auto rounded-lg shadow-md"
+      />
     ) : (
       <div className="bg-gray-200 p-8 rounded-lg shadow-md">
         <p className="text-gray-600">Overview image coming soon.</p>
@@ -34,10 +38,7 @@ export const SystemStack = () => {
     {
       title: "Infrastructure",
       description: "Stable and scalable foundation for service delivery",
-      items: [
-        "Load Balancer server (L3/4)",
-        "DNS server",
-      ],
+      items: ["Load Balancer server (L3/4)", "DNS server"],
     },
     {
       title: "Cluster",
@@ -51,11 +52,9 @@ export const SystemStack = () => {
     },
     {
       title: "Backend",
-      description: "High-performance and efficient server-side logic processing",
-      items: [
-        "Rust axum",
-        "Go fiber",
-      ],
+      description:
+        "High-performance and efficient server-side logic processing",
+      items: ["Rust axum", "Go fiber"],
     },
     {
       title: "Communication Methods",
@@ -102,7 +101,7 @@ export const SystemStack = () => {
       className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat px-4 py-8 sm:px-6 lg:px-8"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="w-full max-w-4xl bg-white bg-opacity-90 rounded-lg shadow-xl overflow-hidden">
+      <div className="w-full max-w-4xl bg-white bg-opacity-90 rounded-lg shadow-xl overflow-hidden mb-16">
         <div className="p-6 sm:p-8">
           <h1
             className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center cursor-pointer hover:text-gray-600 transition-colors duration-300"

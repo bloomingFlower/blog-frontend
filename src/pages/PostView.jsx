@@ -1,4 +1,11 @@
-import React, { useEffect, useReducer, useContext, useRef, useMemo } from "react";
+import React, {
+  useEffect,
+  useReducer,
+  useContext,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "./components/api";
 import { AuthContext } from "./components/AuthContext";
@@ -6,8 +13,8 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Modal from "react-modal";
 import { trackPromise } from "react-promise-tracker";
-import LoadingIndicator from "./components/LoadingIndicator";
 import { toast } from "react-toastify";
+import { calculateReadingTime } from "../utils/readingTime.js";
 import {
   FaUser,
   FaDownload,
@@ -18,8 +25,20 @@ import {
   FaCalendarAlt,
   FaHistory,
   FaFolder,
+  FaClock,
 } from "react-icons/fa";
 import { format } from "date-fns";
+import {
+  FacebookShareButton,
+  TwitterShareButton,
+  LinkedinShareButton,
+  TelegramShareButton,
+  FacebookIcon,
+  TwitterIcon,
+  LinkedinIcon,
+  TelegramIcon,
+} from "react-share";
+// import { KakaoLinkDefault } from "react-kakao-link";
 
 Modal.setAppElement("#root");
 
@@ -50,6 +69,9 @@ function PostView({
   refreshPosts,
   setIsPostStatusChanged,
   setLoadingPostId,
+  isModal = true,
+  isSinglePostPage = false,
+  onClose,
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
@@ -119,6 +141,13 @@ function PostView({
   // }, [state.post]);
 
   useEffect(() => {
+    // Initialize Kakao SDK
+    if (!window.Kakao.isInitialized()) {
+      window.Kakao.init("YOUR_KAKAO_APP_KEY");
+    }
+  }, []);
+
+  useEffect(() => {
     // Release loading state when data is loaded
     return () => setLoadingPostId(null);
   }, [postId, setLoadingPostId]);
@@ -140,8 +169,13 @@ function PostView({
     }
     try {
       await trackPromise(api.put(`/api/v1/post/${postId}/hide`));
-      toast.success(state.post.hidden ? "Post is displayed." : "Post is hidden.");
-      dispatch({ type: "SET_POST", payload: { ...state.post, hidden: !state.post.hidden } });
+      toast.success(
+        state.post.hidden ? "Post is displayed." : "Post is hidden."
+      );
+      dispatch({
+        type: "SET_POST",
+        payload: { ...state.post, hidden: !state.post.hidden },
+      });
       dispatch({ type: "SET_POST_STATUS_CHANGED", payload: true });
       setIsPostStatusChanged(true);
     } catch (error) {
@@ -156,80 +190,122 @@ function PostView({
 
   const formatDate = (dateString) => {
     if (!isValidDate(dateString)) {
-      return 'N/A';
+      return "N/A";
     }
     return format(new Date(dateString), "yyyy.MM.dd HH:mm");
   };
 
   const closeModal = () => {
-    if (state.isPostStatusChanged) {
-      refreshPosts();
+    if (isSinglePostPage) {
+      onClose();
+    } else {
+      if (state.isPostStatusChanged) {
+        refreshPosts();
+      }
+      setIsPostViewModalOpen(false);
     }
-    setIsPostViewModalOpen(false);
   };
+
+  const shareUrl = `${window.location.origin}/post/${postId}`;
+  const shareTitle = state.post ? state.post.title : "";
+  const shareMessage = "Read this amazing post! 👀✨";
+
+  // const kakaoLinkDefault = useMemo(() => {
+  //   return new KakaoLinkDefault({
+  //     objectType: "feed",
+  //     content: {
+  //       title: shareTitle,
+  //       description: shareMessage,
+  //       imageUrl: "YOUR_IMAGE_URL", // 공유할 이미지 URL
+  //       link: {
+  //         mobileWebUrl: shareUrl,
+  //         webUrl: shareUrl,
+  //       },
+  //     },
+  //     buttons: [
+  //       {
+  //         title: "웹으로 보기",
+  //         link: {
+  //           mobileWebUrl: shareUrl,
+  //           webUrl: shareUrl,
+  //         },
+  //       },
+  //     ],
+  //   });
+  // }, [shareUrl, shareTitle]);
+
+  const handleLinkClick = useCallback((e) => {
+    const target = e.target;
+    if (target.tagName === "A" && target.href) {
+      e.preventDefault();
+      if (window.confirm("Do you want to go to the external link?")) {
+        window.open(target.href, "_blank", "noopener,noreferrer");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const contentElement = document.querySelector(".ql-editor");
+    if (contentElement) {
+      contentElement.addEventListener("click", handleLinkClick);
+    }
+    return () => {
+      if (contentElement) {
+        contentElement.removeEventListener("click", handleLinkClick);
+      }
+    };
+  }, [handleLinkClick]);
 
   if (!state.post) {
     return null;
   }
 
-  return (
-    <Modal
-      isOpen={true}
-      onRequestClose={closeModal}
-      shouldCloseOnOverlayClick={true}
-      contentLabel="Post View"
-      className="w-11/12 max-w-4xl mx-auto my-4 sm:my-10 bg-white rounded-lg shadow-xl overflow-auto"
-      overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
-      style={{
-        content: {
-          maxHeight: "90vh",
-        },
-      }}
-    >
-      <article className="p-4 sm:p-6 md:p-8">
-        <header>
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-800">
-            {state.post.title}
-          </h2>
-          <div className="flex flex-col items-center justify-center mb-4 text-xs text-gray-500">
-            <div className="flex items-center mb-1">
-              <FaUser className="mr-1" />
-              <span className="font-medium">{state.post.user?.first_name}</span>
-              <span className="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
-                #{state.post.user?.id}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <time className="flex items-center" dateTime={state.post.created_at}>
-                <FaCalendarAlt className="mr-1" />
-                <span>{formatDate(state.post.created_at)}</span>
-              </time>
-              {isValidDate(state.post.updated_at) && state.post.updated_at !== state.post.created_at && (
-                <time className="flex items-center" dateTime={state.post.updated_at}>
-                  <FaHistory className="mr-1" />
-                  <span>{formatDate(state.post.updated_at)}</span>
-                </time>
-              )}
-            </div>
-
-            {state.post.category && (
-              <div className="flex items-center mt-1">
-                <FaFolder className="mr-1" />
-                <span className="font-medium">{state.post.category}</span>
-              </div>
-            )}
+  const content = (
+    <article className="p-4 sm:p-6 md:p-8">
+      <header className="mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-800">
+          {state.post.title}
+        </h2>
+        <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600 -mx-2">
+          <div className="px-2 w-1/2 sm:w-auto mb-2 sm:mb-0 flex items-center">
+            <FaUser className="mr-1" />
+            <span>{state.post.user?.first_name}</span>
+            <span className="ml-1 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs">
+              #{state.post.user?.id}
+            </span>
           </div>
-        </header>
-        <section className="mb-6 bg-gray-50 rounded-lg p-4 shadow-inner">
-          <ReactQuill
-            value={state.post.content}
-            readOnly={true}
-            theme="bubble"
-            modules={{ toolbar: false }}
-            className="prose max-w-none text-base"
-          />
-        </section>
-        {state.post.tags && state.post.tags.split(",").some((tag) => tag.trim() !== "") && (
+          <time
+            className="px-2 w-1/2 sm:w-auto mb-2 sm:mb-0 flex items-center"
+            dateTime={state.post.created_at}
+          >
+            <FaCalendarAlt className="mr-1" />
+            <span>{formatDate(state.post.created_at)}</span>
+          </time>
+          {state.post.category && (
+            <div className="px-2 w-1/2 sm:w-auto mb-2 sm:mb-0 flex items-center">
+              <FaFolder className="mr-1" />
+              <span>{state.post.category}</span>
+            </div>
+          )}
+          <div className="px-2 w-1/2 sm:w-auto mb-2 sm:mb-0 flex items-center">
+            <FaClock className="mr-1" />
+            <span>{calculateReadingTime(state.post.content)} min read</span>
+          </div>
+        </div>
+      </header>
+
+      <section className="mb-6 bg-gray-50 rounded-lg p-4 shadow-inner h-108 md:h-120 lg:h-128 overflow-auto">
+        <ReactQuill
+          value={state.post.content}
+          readOnly={true}
+          theme="bubble"
+          modules={{ toolbar: false }}
+          className="prose max-w-none text-base h-full"
+        />
+      </section>
+
+      {state.post.tags &&
+        state.post.tags.split(",").some((tag) => tag.trim() !== "") && (
           <section className="mb-4 flex flex-wrap">
             {state.post.tags.split(",").map(
               (tag, index) =>
@@ -244,61 +320,106 @@ function PostView({
             )}
           </section>
         )}
-        {state.post.file && (
-          <section className="mb-4">
-            <a
-              href={`${api.defaults.baseURL}/api/v1/${state.post.file}`}
-              download={state.post.file.split("/").pop()}
-              className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded transition duration-300"
+
+      {state.post.file && (
+        <section className="mb-4">
+          <a
+            href={`${api.defaults.baseURL}/api/v1/${state.post.file}`}
+            download={state.post.file.split("/").pop()}
+            className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded transition duration-300"
+          >
+            <FaDownload className="mr-1 text-xs" />
+            {state.post.file.split("/").pop()}
+          </a>
+        </section>
+      )}
+
+      <section ref={commentSectionRef} className="mt-8"></section>
+    </article>
+  );
+
+  if (!isModal) {
+    return content;
+  }
+
+  return (
+    <Modal
+      isOpen={true}
+      onRequestClose={closeModal}
+      shouldCloseOnOverlayClick={true}
+      contentLabel="Post View"
+      className="w-11/12 max-w-4xl mx-auto my-4 sm:my-10 bg-white rounded-lg shadow-xl overflow-hidden flex flex-col"
+      overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
+      style={{
+        content: {
+          height: "80vh",
+          maxHeight: "800px",
+        },
+      }}
+    >
+      <div className="flex flex-col h-full">
+        <div className="flex-grow overflow-auto">{content}</div>
+        <div className="p-4 border-t border-gray-200 flex justify-between items-center">
+          <div className="flex space-x-2">
+            <FacebookShareButton
+              url={shareUrl}
+              quote={`${shareMessage} ${shareTitle}`}
             >
-              <FaDownload className="mr-1 text-xs" />
-              {state.post.file.split("/").pop()}
-            </a>
-          </section>
-        )}
-        <section ref={commentSectionRef} className="mb-4"></section>
-        <div className="flex justify-end">
-          {canEditOrDelete ? (
-            <div className="grid grid-cols-3 gap-2 w-full">
-              <button
-                className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
-                onClick={handleEditClick}
-              >
-                <FaEdit className="mr-1 text-xs" />
-                Edit
-              </button>
-              <button
-                className="bg-amber-500 hover:bg-amber-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
-                onClick={handleHideClick}
-              >
-                {state.post.hidden ? (
-                  <FaEye className="mr-1 text-xs" />
-                ) : (
-                  <FaEyeSlash className="mr-1 text-xs" />
-                )}
-                {state.post.hidden ? "Display" : "Hide"}
-              </button>
-              <button
-                className="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition duration-300 flex items-center justify-center"
-                onClick={closeModal}
-                aria-label="Close"
-              >
-                <FaTimes className="mr-1 text-xs" />
-                Close
-              </button>
-            </div>
-          ) : (
+              <FacebookIcon size={24} round />
+            </FacebookShareButton>
+            <TwitterShareButton
+              url={shareUrl}
+              title={`${shareMessage} ${shareTitle}`}
+            >
+              <TwitterIcon size={24} round />
+            </TwitterShareButton>
+            <LinkedinShareButton
+              url={shareUrl}
+              title={shareTitle}
+              summary={shareMessage}
+            >
+              <LinkedinIcon size={24} round />
+            </LinkedinShareButton>
+            <TelegramShareButton
+              url={shareUrl}
+              title={`${shareMessage} ${shareTitle}`}
+            >
+              <TelegramIcon size={24} round />
+            </TelegramShareButton>
+          </div>
+          <div className="flex items-center space-x-2">
+            {canEditOrDelete && (
+              <>
+                <button
+                  className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-2 rounded transition duration-300 flex items-center"
+                  onClick={handleEditClick}
+                >
+                  <FaEdit className="mr-1 text-xs" />
+                  Edit
+                </button>
+                <button
+                  className="bg-amber-500 hover:bg-amber-600 text-white text-xs py-1 px-2 rounded transition duration-300 flex items-center"
+                  onClick={handleHideClick}
+                >
+                  {state.post.hidden ? (
+                    <FaEye className="mr-1 text-xs" />
+                  ) : (
+                    <FaEyeSlash className="mr-1 text-xs" />
+                  )}
+                  {state.post.hidden ? "Display" : "Hide"}
+                </button>
+              </>
+            )}
             <button
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded transition duration-300 flex items-center justify-center"
               onClick={closeModal}
-              aria-label="Close"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded inline-flex items-center"
             >
-              <FaTimes className="mr-1 text-xs" />
+              <FaTimes className="mr-1" />
               Close
             </button>
-          )}
+          </div>
         </div>
-      </article>
+      </div>
     </Modal>
   );
 }

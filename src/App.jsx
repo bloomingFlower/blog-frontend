@@ -1,5 +1,20 @@
-import React, { useState, useRef, useEffect, lazy, Suspense, useContext, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  lazy,
+  Suspense,
+  useContext,
+  useCallback,
+} from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingIndicator from "./pages/components/LoadingIndicator";
@@ -31,6 +46,7 @@ const HamburgerButton = lazy(() =>
 const SearchResults = lazy(() => import("./pages/components/SearchResults"));
 const OAuthCallback = lazy(() => import("./pages/components/OAuthCallback"));
 const SystemStack = lazy(() => import("./pages/SystemStack"));
+const SinglePostPage = lazy(() => import("./pages/SinglePostPage"));
 
 const ActivityMonitor = lazy(() =>
   import("./pages/components/ActivityMonitor")
@@ -44,7 +60,7 @@ const ScrollToTop = () => {
   }, [pathname]);
 
   return null;
-}
+};
 
 function AppContent() {
   const [isSearchInputVisible, setIsSearchInputVisible] = useState(false);
@@ -57,19 +73,24 @@ function AppContent() {
   const { user, isLoggedIn } = useContext(AuthContext); // Get user information from AuthContext
   const [isSuperMode, setIsSuperMode] = useState(false);
   const [timerColor, setTimerColor] = useState("text-black");
-  const [profileImageFilter, setProfileImageFilter] = useState('');
+  const [profileImageFilter, setProfileImageFilter] = useState("");
 
   const navigate = useNavigate();
 
   const resetSearchState = () => {
     setIsSearchInputVisible(false);
     setIsSearchOpen(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (event && event.target && searchRef.current && !searchRef.current.contains(event.target)) {
+      if (
+        event &&
+        event.target &&
+        searchRef.current &&
+        !searchRef.current.contains(event.target)
+      ) {
         resetSearchState();
       }
     }
@@ -121,7 +142,7 @@ function AppContent() {
     e.stopPropagation();
     toggleSearchInput();
     // Prevent zoom on mobile devices
-    document.body.style.touchAction = 'manipulation';
+    document.body.style.touchAction = "manipulation";
   };
 
   // Hamburger button click handler
@@ -141,7 +162,7 @@ function AppContent() {
   };
 
   const handleProfileClick = () => {
-    navigate('/edit-profile');
+    navigate("/edit-profile");
   };
 
   // Super mode toggle function
@@ -160,12 +181,12 @@ function AppContent() {
   ];
 
   const colorFilters = [
-    'hue-rotate(0deg)',
-    'hue-rotate(60deg)',
-    'hue-rotate(120deg)',
-    'hue-rotate(180deg)',
-    'hue-rotate(240deg)',
-    'hue-rotate(300deg)',
+    "hue-rotate(0deg)",
+    "hue-rotate(60deg)",
+    "hue-rotate(120deg)",
+    "hue-rotate(180deg)",
+    "hue-rotate(240deg)",
+    "hue-rotate(300deg)",
   ];
 
   // Super mode effect
@@ -181,11 +202,13 @@ function AppContent() {
 
       // Change profile image color filter
       profileFilterInterval = setInterval(() => {
-        setProfileImageFilter(colorFilters[Math.floor(Math.random() * colorFilters.length)]);
+        setProfileImageFilter(
+          colorFilters[Math.floor(Math.random() * colorFilters.length)]
+        );
       }, 200);
     } else {
       setTimerColor("text-black");
-      setProfileImageFilter('');
+      setProfileImageFilter("");
     }
 
     return () => {
@@ -200,9 +223,12 @@ function AppContent() {
 
   // 사용자 이니셜을 생성하는 함수
   const getUserInitials = (name) => {
-    if (!name) return '';
-    const names = name.split(' ');
-    return names.map(n => n[0]).join('').toUpperCase();
+    if (!name) return "";
+    const names = name.split(" ");
+    return names
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
   return (
@@ -211,7 +237,11 @@ function AppContent() {
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
       <ScrollToTop />
-      <ActivityMonitor onTimeUpdate={handleTimeUpdate} isSuperMode={isSuperMode} setSuperMode={setIsSuperMode} />
+      <ActivityMonitor
+        onTimeUpdate={handleTimeUpdate}
+        isSuperMode={isSuperMode}
+        setSuperMode={setIsSuperMode}
+      />
       <header>
         <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50 shadow-sm">
           <Link to="/" className="text-lg sm:text-xl">
@@ -220,10 +250,14 @@ function AppContent() {
           <div className="flex items-center" ref={searchRef}>
             {isLoggedIn && user && (
               <>
-                <span className={`hidden md:inline-block mr-4 text-xs sm:text-sm ${timerColor} transition-colors duration-200`}>
+                <span
+                  className={`hidden md:inline-block mr-4 text-xs sm:text-sm ${timerColor} transition-colors duration-200`}
+                >
                   Remaining login time: {formatTime(remainingTime)}
                 </span>
-                <span className={`md:hidden mr-2 text-xs ${timerColor} transition-colors duration-200`}>
+                <span
+                  className={`md:hidden mr-2 text-xs ${timerColor} transition-colors duration-200`}
+                >
                   {formatTimeForMobile(remainingTime)}
                 </span>
                 {user.picture ? (
@@ -266,12 +300,12 @@ function AppContent() {
               </button>
               <div
                 className={`absolute right-0 mt-2 overflow-hidden transition-all duration-300 ease-out
-                  ${isSearchInputVisible ? 'w-64' : 'w-0'}`}
+                  ${isSearchInputVisible ? "w-64" : "w-0"}`}
               >
                 <form
                   onSubmit={handleSearch}
                   className={`w-64 transition-opacity duration-300 ease-out
-                    ${isSearchAnimating ? 'opacity-100' : 'opacity-0'}`}
+                    ${isSearchAnimating ? "opacity-100" : "opacity-0"}`}
                 >
                   <input
                     ref={searchInputRef}
@@ -280,7 +314,7 @@ function AppContent() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="ElasticSearch is not yet implemented..."
                     className="w-full px-3 py-1 sm:px-4 sm:py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    style={{ fontSize: '16px' }}
+                    style={{ fontSize: "16px" }}
                   />
                 </form>
               </div>
@@ -319,6 +353,7 @@ function AppContent() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/system-stack" element={<SystemStack />} />
+            <Route path="/post/:postId" element={<SinglePostPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

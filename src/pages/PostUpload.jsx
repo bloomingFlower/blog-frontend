@@ -24,6 +24,7 @@ import {
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { FaFolder } from "react-icons/fa";
+import { categoryOptions } from "../constants/categories";
 
 Quill.register("modules/imageUploader", ImageUploader);
 
@@ -43,18 +44,19 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   const [composing, setComposing] = useState(false);
   const [lastAddedTag, setLastAddedTag] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
-  const initialStateRef = useRef({ title: "", editorState: "", file: null, tags: [], category: "" });
+  const initialStateRef = useRef({
+    title: "",
+    editorState: "",
+    file: null,
+    tags: [],
+    category: "",
+  });
   const [updateMessage, setUpdateMessage] = useState("");
-  const [confirmModalType, setConfirmModalType] = useState('');
+  const [confirmModalType, setConfirmModalType] = useState("");
   const [lastUploadTime, setLastUploadTime] = useState(0);
-  const [cooldownMessage, setCooldownMessage] = useState('');
+  const [cooldownMessage, setCooldownMessage] = useState("");
   const UPLOAD_COOLDOWN = 60000; // 1분 (밀리초 단위)
   const [category, setCategory] = useState("");
-
-  // Category options
-  const categoryOptions = [
-    "Tech", "Travel", "Book", "Secret", "Food", "Sports", "Movie", "Music"
-  ];
 
   // DOMPurify configuration
   const purifyConfig = {
@@ -147,9 +149,9 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
           setTags(
             postData.tags
               ? postData.tags
-                .split(",")
-                .filter((tag) => tag.trim() !== "")
-                .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
+                  .split(",")
+                  .filter((tag) => tag.trim() !== "")
+                  .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
               : []
           );
           setFile(postData.file);
@@ -162,11 +164,11 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
             file: postData.file,
             tags: postData.tags
               ? postData.tags
-                .split(",")
-                .filter((tag) => tag.trim() !== "")
-                .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
+                  .split(",")
+                  .filter((tag) => tag.trim() !== "")
+                  .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
               : [],
-            category: postData.category || ""
+            category: postData.category || "",
           };
         } else {
           throw new Error("Post not found");
@@ -180,7 +182,13 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
       fetchPost();
     } else {
       // Set initial state for new post
-      initialStateRef.current = { title: "", editorState: "", file: null, tags: [], category: "" };
+      initialStateRef.current = {
+        title: "",
+        editorState: "",
+        file: null,
+        tags: [],
+        category: "",
+      };
     }
   }, [postId]);
 
@@ -203,7 +211,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
         setIsUploadModalOpen(false);
         refreshPosts();
       });
-      setConfirmModalType('close');
+      setConfirmModalType("close");
       setIsConfirmModalOpen(true);
     } else {
       setIsUploadModalOpen(false);
@@ -218,12 +226,14 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
 
     const currentTime = Date.now();
     if (currentTime - lastUploadTime < UPLOAD_COOLDOWN) {
-      const remainingTime = Math.ceil((UPLOAD_COOLDOWN - (currentTime - lastUploadTime)) / 1000);
+      const remainingTime = Math.ceil(
+        (UPLOAD_COOLDOWN - (currentTime - lastUploadTime)) / 1000
+      );
       setCooldownMessage(`다시 업로드하기까지 ${remainingTime}초 남았습니다.`);
       return;
     }
 
-    setCooldownMessage(''); // Reset message
+    setCooldownMessage(""); // Reset message
 
     // Check if title and content are not empty
     if (!title.trim() || !editorState.trim()) {
@@ -316,12 +326,14 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
           }
         }
       } catch (error) {
-        setUpdateMessage(`${postId ? "Update" : "Upload"} failed: ${error.message}`);
+        setUpdateMessage(
+          `${postId ? "Update" : "Upload"} failed: ${error.message}`
+        );
       } finally {
         setIsUploading(false);
       }
     });
-    setConfirmModalType('save');
+    setConfirmModalType("save");
     setIsConfirmModalOpen(true);
   };
 
@@ -389,6 +401,10 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   const handleCategorySelect = (selectedCategory) => {
     setCategory(selectedCategory === category ? "" : selectedCategory);
   };
+
+  const uploadCategoryOptions = categoryOptions.filter(
+    (category) => category !== "All"
+  );
 
   return (
     <>
@@ -519,14 +535,15 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                 Category
               </label>
               <div className="flex flex-wrap gap-2">
-                {categoryOptions.map((option) => (
+                {uploadCategoryOptions.map((option) => (
                   <button
                     key={option}
                     onClick={() => handleCategorySelect(option)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium mb-1 ${category === option
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      }`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium mb-1 ${
+                      category === option
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
                   >
                     {option}
                   </button>
@@ -551,12 +568,17 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                 <p className="text-sm text-red-500 mb-2">{updateMessage}</p>
               )}
               {cooldownMessage && (
-                <p className="text-sm text-orange-500 mb-2">{cooldownMessage}</p>
+                <p className="text-sm text-orange-500 mb-2">
+                  {cooldownMessage}
+                </p>
               )}
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                 <button
-                  className={`w-full sm:w-auto py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${isUploading || cooldownMessage ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                  className={`w-full sm:w-auto py-2 px-4 bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300 ${
+                    isUploading || cooldownMessage
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
                   onClick={handleUpload}
                   disabled={isUploading || !!cooldownMessage}
                   aria-label="Upload"
@@ -573,8 +595,9 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                   )}
                 </button>
                 <button
-                  className={`w-full sm:w-auto py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${isUploading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                  className={`w-full sm:w-auto py-2 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 ${
+                    isUploading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
                   onClick={handleClose}
                   disabled={isUploading}
                   aria-label="Cancel"
@@ -597,7 +620,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
       >
         <h2 className="text-xl font-bold mb-4">Confirm Action</h2>
         <p className="mb-6">
-          {confirmModalType === 'close'
+          {confirmModalType === "close"
             ? "You have unsaved changes. Are you sure you want to close without saving?"
             : "Are you sure you want to save these changes?"}
         </p>

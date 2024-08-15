@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
-  darkMode: 'media',
+  darkMode: "media",
   theme: {
     extend: {
       animation: {
@@ -11,7 +11,7 @@ module.exports = {
         "fade-in-right": "fade-in-right 0.5s ease-out both",
         "slide-out-right": "slide-out-right 0.5s ease-out both",
         "fade-out-right": "fade-out-right 0.5s ease-out both",
-        "blink": 'blink 1s infinite',
+        blink: "blink 1s infinite",
       },
       keyframes: {
         slideDown: {
@@ -38,10 +38,15 @@ module.exports = {
           "0%": { transform: "translateX(0)", opacity: "1" },
           "100%": { transform: "translateX(100%)", opacity: "0" },
         },
-        "blink": {
-          '0%': { opacity: '1' },
-          '100%': { opacity: '0' },
+        blink: {
+          "0%": { opacity: "1" },
+          "100%": { opacity: "0" },
         },
+      },
+      height: {
+        108: "27rem",
+        120: "30rem",
+        128: "32rem",
       },
     },
   },
@@ -49,4 +54,5 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  mode: "jit",
 };
