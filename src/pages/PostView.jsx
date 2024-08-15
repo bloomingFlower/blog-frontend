@@ -393,6 +393,8 @@ function PostView({
                 <button
                   className="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-2 rounded transition duration-300 flex items-center"
                   onClick={handleEditClick}
+                  onTouchStart={handleEditClick}
+                  style={{ touchAction: 'manipulation' }}
                 >
                   <FaEdit className="text-xs sm:mr-1" />
                   <span className="hidden sm:inline">Edit</span>
@@ -400,6 +402,8 @@ function PostView({
                 <button
                   className="bg-amber-500 hover:bg-amber-600 text-white text-xs py-1 px-2 rounded transition duration-300 flex items-center"
                   onClick={handleHideClick}
+                  onTouchStart={handleHideClick}
+                  style={{ touchAction: 'manipulation' }}
                 >
                   {state.post.hidden ? (
                     <FaEye className="text-xs sm:mr-1" />
@@ -414,6 +418,8 @@ function PostView({
             )}
             <button
               onClick={closeModal}
+              onTouchStart={closeModal}
+              style={{ touchAction: 'manipulation' }}
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs py-1 px-2 rounded inline-flex items-center"
             >
               <FaTimes className="text-xs sm:mr-1" />

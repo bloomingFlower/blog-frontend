@@ -80,7 +80,7 @@ function Post() {
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  useEffect(() => {}, [isUploadModalOpen]);
+  useEffect(() => { }, [isUploadModalOpen]);
 
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -96,8 +96,7 @@ function Post() {
       try {
         const response = await trackPromise(
           api.get(
-            `/api/v1/posts?page=${pageNum}&category=${
-              category === "All" ? "" : category
+            `/api/v1/posts?page=${pageNum}&category=${category === "All" ? "" : category
             }`
           )
         );
@@ -221,11 +220,10 @@ function Post() {
               key={pageNumber}
               onClick={() => handlePageChange(pageNumber)}
               disabled={isLoading}
-              className={`w-8 h-8 rounded-full ${
-                pageNumber === page
+              className={`w-8 h-8 rounded-full ${pageNumber === page
                   ? "bg-blue-500 text-white"
                   : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {pageNumber}
             </button>
@@ -435,11 +433,12 @@ function Post() {
                 <button
                   key={category}
                   onClick={() => handleCategorySelect(category)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${
-                    selectedCategory === category
+                  onTouchStart={() => handleCategorySelect(category)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${selectedCategory === category
                       ? "bg-blue-500 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                    }`}
+                  style={{ touchAction: 'manipulation' }}
                 >
                   {category}
                 </button>
@@ -492,6 +491,8 @@ function Post() {
                         ${post.hidden ? "opacity-50 bg-gray-100" : ""}
                         ${loadingPostId === post.id ? "relative" : ""}`}
                       onClick={() => handlePostClick(post.id)}
+                      onTouchStart={() => handlePostClick(post.id)}
+                      style={{ touchAction: 'manipulation' }}
                       key={post.id}
                     >
                       {loadingPostId === post.id && (
@@ -595,14 +596,14 @@ function Post() {
                         </p>
                         <p>
                           {post.created_at === "0001-01-01T00:00:00Z" ||
-                          (post.updated_at &&
-                            post.updated_at !== post.created_at)
+                            (post.updated_at &&
+                              post.updated_at !== post.created_at)
                             ? `Updated ${new Date(
-                                post.updated_at
-                              ).toLocaleDateString()}`
+                              post.updated_at
+                            ).toLocaleDateString()}`
                             : `Created ${new Date(
-                                post.created_at
-                              ).toLocaleDateString()}`}
+                              post.created_at
+                            ).toLocaleDateString()}`}
                         </p>
                       </div>
                     </div>
