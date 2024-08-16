@@ -221,8 +221,8 @@ function Post() {
               onClick={() => handlePageChange(pageNumber)}
               disabled={isLoading}
               className={`w-8 h-8 rounded-full ${pageNumber === page
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                 } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {pageNumber}
@@ -435,8 +435,8 @@ function Post() {
                   onClick={() => handleCategorySelect(category)}
                   onTouchStart={() => handleCategorySelect(category)}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${selectedCategory === category
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
                   style={{ touchAction: 'manipulation' }}
                 >
@@ -556,18 +556,6 @@ function Post() {
                           dangerouslySetInnerHTML={{ __html: post.content }}
                           onClick={(e) => e.preventDefault()}
                         />
-                        {post.image && (
-                          <img
-                            src={post.image}
-                            alt={post.title}
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = `${process.env.REACT_APP_API_URL}${post.image}`;
-                              setImageLoadError(true);
-                            }}
-                            className="w-full h-24 sm:h-32 object-cover mb-2"
-                          />
-                        )}
                         {post.tags && post.tags.trim() !== "" && (
                           <div className="flex flex-wrap gap-1 mb-2 overflow-hidden h-6">
                             {post.tags
