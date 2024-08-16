@@ -354,6 +354,8 @@ function AppContent() {
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/system-stack" element={<SystemStack />} />
             <Route path="/post/:postId" element={<SinglePostPage />} />
+            <Route path="/post/new" element={<PostUpload />} />
+            <Route path="/post/edit/:postId" element={<PostUpload />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

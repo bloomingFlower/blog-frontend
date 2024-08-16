@@ -28,6 +28,181 @@ import { ClipLoader } from "react-spinners";
 import { calculateReadingTime } from "../utils/readingTime.js";
 import { FaClock } from "react-icons/fa";
 import { categoryOptions } from "../constants/categories";
+import DOMPurify from 'dompurify';
+import { memo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+const removeImageTags = (html) => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('img').forEach(img => img.remove());
+  return doc.body.innerHTML;
+};
+
+const extractMainContent = (content, maxLength = 200) => {
+  const stripHtml = (html) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
+  try {
+    let plainText = '';
+
+    try {
+      const parsedContent = JSON.parse(content);
+      if (parsedContent && parsedContent.root && parsedContent.root.children) {
+        plainText = parsedContent.root.children
+          .map(node => {
+            if (node.type === 'paragraph') {
+              return node.children.map(child => child.text).join(' ');
+            }
+            return '';
+          })
+          .filter(text => text.trim() !== '') // Remove empty paragraphs
+          .join('\n'); // Separate paragraphs with line breaks
+      }
+    } catch (jsonError) {
+      plainText = stripHtml(removeImageTags(content));
+    }
+
+    const decodedText = DOMPurify.sanitize(plainText, { ALLOWED_TAGS: [] });
+
+    // Handle truncation if the text exceeds the maximum length
+    if (decodedText.length > maxLength) {
+      const truncated = decodedText.slice(0, maxLength);
+      // Keep only the text after the last line break
+      const lastNewLineIndex = truncated.lastIndexOf('\n');
+      return lastNewLineIndex !== -1
+        ? truncated.slice(0, lastNewLineIndex) + '...'
+        : truncated + '...';
+    }
+
+    return decodedText;
+  } catch (error) {
+    console.error('Failed to parse content:', error);
+    return 'Content parsing error';
+  }
+};
+
+const PostItem = memo(({ post, isNew, isRecent, isUpdated, isUserPost, readingTime, loadingPostId }) => {
+  return (
+    <Link
+      to={`/post/${post.id}`}
+      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 flex flex-col h-80 sm:h-96 w-full
+        ${isNew ? "ring-2 ring-green-500" : ""}
+        ${post.hidden ? "opacity-50 bg-gray-100" : ""}
+        ${loadingPostId === post.id ? "relative" : ""}`}
+      style={{ touchAction: 'manipulation' }}
+    >
+      {loadingPostId === post.id && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+          <ClipLoader color="#4A90E2" size={50} />
+        </div>
+      )}
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="mb-2">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+            {post.title}
+          </h2>
+          <p className="text-xs text-gray-600 flex items-center">
+            <FaUser className="mr-1 text-gray-400" />
+            <span className="font-medium">
+              {post.user.first_name}
+            </span>
+            <span className="ml-1 bg-gray-200 text-gray-700 px-1 rounded">
+              #{post.user.id}
+            </span>
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1 mb-2">
+          {isRecent && (
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded inline-flex items-center">
+              New
+            </span>
+          )}
+          {isUpdated && (
+            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded inline-flex items-center">
+              <FaEdit className="mr-1" />
+              Updated
+            </span>
+          )}
+          {isUserPost && (
+            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded inline-flex items-center">
+              My Post
+            </span>
+          )}
+          {post.hidden && (
+            <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded inline-flex items-center">
+              <FaEyeSlash className="mr-1" />
+              Hidden
+            </span>
+          )}
+          {post.file && (
+            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded inline-flex items-center">
+              <FaPaperclip className="mr-1" />
+              File
+            </span>
+          )}
+          {post.category && (
+            <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded inline-flex items-center">
+              <FaFolder className="mr-1" />
+              {post.category}
+            </span>
+          )}
+        </div>
+        <div className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-3 sm:line-clamp-5 flex-grow overflow-hidden whitespace-pre-line">
+          {extractMainContent(post.content)}
+        </div>
+        {post.tags && post.tags.trim() !== "" && (
+          <div className="flex flex-wrap gap-1 mb-2 overflow-hidden h-6">
+            {post.tags
+              .split(",")
+              .slice(0, 3)
+              .map((tag, index) => (
+                <span
+                  className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded"
+                  key={index}
+                >
+                  #{tag.trim()}
+                </span>
+              ))}
+            {post.tags.split(",").length > 3 && (
+              <span className="text-xs text-gray-500">
+                +{post.tags.split(",").length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="p-4 bg-gray-50 flex justify-between items-center text-xs text-gray-500">
+        <p className="flex items-center">
+          <FaClock className="mr-1" />
+          {readingTime} min read
+        </p>
+        <p>
+          {post.created_at === "0001-01-01T00:00:00Z" ||
+            (post.updated_at &&
+              post.updated_at !== post.created_at)
+            ? `Updated ${new Date(
+              post.updated_at
+            ).toLocaleDateString()}`
+            : `Created ${new Date(
+              post.created_at
+            ).toLocaleDateString()}`}
+        </p>
+      </div>
+    </Link>
+  );
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.post.id === nextProps.post.id &&
+    prevProps.isNew === nextProps.isNew &&
+    prevProps.isRecent === nextProps.isRecent &&
+    prevProps.isUpdated === nextProps.isUpdated &&
+    prevProps.isUserPost === nextProps.isUserPost &&
+    prevProps.readingTime === nextProps.readingTime
+  );
+});
 
 function Post() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -35,16 +210,12 @@ function Post() {
   );
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isPostViewModalOpen, setIsPostViewModalOpen] = useState(false);
-  // PostUpload 모달의 열림/닫힘을 제어하는 상태를 추가
-  // 편집 중인 포스트의 ID를 저장하는 상태를 추가
   const [editingPostId, setEditingPostId] = useState(null);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [posts, setPosts] = useState([]);
-  // 검색 결과를 저장할 상태를 추가
   const [searchResults, setSearchResults] = useState([]);
-  const [imageLoadError, setImageLoadError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreatePostHint, setShowCreatePostHint] = useState(false);
   const hintRef = useRef(null);
@@ -67,16 +238,10 @@ function Post() {
 
   const [loadingPostId, setLoadingPostId] = useState(null);
 
-  const handlePostClick = (postId) => {
-    setLoadingPostId(postId);
-    setSelectedPostId(postId);
-    setIsPostViewModalOpen(true);
-  };
-
   const handleUploadClick = (e) => {
-    e.stopPropagation(); // 이벤트 버블링 방지
-    setEditingPostId(null); // Set editingPostId to null when creating a new post
-    setIsUploadModalOpen(true);
+    e.stopPropagation();
+    setEditingPostId(null);
+    navigate('/post/upload');
   };
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -90,28 +255,22 @@ function Post() {
     fetchPosts(1, category);
   }, []);
 
-  const fetchPosts = useCallback(
-    async (pageNum, category = selectedCategory) => {
-      setIsLoading(true);
-      try {
-        const response = await trackPromise(
-          api.get(
-            `/api/v1/posts?page=${pageNum}&category=${category === "All" ? "" : category
-            }`
-          )
-        );
-        setPosts(response.data.data);
-        setLastPage(response.data.meta.last_page);
-        setPage(pageNum);
-      } catch (error) {
-        console.error(`Error fetching posts for page ${pageNum}:`, error);
-        toast.error("게시물을 가져오는 데 실패했습니다:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [selectedCategory]
-  );
+  const fetchPosts = useCallback(async (pageNum, category = selectedCategory) => {
+    setIsLoading(true);
+    try {
+      const response = await trackPromise(
+        api.get(`/api/v1/posts?page=${pageNum}&category=${category === "All" ? "" : category}`)
+      );
+      setPosts(response.data.data);
+      setLastPage(response.data.meta.last_page);
+      setPage(pageNum);
+    } catch (error) {
+      console.error(`Error fetching posts for page ${pageNum}:`, error);
+      toast.error("게시물을 가져오는 데 실패했습니다:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCategory]);
 
   const handlePageChange = useCallback(
     (newPage) => {
@@ -263,11 +422,11 @@ function Post() {
   }, [fetchPosts, page]);
 
   const isNewPost = (createdAt) => {
-    return new Date(createdAt) > new Date(Date.now() - 10 * 60 * 1000); // 10 minutes
+    return new Date(createdAt) > new Date(Date.now() - 10 * 60 * 1000);
   };
 
   const isRecentPost = (createdAt) => {
-    return new Date(createdAt) > new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 2 days
+    return new Date(createdAt) > new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
   };
 
   const isRecentlyUpdated = (updatedAt, createdAt) => {
@@ -276,11 +435,10 @@ function Post() {
     return (
       updateTime > createTime &&
       updateTime > new Date(Date.now() - 24 * 60 * 60 * 1000)
-    ); // 1 day
+    );
   };
 
   useEffect(() => {
-    // Get user information from session storage
     const userDataString = sessionStorage.getItem("user");
     if (userDataString) {
       const userData = JSON.parse(userDataString);
@@ -288,7 +446,6 @@ function Post() {
     }
   }, [isLoggedIn]);
 
-  // Filter posts by category
   const filteredPosts = useMemo(() => {
     let filtered = (searchResults.length > 0 ? searchResults : posts).filter(
       (post) => {
@@ -356,7 +513,6 @@ function Post() {
   const RSSButton = () => (
     <button
       onClick={handleRSSClick}
-      onTouchStart={handleRSSClick}
       className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-2 py-1 rounded-full flex items-center transition-colors duration-300 touch-manipulation"
       title="RSS Feed"
       role="button"
@@ -366,6 +522,8 @@ function Post() {
       <span className="hidden sm:inline text-sm">RSS</span>
     </button>
   );
+
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -385,26 +543,7 @@ function Post() {
               refreshPosts={refreshPosts}
             />
           )}
-          {isPostViewModalOpen && (
-            <PostView
-              postId={selectedPostId}
-              setIsPostViewModalOpen={setIsPostViewModalOpen}
-              setEditingPostId={setEditingPostId}
-              setIsUploadModalOpen={setIsUploadModalOpen}
-              refreshPosts={refreshPosts}
-              setIsPostStatusChanged={setIsPostStatusChanged}
-              setLoadingPostId={setLoadingPostId}
-            />
-          )}
           <div className="max-w-7xl mx-auto">
-            {imageLoadError && (
-              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 text-sm">
-                <p>
-                  Some images may not display correctly. Please refresh the page
-                  if you encounter any issues.
-                </p>
-              </div>
-            )}
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-xl sm:text-3xl font-bold text-white">
                 Go-Powered RESTful Post Management System
@@ -433,7 +572,6 @@ function Post() {
                 <button
                   key={category}
                   onClick={() => handleCategorySelect(category)}
-                  onTouchStart={() => handleCategorySelect(category)}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${selectedCategory === category
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -485,116 +623,16 @@ function Post() {
                   const readingTime = calculateReadingTime(post.content);
 
                   return (
-                    <div
-                      className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 flex flex-col h-80 sm:h-96 w-full
-                        ${isNew ? "ring-2 ring-green-500" : ""}
-                        ${post.hidden ? "opacity-50 bg-gray-100" : ""}
-                        ${loadingPostId === post.id ? "relative" : ""}`}
-                      onClick={() => handlePostClick(post.id)}
-                      onTouchStart={() => handlePostClick(post.id)}
-                      style={{ touchAction: 'manipulation' }}
+                    <PostItem
                       key={post.id}
-                    >
-                      {loadingPostId === post.id && (
-                        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-                          <ClipLoader color="#4A90E2" size={50} />
-                        </div>
-                      )}
-                      <div className="p-4 flex flex-col flex-grow">
-                        <div className="mb-2">
-                          <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            {post.title}
-                          </h2>
-                          <p className="text-xs text-gray-600 flex items-center">
-                            <FaUser className="mr-1 text-gray-400" />
-                            <span className="font-medium">
-                              {post.user.first_name}
-                            </span>
-                            <span className="ml-1 bg-gray-200 text-gray-700 px-1 rounded">
-                              #{post.user.id}
-                            </span>
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {isRecent && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded inline-flex items-center">
-                              New
-                            </span>
-                          )}
-                          {isUpdated && (
-                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded inline-flex items-center">
-                              <FaEdit className="mr-1" />
-                              Updated
-                            </span>
-                          )}
-                          {isUserPost && (
-                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded inline-flex items-center">
-                              My Post
-                            </span>
-                          )}
-                          {post.hidden && (
-                            <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded inline-flex items-center">
-                              <FaEyeSlash className="mr-1" />
-                              Hidden
-                            </span>
-                          )}
-                          {post.file && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded inline-flex items-center">
-                              <FaPaperclip className="mr-1" />
-                              File
-                            </span>
-                          )}
-                          {post.category && (
-                            <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded inline-flex items-center">
-                              <FaFolder className="mr-1" />
-                              {post.category}
-                            </span>
-                          )}
-                        </div>
-                        <div
-                          className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2 sm:line-clamp-3 flex-grow overflow-hidden"
-                          dangerouslySetInnerHTML={{ __html: post.content }}
-                          onClick={(e) => e.preventDefault()}
-                        />
-                        {post.tags && post.tags.trim() !== "" && (
-                          <div className="flex flex-wrap gap-1 mb-2 overflow-hidden h-6">
-                            {post.tags
-                              .split(",")
-                              .slice(0, 3)
-                              .map((tag, index) => (
-                                <span
-                                  className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded"
-                                  key={index}
-                                >
-                                  #{tag.trim()}
-                                </span>
-                              ))}
-                            {post.tags.split(",").length > 3 && (
-                              <span className="text-xs text-gray-500">
-                                +{post.tags.split(",").length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4 bg-gray-50 flex justify-between items-center text-xs text-gray-500">
-                        <p className="flex items-center">
-                          <FaClock className="mr-1" />
-                          {readingTime} min read
-                        </p>
-                        <p>
-                          {post.created_at === "0001-01-01T00:00:00Z" ||
-                            (post.updated_at &&
-                              post.updated_at !== post.created_at)
-                            ? `Updated ${new Date(
-                              post.updated_at
-                            ).toLocaleDateString()}`
-                            : `Created ${new Date(
-                              post.created_at
-                            ).toLocaleDateString()}`}
-                        </p>
-                      </div>
-                    </div>
+                      post={post}
+                      isNew={isNew}
+                      isRecent={isRecent}
+                      isUpdated={isUpdated}
+                      isUserPost={isUserPost}
+                      readingTime={readingTime}
+                      loadingPostId={loadingPostId}
+                    />
                   );
                 })}
               </div>
@@ -625,4 +663,4 @@ function Post() {
   );
 }
 
-export default Post;
+export default memo(Post);

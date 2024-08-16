@@ -1,344 +1,210 @@
-// PostUpload.jsx
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
-import ReactQuill, { Quill } from "react-quill";
-import ImageUploader from "quill-image-uploader";
-import "quill-image-uploader/dist/quill.imageUploader.min.css";
-import "react-quill/dist/quill.snow.css";
-import Modal from "react-modal";
-import "tailwindcss/tailwind.css";
+import React, { useState, useRef, useCallback, useEffect, useContext } from "react";
+import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
+import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
+import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
+import { ListItemNode, ListNode } from '@lexical/list';
+import { CodeHighlightNode, CodeNode } from '@lexical/code';
+import { AutoLinkNode, LinkNode } from '@lexical/link';
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import { TRANSFORMERS } from '@lexical/markdown';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { api } from "./components/api";
 import { trackPromise } from "react-promise-tracker";
-import sanitizeHtml from "sanitize-html";
 import { toast } from "react-toastify";
-import DOMPurify from "dompurify";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   DocumentIcon,
   PhotoIcon,
   VideoCameraIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
-import { FaFolder } from "react-icons/fa";
+import { XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { categoryOptions } from "../constants/categories";
+import PlaygroundEditorTheme from '../themes/PlaygroundEditorTheme';
+import { $getRoot, $createParagraphNode, $createTextNode, $createNodeSelection } from 'lexical';
+import { AuthContext } from "./components/AuthContext";
 
-Quill.register("modules/imageUploader", ImageUploader);
+const editorConfig = {
+  namespace: 'MyEditor',
+  theme: PlaygroundEditorTheme,
+  onError(error) {
+    console.error('Lexical error:', error);
+  },
+  nodes: [
+    HeadingNode,
+    ListNode,
+    ListItemNode,
+    QuoteNode,
+    CodeNode,
+    CodeHighlightNode,
+    TableNode,
+    TableCellNode,
+    TableRowNode,
+    AutoLinkNode,
+    LinkNode
+  ],
+};
 
-function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
-  const [title, setTitle] = useState("");
-  const [editorState, setEditorState] = useState("");
-  const [file, setFile] = useState(null);
-  const [tags, setTags] = useState([]);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const quillRef = useRef(); // Quill 인스턴스에 접근하기 위한 ref
-  const fileInputRef = useRef(null);
-  const [fileName, setFileName] = useState("");
-  const [tagInput, setTagInput] = useState("");
-  const tagInputRef = useRef(null);
-  const [composing, setComposing] = useState(false);
-  const [lastAddedTag, setLastAddedTag] = useState("");
-  const [confirmAction, setConfirmAction] = useState(null);
-  const initialStateRef = useRef({
-    title: "",
-    editorState: "",
-    file: null,
-    tags: [],
-    category: "",
-  });
-  const [updateMessage, setUpdateMessage] = useState("");
-  const [confirmModalType, setConfirmModalType] = useState("");
-  const [lastUploadTime, setLastUploadTime] = useState(0);
-  const [cooldownMessage, setCooldownMessage] = useState("");
-  const UPLOAD_COOLDOWN = 60000; // 1분 (밀리초 단위)
-  const [category, setCategory] = useState("");
-
-  // DOMPurify configuration
-  const purifyConfig = {
-    ADD_TAGS: ["img"],
-    ADD_ATTR: ["src", "alt", "width", "height"],
-  };
-
-  const getApiUrl = () => {
-    if (process.env.NODE_ENV === "development") {
-      return process.env.REACT_APP_API_URL;
-    }
-    return window.ENV.REACT_APP_API_URL !== "%REACT_APP_API_URL%"
-      ? window.ENV.REACT_APP_API_URL
-      : "";
-  };
-
-  const imageUploader = useCallback((file) => {
-    return new Promise((resolve, reject) => {
-      if (!file) {
-        toast.error("Please select an image");
-        return reject("No file selected");
-      }
-      const formData = new FormData();
-      formData.append("image", file);
-
-      trackPromise(
-        api({
-          url: `${getApiUrl()}/api/v1/upload-img`,
-          method: "POST",
-          data: formData,
-          withCredentials: true,
-        })
-      )
-        .then((response) => {
-          resolve(response.data.url);
-        })
-        .catch((error) => {
-          toast.error("Failed to upload image");
-          reject("Upload failed");
-        });
-    });
-  }, []);
-
-  const imageHandler = useCallback(() => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
-
-    input.onchange = async () => {
-      const file = input.files[0];
-      const quill = quillRef.current.getEditor();
-      const range = quill.getSelection(true);
-
-      try {
-        const url = await imageUploader(file);
-        quill.insertEmbed(range.index, "image", url);
-      } catch (error) {
-        toast.error("Failed to upload image:", error);
-      }
-    };
-  }, [imageUploader]);
-
-  const modules = useMemo(() => {
-    return {
-      toolbar: {
-        container: [
-          [{ header: [1, 2, 3, false] }],
-          ["bold", "italic", "underline", "strike"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          [{ color: [] }, { background: [] }],
-          ["link", "image", "video"],
-          ["clean"],
-        ],
-        handlers: {
-          image: imageHandler,
-        },
-      },
-    };
-  }, [imageHandler]);
+function Editor({ onChange, initialContent }) {
+  const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const response = await trackPromise(api.get(`/api/v1/post/${postId}`));
-        if (response.data.data) {
-          const postData = response.data.data;
-          setTitle(postData.title);
-          setEditorState(postData.content);
-          setTags(
-            postData.tags
-              ? postData.tags
-                  .split(",")
-                  .filter((tag) => tag.trim() !== "")
-                  .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
-              : []
-          );
-          setFile(postData.file);
-          setCategory(postData.category || "");
-
-          // Save initial state
-          initialStateRef.current = {
-            title: postData.title,
-            editorState: postData.content,
-            file: postData.file,
-            tags: postData.tags
-              ? postData.tags
-                  .split(",")
-                  .filter((tag) => tag.trim() !== "")
-                  .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
-              : [],
-            category: postData.category || "",
-          };
-        } else {
-          throw new Error("Post not found");
+    if (initialContent) {
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        try {
+          if (typeof initialContent === 'string') {
+            const parsedContent = JSON.parse(initialContent);
+            if (parsedContent.root && parsedContent.root.children) {
+              const state = editor.parseEditorState(parsedContent);
+              editor.setEditorState(state);
+            } else {
+              throw new Error('Invalid content structure');
+            }
+          } else if (initialContent.root && initialContent.root.children) {
+            const state = editor.parseEditorState(initialContent);
+            editor.setEditorState(state);
+          } else {
+            throw new Error('Invalid content structure');
+          }
+        } catch (error) {
+          console.error('Failed to parse editor state:', error);
+          const paragraph = $createParagraphNode();
+          paragraph.append($createTextNode(typeof initialContent === 'string' ? initialContent : ''));
+          root.append(paragraph);
         }
-      } catch (error) {
-        console.error("Failed to fetch post:", error);
-      }
-    };
-
-    if (postId) {
-      fetchPost();
-    } else {
-      // Set initial state for new post
-      initialStateRef.current = {
-        title: "",
-        editorState: "",
-        file: null,
-        tags: [],
-        category: "",
-      };
-    }
-  }, [postId]);
-
-  // Check if there are changes
-  const checkModified = () => {
-    const initialState = initialStateRef.current;
-    return (
-      title !== initialState.title ||
-      editorState !== initialState.editorState ||
-      file !== initialState.file ||
-      JSON.stringify(tags) !== JSON.stringify(initialState.tags) ||
-      category !== initialState.category
-    );
-  };
-
-  // Handle close modal
-  const handleClose = () => {
-    if (checkModified()) {
-      setConfirmAction(() => () => {
-        setIsUploadModalOpen(false);
-        refreshPosts();
       });
-      setConfirmModalType("close");
-      setIsConfirmModalOpen(true);
-    } else {
-      setIsUploadModalOpen(false);
-      refreshPosts();
     }
-  };
+  }, [editor, initialContent]);
 
-  // Handle upload or update
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      onChange(JSON.stringify(editorState.toJSON()));
+    });
+  }, [editor, onChange]);
+
+  return null;
+}
+
+function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [editorContent, setEditorContent] = useState(() => {
+    if (editingPost && editingPost.content) {
+      try {
+        return JSON.parse(editingPost.content);
+      } catch (error) {
+        console.error('Failed to parse fetched content:', error);
+        return editingPost.content;
+      }
+    }
+    return '';
+  });
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
+  const [category, setCategory] = useState("");
+  const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [fileUploadError, setFileUploadError] = useState("");
+  const fileInputRef = useRef(null);
+  const [composing, setComposing] = useState(false);
+
+  useEffect(() => {
+    if (editingPost) {
+      setTitle(editingPost.title || "");
+      if (editingPost.content) {
+        try {
+          const parsedContent = JSON.parse(editingPost.content);
+          setEditorContent(parsedContent);
+        } catch (error) {
+          console.error('Failed to parse fetched content:', error);
+          setEditorContent(editingPost.content);
+        }
+      }
+      setTags(editingPost.tags ? editingPost.tags.split(',').filter(tag => tag.trim()).map(tag => ({ value: tag.trim(), label: tag.trim() })) : []);
+      setCategory(editingPost.category || "");
+      if (editingPost.file) {
+        const filePath = editingPost.file;
+        const fileName = filePath.split('/').pop();
+        setFileName(fileName);
+        setFile(new File([], fileName));
+      }
+    }
+  }, [editingPost]);
+
   const handleUpload = async (e) => {
     e.preventDefault();
     if (isUploading) return;
 
-    const currentTime = Date.now();
-    if (currentTime - lastUploadTime < UPLOAD_COOLDOWN) {
-      const remainingTime = Math.ceil(
-        (UPLOAD_COOLDOWN - (currentTime - lastUploadTime)) / 1000
-      );
-      setCooldownMessage(`다시 업로드하기까지 ${remainingTime}초 남았습니다.`);
+    console.log("Current state before upload:", { title, editorContent, tags, category, file });
+    if (!title.trim() || !editorContent) {
+      setUpdateMessage("Please enter both title and content.");
       return;
     }
 
-    setCooldownMessage(""); // Reset message
+    setUpdateMessage("");
+    setFileUploadError("");
+    setIsUploading(true);
 
-    // Check if title and content are not empty
-    if (!title.trim() || !editorState.trim()) {
-      setUpdateMessage("Title or content cannot be empty");
-      return;
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", typeof editorContent === 'string' ? editorContent : JSON.stringify(editorContent));
+    const tagValues = tags.map((tag) => tag.value).join(",");
+    formData.append("tags", tagValues);
+    formData.append("category", category || "Others");
+    if (file) {
+      formData.append("file", file);
     }
 
-    if (postId && !checkModified()) {
-      setUpdateMessage("No changes to update");
-      return;
-    }
-
-    setUpdateMessage(""); // Reset message
-    setConfirmAction(() => async () => {
-      setIsUploading(true);
-
-      // DOMPurify to sanitize the editor content (allowing image tags)
-      const sanitizedContent = DOMPurify.sanitize(editorState, purifyConfig);
-
-      // HTML Sanitization (keeping the original code, using as an additional security layer)
-      const cleanContent = sanitizeHtml(sanitizedContent, {
-        allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-          "img",
-          "p",
-          "b",
-          "i",
-          "u",
-          "s",
-          "a",
-          "br",
-          "video",
-        ]),
-        allowedAttributes: {
-          a: ["href", "target"],
-          img: ["src", "alt", "width", "height"],
-          video: [
-            "src",
-            "controls",
-            "autoplay",
-            "muted",
-            "loop",
-            "width",
-            "height",
-          ],
-        },
-      });
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", cleanContent);
-      const tagValues = tags.map((tag) => tag.value).join(",");
-      formData.append("tags", tagValues);
-      formData.append("category", category || "Others"); // Add category or set to "Others" if not selected
-      if (file) {
-        formData.append("file", file);
-      }
-      try {
-        if (postId) {
-          // If postId is provided, update the existing post
-          const response = await trackPromise(
-            api.put(`/api/v1/post/${postId}`, formData, {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            })
-          );
-          if (response.status === 200) {
-            toast.success("Post updated successfully");
-            setIsUploadModalOpen(false);
-            refreshPosts(); // Refresh the post list
-            setLastUploadTime(Date.now()); // Update the last upload time
-          } else {
-            toast.error("Failed to update post");
-          }
-        } else {
-          const response = await trackPromise(
-            api.post("/api/v1/posts", formData, {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            })
-          );
-
-          if (response.status === 200) {
-            toast.success("Post uploaded successfully");
-            setIsUploadModalOpen(false);
-            refreshPosts(); // Refresh the post list
-            setLastUploadTime(Date.now()); // Update the last upload time
-          } else {
-            toast.error("Failed to upload post");
-          }
-        }
-      } catch (error) {
-        setUpdateMessage(
-          `${postId ? "Update" : "Upload"} failed: ${error.message}`
+    try {
+      let response;
+      console.log("editingPost:", editingPost);
+      if (editingPost) {
+        response = await trackPromise(
+          api.put(`/api/v1/post/${editingPost.id}`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
         );
-      } finally {
-        setIsUploading(false);
+      } else {
+        response = await trackPromise(
+          api.post("/api/v1/post", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+        );
       }
-    });
-    setConfirmModalType("save");
-    setIsConfirmModalOpen(true);
-  };
 
-  const handleInputChange = (content) => {
-    setEditorState(content);
+      if (response.status === 200) {
+        toast.success(editingPost ? "Post updated successfully." : "Post uploaded successfully.");
+        navigate('/post');
+        refreshPosts();
+      } else {
+        toast.error(editingPost ? "Post update failed." : "Post upload failed.");
+      }
+    } catch (error) {
+      console.error("Upload/Update error:", error);
+      setUpdateMessage(`${editingPost ? "Update" : "Upload"} failed: ${error.message}`);
+      if (error.response && error.response.data && error.response.data.message) {
+        if (error.response.data.message.includes("file")) {
+          setFileUploadError(`File upload failed: ${error.response.data.message}`);
+        }
+      }
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleTagInputChange = (e) => {
@@ -346,7 +212,7 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
   };
 
   const handleTagInputKeyDown = (e) => {
-    if (composing) return; // 조합 중일 때는 처리하지 않음
+    if (composing) return;
 
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -358,11 +224,10 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
 
   const addTag = () => {
     let newTag = tagInput.trim();
-    if (newTag && newTag !== lastAddedTag) {
+    if (newTag) {
       newTag = newTag.startsWith("#") ? newTag.slice(1) : newTag;
       if (!tags.some((existingTag) => existingTag.value === newTag)) {
         setTags([...tags, { value: newTag, label: newTag }]);
-        setLastAddedTag(newTag);
       }
     }
     setTagInput("");
@@ -372,22 +237,10 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
     setTags(tags.filter((tag) => tag.value !== tagToRemove));
   };
 
-  const titleRef = useRef(null);
-
-  useEffect(() => {
-    if (titleRef.current) {
-      titleRef.current.focus();
-    }
-    Modal.setAppElement("#root");
-  }, []);
-
-  const getFileIcon = (fileType) => {
-    if (!fileType) return DocumentIcon;
-    if (fileType.startsWith("image/")) return PhotoIcon;
-    if (fileType.startsWith("video/")) return VideoCameraIcon;
-    if (fileType === "application/pdf") return DocumentTextIcon;
-    return DocumentIcon;
-  };
+  const handleCategorySelect = useCallback((e, selectedCategory) => {
+    e.preventDefault();
+    setCategory(selectedCategory === category ? "" : selectedCategory);
+  }, [category]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -397,128 +250,115 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
     }
   };
 
-  // Category selection handler
-  const handleCategorySelect = (selectedCategory) => {
-    setCategory(selectedCategory === category ? "" : selectedCategory);
+  const getFileIcon = (fileType) => {
+    if (!fileType) return DocumentIcon;
+    if (fileType.startsWith("image/")) return PhotoIcon;
+    if (fileType.startsWith("video/")) return VideoCameraIcon;
+    if (fileType === "application/pdf") return DocumentTextIcon;
+    return DocumentIcon;
   };
 
   const uploadCategoryOptions = categoryOptions.filter(
     (category) => category !== "All"
   );
 
+  const removeFile = () => {
+    setFile(null);
+    setFileName("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleEditorChange = useCallback((newContent) => {
+    setEditorContent(newContent);
+  }, []);
+
   return (
-    <>
-      <Modal
-        isOpen={true}
-        onRequestClose={handleClose}
-        contentLabel="Post Upload"
-        className="w-11/12 max-w-4xl mx-auto mt-16 bg-[#f8f5e6] rounded-lg shadow-2xl overflow-hidden flex flex-col"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-2 sm:p-4"
-        style={{
-          content: {
-            maxHeight: "calc(100vh - 4rem)",
-            height: "calc(100vh - 4rem)",
-          },
-        }}
-      >
-        <nav className="bg-[#e6e0cc] py-2 px-4 flex-shrink-0 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-gray-600">
-            {postId ? "Editing post" : "New post"}
-          </h2>
-          <div className="flex items-center space-x-2">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 mt-4 sm:mt-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl p-4 sm:p-6">
+        {/* Updated header section with responsive font sizes and spacing */}
+        <div className="flex items-center justify-between mb-3 sm:mb-6">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold transition-all duration-300">
+            {editingPostId ? "Edit Post" : "Create New Post"}
+          </h1>
+          <div className="flex space-x-2">
             <button
-              className="py-1 px-3 text-sm bg-[#8b7d5e] text-white rounded-lg hover:bg-[#7a6c4e] transition duration-300"
-              onClick={handleUpload}
-              disabled={isUploading || !!cooldownMessage}
-              aria-label="Upload"
+              type="button"
+              onClick={() => navigate('/post')}
+              className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition duration-300"
+              title="Close"
             >
-              {isUploading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                  {postId ? "Updating..." : "Uploading..."}
-                </div>
-              ) : postId ? (
-                "Update"
-              ) : (
-                "Upload"
-              )}
+              <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
             <button
-              className="text-gray-500 hover:text-gray-700 transition duration-300"
-              onClick={handleClose}
-              aria-label="Close"
+              type="submit"
+              form="post-form"
+              className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300"
+              disabled={isUploading}
+              title={isUploading ? "Processing" : (editingPostId ? "Update" : "Upload")}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <PaperAirplaneIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           </div>
-        </nav>
+        </div>
 
-        <div className="p-4 sm:p-6 flex-grow overflow-y-auto">
+        {/* Form with id for button association */}
+        <form id="post-form" onSubmit={handleUpload}>
           <input
-            ref={titleRef}
-            className="w-full mb-4 p-2 text-lg border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300 bg-transparent"
+            className="w-full mb-3 sm:mb-4 p-2 text-sm sm:text-base border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter a title"
-            aria-label="Title"
+            placeholder="Post title..."
           />
 
-          {/* ReactQuill editor area */}
-          <div className="mb-4 h-64 sm:h-[calc(100vh-24rem)] overflow-y-auto">
-            <ReactQuill
-              ref={quillRef}
-              value={editorState}
-              onChange={(content, delta, source, editor) => {
-                const sanitizedContent = DOMPurify.sanitize(
-                  editor.getHTML(),
-                  purifyConfig
-                );
-                setEditorState(sanitizedContent);
-              }}
-              modules={modules}
-              theme="snow"
-              placeholder="Share your story..."
-              className="h-full"
-              style={{ height: "100%" }}
-              aria-label="Content"
-            />
+          <div className="mb-3 sm:mb-4 border rounded overflow-y-auto transition-all duration-300 ease-in-out
+                          h-[calc(100vh-24rem)] sm:h-[calc(100vh-28rem)] md:h-[calc(100vh-32rem)] lg:h-[calc(100vh-36rem)]">
+            <LexicalComposer initialConfig={editorConfig}>
+              <RichTextPlugin
+                contentEditable={<ContentEditable className="outline-none h-full p-2" />}
+                ErrorBoundary={LexicalErrorBoundary}
+              />
+              <HistoryPlugin />
+              <AutoFocusPlugin />
+              <ListPlugin />
+              <LinkPlugin />
+              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+              <Editor onChange={handleEditorChange} initialContent={editorContent} />
+            </LexicalComposer>
           </div>
 
-          {/* file upload area */}
-          <div className="mb-4">
+          <div className="mb-3 sm:mb-4">
             <div
-              className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-[#f0ead6] hover:bg-[#e6e0cc]"
+              className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 cursor-pointer bg-gray-100 hover:bg-gray-200"
               onClick={() => fileInputRef.current.click()}
             >
               <div className="flex items-center justify-center">
-                {file ? (
+                {(file || fileName) ? (
                   <>
-                    {React.createElement(getFileIcon(file.type), {
-                      className: "h-6 w-6 text-blue-500 mr-2",
+                    {React.createElement(getFileIcon(file ? file.type : ''), {
+                      className: "h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mr-2",
                     })}
-                    <span className="text-sm text-gray-700 truncate max-w-[200px]">
-                      {fileName}
+                    <span className="text-xs sm:text-sm text-gray-700 truncate max-w-[200px]">
+                      {fileName || file.name}
                     </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile();
+                      }}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </button>
                   </>
                 ) : (
                   <>
-                    <DocumentIcon className="h-6 w-6 text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-500">
-                      Click to select a file
+                    <DocumentIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400 mr-2" />
+                    <span className="text-xs sm:text-sm text-gray-500">
+                      Select a file (jpg, jpeg, png, webp, txt, pdf; max 10MB)
                     </span>
                   </>
                 )}
@@ -529,17 +369,16 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
               className="hidden"
               type="file"
               onChange={handleFileChange}
-              aria-label="File"
+              accept=".jpg,.jpeg,.png,.webp,.txt,.pdf"
             />
           </div>
 
-          {/* tag input area */}
-          <div className="mb-4">
-            <div className="flex flex-wrap items-center gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-[#f0ead6]">
+          <div className="mb-3 sm:mb-4">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2 p-2 border-2 border-gray-300 rounded-lg focus-within:border-blue-500 transition duration-300 bg-gray-100">
               {tags.map((tag) => (
                 <span
                   key={tag.value}
-                  className="bg-[#e6e0cc] text-gray-700 px-2 py-1 rounded-full text-sm flex items-center mb-1"
+                  className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs sm:text-sm flex items-center"
                 >
                   #{tag.value}
                   <button
@@ -551,7 +390,6 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                 </span>
               ))}
               <input
-                ref={tagInputRef}
                 type="text"
                 value={tagInput}
                 onChange={handleTagInputChange}
@@ -559,88 +397,127 @@ function PostUpload({ setIsUploadModalOpen, postId, refreshPosts }) {
                 onCompositionStart={() => setComposing(true)}
                 onCompositionEnd={() => {
                   setComposing(false);
-                  // 조합이 끝났을 때 태그를 즉시 추가하지 않음
                 }}
-                placeholder="Add a tag... (Enter to add)"
-                className="flex-grow bg-transparent outline-none text-sm w-full"
+                placeholder={tags.length === 0 ? "Add a tag... (Enter to add)" : ""}
+                className="flex-grow bg-transparent outline-none text-xs sm:text-sm"
               />
             </div>
           </div>
 
-          {/* category selection area */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="mb-3 sm:mb-4">
+            <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="post-category">
               Category
             </label>
-            <div className="flex flex-wrap gap-2">
-              {uploadCategoryOptions.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => handleCategorySelect(option)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium mb-1 ${
-                    category === option
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
+            <div className="relative">
+              <div className="flex overflow-x-auto pb-2 hide-scrollbar">
+                <div className="flex space-x-1 sm:space-x-2">
+                  {uploadCategoryOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={(e) => handleCategorySelect(e, option)}
+                      type="button"
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${category === option
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             {category && (
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
                 Selected category: {category}
               </p>
             )}
             {!category && (
-              <p className="mt-2 text-sm text-gray-600">
-                No category selected (will be set as "Others")
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
+                Category not selected (Default: "Others")
               </p>
             )}
           </div>
 
           {updateMessage && (
-            <p className="text-sm text-red-500 mb-2">{updateMessage}</p>
+            <p className="text-red-500 mb-2 text-xs">{updateMessage}</p>
           )}
-          {cooldownMessage && (
-            <p className="text-sm text-orange-500 mb-2">{cooldownMessage}</p>
+          {fileUploadError && (
+            <p className="text-red-500 text-xs mt-2">{fileUploadError}</p>
           )}
-        </div>
-      </Modal>
+        </form>
+      </div>
+    </div>
+  );
+}
 
-      {/* Confirmation Modal */}
-      <Modal
-        isOpen={isConfirmModalOpen}
-        onRequestClose={() => setIsConfirmModalOpen(false)}
-        contentLabel="Confirm Action"
-        className="w-96 mx-auto my-20 bg-white rounded-lg shadow-xl p-6"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
-      >
-        <h2 className="text-xl font-bold mb-4">Confirm Action</h2>
-        <p className="mb-6">
-          {confirmModalType === "close"
-            ? "You have unsaved changes. Are you sure you want to close without saving?"
-            : "Are you sure you want to save these changes?"}
-        </p>
-        <div className="flex justify-end space-x-4">
-          <button
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-            onClick={() => setIsConfirmModalOpen(false)}
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={() => {
-              setIsConfirmModalOpen(false);
-              confirmAction();
-            }}
-          >
-            Confirm
-          </button>
-        </div>
-      </Modal>
-    </>
+function PostUpload({ refreshPosts }) {
+  const { postId } = useParams();
+  const { isLoggedIn, user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [editingPost, setEditingPost] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 포스트 데이터를 가져오는 함수
+  const fetchPost = useCallback(async () => {
+    if (!postId) return;
+    try {
+      const response = await api.get(`/api/v1/post/${postId}`);
+      if (response.data.data) {
+        setEditingPost(response.data.data);
+      } else {
+        throw new Error("Post not found");
+      }
+    } catch (error) {
+      console.error("Failed to fetch post:", error);
+      toast.error("Failed to load post data for editing");
+      navigate("/post");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [postId, navigate]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/login", { state: { from: `/post/edit/${postId}` } });
+      return;
+    }
+
+    if (postId) {
+      fetchPost();
+    } else {
+      setIsLoading(false);
+    }
+  }, [isLoggedIn, navigate, postId, fetchPost]);
+
+  const checkUserPermission = useCallback(() => {
+    if (!user || !editingPost) return false;
+    return user.id === editingPost.user.id;
+  }, [user, editingPost]);
+
+  useEffect(() => {
+    if (!isLoading && editingPost && !checkUserPermission()) {
+      toast.error("You don't have permission to edit this post.");
+      navigate("/post");
+    }
+  }, [isLoading, editingPost, checkUserPermission, navigate]);
+
+  if (!isLoggedIn || isLoading) {
+    return null;
+  }
+
+  if (postId && !editingPost) {
+    return null;
+  }
+
+  return (
+    <LexicalComposer initialConfig={editorConfig}>
+      <PostUploadContent
+        editingPostId={postId}
+        refreshPosts={refreshPosts}
+        editingPost={editingPost}
+      />
+    </LexicalComposer>
   );
 }
 
