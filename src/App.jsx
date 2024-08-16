@@ -74,6 +74,8 @@ function AppContent() {
   const [isSuperMode, setIsSuperMode] = useState(false);
   const [timerColor, setTimerColor] = useState("text-black");
   const [profileImageFilter, setProfileImageFilter] = useState("");
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const lastScrollTop = useRef(0);
 
   const navigate = useNavigate();
 
@@ -231,6 +233,23 @@ function AppContent() {
       .toUpperCase();
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const st = window.scrollY || document.documentElement.scrollTop;
+      if (st > lastScrollTop.current) {
+        // Scrolling down
+        setIsNavVisible(false);
+      } else {
+        // Scrolling up
+        setIsNavVisible(true);
+      }
+      lastScrollTop.current = st <= 0 ? 0 : st;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat"
@@ -243,7 +262,11 @@ function AppContent() {
         setSuperMode={setIsSuperMode}
       />
       <header>
-        <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50 shadow-sm">
+        <nav
+          className={`fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50 shadow-sm transition-transform duration-300 ${
+            isNavVisible ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
           <Link to="/" className="text-lg sm:text-xl">
             Our Journey
           </Link>
