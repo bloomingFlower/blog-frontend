@@ -1,20 +1,26 @@
-import React, { useState, useRef, useCallback, useEffect, useContext } from "react";
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import { HeadingNode, QuoteNode } from '@lexical/rich-text';
-import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
-import { ListItemNode, ListNode } from '@lexical/list';
-import { CodeHighlightNode, CodeNode } from '@lexical/code';
-import { AutoLinkNode, LinkNode } from '@lexical/link';
-import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
-import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
-import { TRANSFORMERS } from '@lexical/markdown';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useContext,
+} from "react";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { AutoLinkNode, LinkNode } from "@lexical/link";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { TRANSFORMERS } from "@lexical/markdown";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { api } from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
@@ -27,15 +33,20 @@ import {
 } from "@heroicons/react/24/outline";
 import { XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { categoryOptions } from "../constants/categories";
-import PlaygroundEditorTheme from '../themes/PlaygroundEditorTheme';
-import { $getRoot, $createParagraphNode, $createTextNode, $createNodeSelection } from 'lexical';
+import PlaygroundEditorTheme from "../themes/PlaygroundEditorTheme";
+import {
+  $getRoot,
+  $createParagraphNode,
+  $createTextNode,
+  $createNodeSelection,
+} from "lexical";
 import { AuthContext } from "./components/AuthContext";
 
 const editorConfig = {
-  namespace: 'MyEditor',
+  namespace: "MyEditor",
   theme: PlaygroundEditorTheme,
   onError(error) {
-    console.error('Lexical error:', error);
+    console.error("Lexical error:", error);
   },
   nodes: [
     HeadingNode,
@@ -48,7 +59,7 @@ const editorConfig = {
     TableCellNode,
     TableRowNode,
     AutoLinkNode,
-    LinkNode
+    LinkNode,
   ],
 };
 
@@ -61,24 +72,28 @@ function Editor({ onChange, initialContent }) {
         const root = $getRoot();
         root.clear();
         try {
-          if (typeof initialContent === 'string') {
+          if (typeof initialContent === "string") {
             const parsedContent = JSON.parse(initialContent);
             if (parsedContent.root && parsedContent.root.children) {
               const state = editor.parseEditorState(parsedContent);
               editor.setEditorState(state);
             } else {
-              throw new Error('Invalid content structure');
+              throw new Error("Invalid content structure");
             }
           } else if (initialContent.root && initialContent.root.children) {
             const state = editor.parseEditorState(initialContent);
             editor.setEditorState(state);
           } else {
-            throw new Error('Invalid content structure');
+            throw new Error("Invalid content structure");
           }
         } catch (error) {
-          console.error('Failed to parse editor state:', error);
+          console.error("Failed to parse editor state:", error);
           const paragraph = $createParagraphNode();
-          paragraph.append($createTextNode(typeof initialContent === 'string' ? initialContent : ''));
+          paragraph.append(
+            $createTextNode(
+              typeof initialContent === "string" ? initialContent : ""
+            )
+          );
           root.append(paragraph);
         }
       });
@@ -102,11 +117,11 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
       try {
         return JSON.parse(editingPost.content);
       } catch (error) {
-        console.error('Failed to parse fetched content:', error);
+        console.error("Failed to parse fetched content:", error);
         return editingPost.content;
       }
     }
-    return '';
+    return "";
   });
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
@@ -127,15 +142,22 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
           const parsedContent = JSON.parse(editingPost.content);
           setEditorContent(parsedContent);
         } catch (error) {
-          console.error('Failed to parse fetched content:', error);
+          console.error("Failed to parse fetched content:", error);
           setEditorContent(editingPost.content);
         }
       }
-      setTags(editingPost.tags ? editingPost.tags.split(',').filter(tag => tag.trim()).map(tag => ({ value: tag.trim(), label: tag.trim() })) : []);
+      setTags(
+        editingPost.tags
+          ? editingPost.tags
+              .split(",")
+              .filter((tag) => tag.trim())
+              .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
+          : []
+      );
       setCategory(editingPost.category || "");
       if (editingPost.file) {
         const filePath = editingPost.file;
-        const fileName = filePath.split('/').pop();
+        const fileName = filePath.split("/").pop();
         setFileName(fileName);
         setFile(new File([], fileName));
       }
@@ -146,7 +168,13 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
     e.preventDefault();
     if (isUploading) return;
 
-    console.log("Current state before upload:", { title, editorContent, tags, category, file });
+    console.log("Current state before upload:", {
+      title,
+      editorContent,
+      tags,
+      category,
+      file,
+    });
     if (!title.trim() || !editorContent) {
       setUpdateMessage("Please enter both title and content.");
       return;
@@ -158,7 +186,12 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
 
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("content", typeof editorContent === 'string' ? editorContent : JSON.stringify(editorContent));
+    formData.append(
+      "content",
+      typeof editorContent === "string"
+        ? editorContent
+        : JSON.stringify(editorContent)
+    );
     const tagValues = tags.map((tag) => tag.value).join(",");
     formData.append("tags", tagValues);
     formData.append("category", category || "Others");
@@ -179,7 +212,7 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
         );
       } else {
         response = await trackPromise(
-          api.post("/api/v1/post", formData, {
+          api.post("/api/v1/posts", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
@@ -188,18 +221,32 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
       }
 
       if (response.status === 200) {
-        toast.success(editingPost ? "Post updated successfully." : "Post uploaded successfully.");
-        navigate('/post');
+        toast.success(
+          editingPost
+            ? "Post updated successfully."
+            : "Post uploaded successfully."
+        );
+        navigate("/post");
         refreshPosts();
       } else {
-        toast.error(editingPost ? "Post update failed." : "Post upload failed.");
+        toast.error(
+          editingPost ? "Post update failed." : "Post upload failed."
+        );
       }
     } catch (error) {
       console.error("Upload/Update error:", error);
-      setUpdateMessage(`${editingPost ? "Update" : "Upload"} failed: ${error.message}`);
-      if (error.response && error.response.data && error.response.data.message) {
+      setUpdateMessage(
+        `${editingPost ? "Update" : "Upload"} failed: ${error.message}`
+      );
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         if (error.response.data.message.includes("file")) {
-          setFileUploadError(`File upload failed: ${error.response.data.message}`);
+          setFileUploadError(
+            `File upload failed: ${error.response.data.message}`
+          );
         }
       }
     } finally {
@@ -222,6 +269,10 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
     }
   };
 
+  const handleTagInputBlur = () => {
+    addTag();
+  };
+
   const addTag = () => {
     let newTag = tagInput.trim();
     if (newTag) {
@@ -237,16 +288,33 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
     setTags(tags.filter((tag) => tag.value !== tagToRemove));
   };
 
-  const handleCategorySelect = useCallback((e, selectedCategory) => {
-    e.preventDefault();
-    setCategory(selectedCategory === category ? "" : selectedCategory);
-  }, [category]);
+  const handleCategorySelect = useCallback(
+    (e, selectedCategory) => {
+      e.preventDefault();
+      setCategory(selectedCategory === category ? "" : selectedCategory);
+    },
+    [category]
+  );
+
+  const truncateFileName = (fileName) => {
+    if (fileName.length <= 20) return fileName;
+
+    const extension = fileName.split(".").pop();
+    const nameWithoutExtension = fileName.substring(
+      0,
+      fileName.lastIndexOf(".")
+    );
+
+    if (nameWithoutExtension.length <= 16) return fileName;
+
+    return `${nameWithoutExtension.substring(0, 13)}...${extension}`;
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      setFileName(selectedFile.name);
+      setFileName(truncateFileName(selectedFile.name));
     }
   };
 
@@ -285,7 +353,7 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
           <div className="flex space-x-2">
             <button
               type="button"
-              onClick={() => navigate('/post')}
+              onClick={() => navigate("/post")}
               className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition duration-300"
               title="Close"
             >
@@ -294,11 +362,36 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
             <button
               type="submit"
               form="post-form"
-              className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300"
+              className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 flex items-center justify-center"
               disabled={isUploading}
-              title={isUploading ? "Processing" : (editingPostId ? "Update" : "Upload")}
+              title={
+                isUploading ? "Processing" : editingPostId ? "Update" : "Upload"
+              }
             >
-              <PaperAirplaneIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              {isUploading ? (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : (
+                <PaperAirplaneIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              )}
             </button>
           </div>
         </div>
@@ -313,11 +406,15 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
             placeholder="Post title..."
           />
 
-          <div className="mb-3 sm:mb-4 border rounded overflow-y-auto transition-all duration-300 ease-in-out
-                          h-[calc(100vh-24rem)] sm:h-[calc(100vh-28rem)] md:h-[calc(100vh-32rem)] lg:h-[calc(100vh-36rem)]">
+          <div
+            className="mb-3 sm:mb-4 border rounded overflow-y-auto transition-all duration-300 ease-in-out
+                          h-[calc(100vh-24rem)] sm:h-[calc(100vh-28rem)] md:h-[calc(100vh-32rem)] lg:h-[calc(100vh-36rem)]"
+          >
             <LexicalComposer initialConfig={editorConfig}>
               <RichTextPlugin
-                contentEditable={<ContentEditable className="outline-none h-full p-2" />}
+                contentEditable={
+                  <ContentEditable className="outline-none h-full p-2" />
+                }
                 ErrorBoundary={LexicalErrorBoundary}
               />
               <HistoryPlugin />
@@ -325,7 +422,10 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
               <ListPlugin />
               <LinkPlugin />
               <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-              <Editor onChange={handleEditorChange} initialContent={editorContent} />
+              <Editor
+                onChange={handleEditorChange}
+                initialContent={editorContent}
+              />
             </LexicalComposer>
           </div>
 
@@ -335,13 +435,16 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
               onClick={() => fileInputRef.current.click()}
             >
               <div className="flex items-center justify-center">
-                {(file || fileName) ? (
+                {file || fileName ? (
                   <>
-                    {React.createElement(getFileIcon(file ? file.type : ''), {
+                    {React.createElement(getFileIcon(file ? file.type : ""), {
                       className: "h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mr-2",
                     })}
-                    <span className="text-xs sm:text-sm text-gray-700 truncate max-w-[200px]">
-                      {fileName || file.name}
+                    <span
+                      className="text-xs sm:text-sm text-gray-700 truncate max-w-[200px]"
+                      title={file ? file.name : fileName}
+                    >
+                      {fileName || (file && truncateFileName(file.name))}
                     </span>
                     <button
                       type="button"
@@ -394,18 +497,24 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
                 value={tagInput}
                 onChange={handleTagInputChange}
                 onKeyDown={handleTagInputKeyDown}
+                onBlur={handleTagInputBlur}
                 onCompositionStart={() => setComposing(true)}
                 onCompositionEnd={() => {
                   setComposing(false);
                 }}
-                placeholder={tags.length === 0 ? "Add a tag... (Enter to add)" : ""}
+                placeholder={
+                  tags.length === 0 ? "Add a tag... (Enter to add)" : ""
+                }
                 className="flex-grow bg-transparent outline-none text-xs sm:text-sm"
               />
             </div>
           </div>
 
           <div className="mb-3 sm:mb-4">
-            <label className="block text-xs font-medium text-gray-700 mb-1" htmlFor="post-category">
+            <label
+              className="block text-xs font-medium text-gray-700 mb-1"
+              htmlFor="post-category"
+            >
               Category
             </label>
             <div className="relative">
@@ -416,10 +525,11 @@ function PostUploadContent({ refreshPosts, editingPostId, editingPost }) {
                       key={option}
                       onClick={(e) => handleCategorySelect(e, option)}
                       type="button"
-                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${category === option
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${
+                        category === option
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
                     >
                       {option}
                     </button>

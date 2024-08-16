@@ -12,25 +12,31 @@ import { AuthContext } from "./components/AuthContext";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
 import { calculateReadingTime } from "../utils/readingTime.js";
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import { HeadingNode, QuoteNode } from '@lexical/rich-text';
-import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
-import { ListItemNode, ListNode } from '@lexical/list';
-import { CodeHighlightNode, CodeNode } from '@lexical/code';
-import { AutoLinkNode, LinkNode } from '@lexical/link';
-import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
-import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
-import { TRANSFORMERS } from '@lexical/markdown';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getRoot, $createParagraphNode, $createTextNode, $parseSerializedNode, EditorState } from 'lexical';
-import { $generateNodesFromDOM } from '@lexical/html';
-import PlaygroundEditorTheme from '../themes/PlaygroundEditorTheme';
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { CodeHighlightNode, CodeNode } from "@lexical/code";
+import { AutoLinkNode, LinkNode } from "@lexical/link";
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { TRANSFORMERS } from "@lexical/markdown";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import {
+  $getRoot,
+  $createParagraphNode,
+  $createTextNode,
+  $parseSerializedNode,
+  EditorState,
+} from "lexical";
+import { $generateNodesFromDOM } from "@lexical/html";
+import PlaygroundEditorTheme from "../themes/PlaygroundEditorTheme";
 import {
   FaUser,
   FaDownload,
@@ -74,10 +80,10 @@ function reducer(state, action) {
 }
 
 const editorConfig = {
-  namespace: 'MyEditor',
+  namespace: "MyEditor",
   theme: PlaygroundEditorTheme,
   onError(error) {
-    console.error('Lexical error:', error);
+    console.error("Lexical error:", error);
   },
   nodes: [
     HeadingNode,
@@ -90,14 +96,14 @@ const editorConfig = {
     TableCellNode,
     TableRowNode,
     AutoLinkNode,
-    LinkNode
+    LinkNode,
   ],
   editable: false,
   editorState: (editor) => {
     const root = $getRoot();
     if (root.getFirstChild() === null) {
       const paragraph = $createParagraphNode();
-      paragraph.append($createTextNode('Loading content...'));
+      paragraph.append($createTextNode("Loading content..."));
       root.append(paragraph);
     }
   },
@@ -115,14 +121,15 @@ function Editor({ content }) {
 
       try {
         // Try JSON Parsing
-        const parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
+        const parsedContent =
+          typeof content === "string" ? JSON.parse(content) : content;
         const state = editor.parseEditorState(parsedContent);
         editor.setEditorState(state);
       } catch (error) {
         // JSON Parsing Failed, Treat as HTML
-        console.warn('Content is not in JSON format, treating as HTML');
+        console.warn("Content is not in JSON format, treating as HTML");
         const parser = new DOMParser();
-        const dom = parser.parseFromString(content, 'text/html');
+        const dom = parser.parseFromString(content, "text/html");
         const nodes = $generateNodesFromDOM(editor, dom);
         root.append(...nodes);
       }
@@ -167,7 +174,7 @@ function PostView() {
         throw new Error("Post not found");
       }
     } catch (error) {
-      console.error('Error fetching post:', error);
+      console.error("Error fetching post:", error);
       navigate("/error");
     }
   }, [postId, navigate]);
@@ -214,14 +221,17 @@ function PostView() {
   };
 
   const handleClose = useCallback(() => {
-    navigate('/post');
+    navigate("/post");
   }, [navigate]);
 
-  const shareData = useMemo(() => ({
-    url: `${window.location.origin}/post/${postId}`,
-    title: state.post ? state.post.title : "",
-    message: "Read this amazing post! 👀✨"
-  }), [postId, state.post]);
+  const shareData = useMemo(
+    () => ({
+      url: `${window.location.origin}/post/${postId}`,
+      title: state.post ? state.post.title : "",
+      message: "Read this amazing post! 👀✨",
+    }),
+    [postId, state.post]
+  );
 
   const handleLinkClick = useCallback((e) => {
     const target = e.target;
@@ -232,6 +242,20 @@ function PostView() {
       }
     }
   }, []);
+
+  const truncateFileName = (fileName) => {
+    if (fileName.length <= 20) return fileName;
+
+    const extension = fileName.split(".").pop();
+    const nameWithoutExtension = fileName.substring(
+      0,
+      fileName.lastIndexOf(".")
+    );
+
+    if (nameWithoutExtension.length <= 16) return fileName;
+
+    return `${nameWithoutExtension.substring(0, 13)}...${extension}`;
+  };
 
   useEffect(() => {
     const contentElement = document.querySelector(".ql-editor");
@@ -297,7 +321,7 @@ function PostView() {
               <ListPlugin />
               <LinkPlugin />
               <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-              <Editor content={state.post?.content || ''} />
+              <Editor content={state.post?.content || ""} />
             </LexicalComposer>
           </section>
 
@@ -324,9 +348,10 @@ function PostView() {
                 href={`${api.defaults.baseURL}/api/v1/${state.post.file}`}
                 download={state.post.file.split("/").pop()}
                 className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4 rounded transition duration-300"
+                title={state.post.file.split("/").pop()} // 전체 파일명을 툴팁으로 표시
               >
                 <FaDownload className="mr-1 sm:mr-2" />
-                {state.post.file.split("/").pop()}
+                {truncateFileName(state.post.file.split("/").pop())}
               </a>
             </section>
           )}
@@ -382,9 +407,7 @@ function PostView() {
                     ) : (
                       <FaEyeSlash className="mr-1 sm:mr-2" />
                     )}
-                    <span>
-                      {state.post.hidden ? "Display" : "Hide"}
-                    </span>
+                    <span>{state.post.hidden ? "Display" : "Hide"}</span>
                   </button>
                 </>
               )}
