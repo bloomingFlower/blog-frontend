@@ -209,6 +209,7 @@ const PostItem = memo(
 );
 
 function Post() {
+  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(
     sessionStorage.getItem("isLoggedIn") === "true"
   );
@@ -242,12 +243,15 @@ function Post() {
 
   const [loadingPostId, setLoadingPostId] = useState(null);
 
-  const handleUploadClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setEditingPostId(null);
-    navigate("/post/upload");
-  };
+  const handleUploadClick = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setEditingPostId(null);
+      navigate("/post/upload");
+    },
+    [navigate]
+  );
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   useEffect(() => {}, [isUploadModalOpen]);
@@ -337,6 +341,47 @@ function Post() {
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    let touchStartX, touchStartY;
+    const CLICK_THRESHOLD = 10; // 픽셀 단위의 허용 오차
+
+    const handleTouchStart = (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e) => {
+      if (!touchStartX || !touchStartY) return;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const deltaX = Math.abs(touchEndX - touchStartX);
+      const deltaY = Math.abs(touchEndY - touchStartY);
+
+      if (deltaX < CLICK_THRESHOLD && deltaY < CLICK_THRESHOLD) {
+        const target = e.target.closest("button, a");
+        if (target) {
+          e.preventDefault();
+          target.click();
+        }
+      }
+
+      touchStartX = null;
+      touchStartY = null;
+    };
+
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -535,8 +580,6 @@ function Post() {
       <span className="hidden sm:inline text-sm">RSS</span>
     </button>
   );
-
-  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col min-h-screen">

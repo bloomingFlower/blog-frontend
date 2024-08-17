@@ -59,11 +59,14 @@ import {
   LinkedinIcon,
   TelegramIcon,
 } from "react-share";
+import { usePromiseTracker } from "react-promise-tracker";
+import LoadingIndicator from "./components/LoadingIndicator";
 
 const initialState = {
   post: null,
   user: null,
   isPostStatusChanged: false,
+  isLoading: true,
 };
 
 function reducer(state, action) {
@@ -74,6 +77,8 @@ function reducer(state, action) {
       return { ...state, user: action.payload };
     case "SET_POST_STATUS_CHANGED":
       return { ...state, isPostStatusChanged: action.payload };
+    case "SET_LOADING":
+      return { ...state, isLoading: action.payload };
     default:
       return state;
   }
@@ -147,6 +152,7 @@ function PostView() {
   const navigate = useNavigate();
   const { isLoggedIn } = useContext(AuthContext);
   const commentSectionRef = useRef(null);
+  const { promiseInProgress } = usePromiseTracker();
 
   useEffect(() => {
     const userDataString = sessionStorage.getItem("user");
@@ -167,6 +173,7 @@ function PostView() {
     if (!postId) return;
 
     try {
+      dispatch({ type: "SET_LOADING", payload: true });
       const response = await trackPromise(api.get(`/api/v1/post/${postId}`));
       if (response.data.data) {
         dispatch({ type: "SET_POST", payload: response.data.data });
@@ -176,6 +183,8 @@ function PostView() {
     } catch (error) {
       console.error("Error fetching post:", error);
       navigate("/error");
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
     }
   }, [postId, navigate]);
 
@@ -224,6 +233,20 @@ function PostView() {
     navigate("/post");
   }, [navigate]);
 
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        handleClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [handleClose]);
+
   const shareData = useMemo(
     () => ({
       url: `${window.location.origin}/post/${postId}`,
@@ -268,6 +291,14 @@ function PostView() {
       }
     };
   }, [handleLinkClick]);
+
+  if (state.isLoading || promiseInProgress) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-800">
+        <LoadingIndicator />
+      </div>
+    );
+  }
 
   if (!state.post) {
     return null;
