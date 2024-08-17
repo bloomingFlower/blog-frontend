@@ -34,8 +34,19 @@ import {
 import { XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { categoryOptions } from "../constants/categories";
 import PlaygroundEditorTheme from "../themes/PlaygroundEditorTheme";
-import { $getRoot, $createParagraphNode, $createTextNode } from "lexical";
+import {
+  $getRoot,
+  $createParagraphNode,
+  $createTextNode,
+  $createRangeSelection,
+  $setSelection,
+} from "lexical";
 import { AuthContext } from "./components/AuthContext";
+import {
+  HashtagNode,
+  $createHashtagNode,
+  $isHashtagNode,
+} from "@lexical/hashtag";
 
 const editorConfig = {
   namespace: "MyEditor",
@@ -55,6 +66,7 @@ const editorConfig = {
     TableRowNode,
     AutoLinkNode,
     LinkNode,
+    HashtagNode,
   ],
 };
 
@@ -75,6 +87,7 @@ const PostUploadContent = React.memo(
     const [composing, setComposing] = useState(false);
     const [editor] = useLexicalComposerContext();
     const titleInputRef = useRef(null);
+    const editorRef = useRef(null);
 
     useEffect(() => {
       if (titleInputRef.current) {
@@ -102,7 +115,7 @@ const PostUploadContent = React.memo(
         }
         try {
           const parsedContent = JSON.parse(editingPost.content);
-          console.log("파싱된 내용:", parsedContent);
+          console.log("parsedContent", parsedContent);
           setEditorContent(parsedContent);
         } catch (error) {
           console.error("Failed to parse fetched content:", error);
@@ -126,7 +139,21 @@ const PostUploadContent = React.memo(
                 if (node.children) {
                   node.children.forEach((child) => {
                     if (child.type === "text") {
-                      paragraph.append($createTextNode(child.text));
+                      const text = child.text;
+                      const words = text.split(/\s+/);
+                      words.forEach((word, index) => {
+                        if (word.startsWith("#")) {
+                          const hashtagNode = $createHashtagNode(word.slice(1));
+                          paragraph.append(hashtagNode);
+                        } else {
+                          const textNode = $createTextNode(word);
+                          textNode.setFormat(child.format);
+                          paragraph.append(textNode);
+                        }
+                        if (index < words.length - 1) {
+                          paragraph.append($createTextNode(" "));
+                        }
+                      });
                     }
                   });
                 }
@@ -139,6 +166,9 @@ const PostUploadContent = React.memo(
             root.append(paragraph);
           }
         },
+        onError: (error) => {
+          console.error("Lexical 에디터 오류:", error);
+        },
       }),
       [editorContent]
     );
@@ -147,11 +177,8 @@ const PostUploadContent = React.memo(
       async (e) => {
         e.preventDefault();
         if (isUploading) return;
-
-        if (
-          !title.trim() ||
-          !editor.getEditorState().toJSON().root.children.length
-        ) {
+        console.log("editorRef.current", editorRef.current);
+        if (!title.trim() || !editorRef.current) {
           setUpdateMessage("Please enter both title and content.");
           return;
         }
@@ -162,10 +189,12 @@ const PostUploadContent = React.memo(
 
         const formData = new FormData();
         formData.append("title", title);
-        formData.append(
-          "content",
-          JSON.stringify(editor.getEditorState().toJSON())
-        );
+
+        // Convert editor content to JSON string
+        const editorState = editorRef.current.toJSON();
+        console.log("editorState", editorState);
+        formData.append("content", JSON.stringify(editorState));
+
         const tagValues = tags.map((tag) => tag.value).join(",");
         formData.append("tags", tagValues);
         formData.append("category", category || "Others");
@@ -225,7 +254,7 @@ const PostUploadContent = React.memo(
           setIsUploading(false);
         }
       },
-      [title, editor, tags, category, file, editingPost, navigate, refreshPosts]
+      [title, editingPost, navigate, refreshPosts, isUploading]
     );
 
     const handleTagInputChange = useCallback((e) => {
@@ -319,7 +348,7 @@ const PostUploadContent = React.memo(
     };
 
     const handleEditorChange = useCallback((editorState) => {
-      console.log("Editor state changed:", editorState);
+      editorRef.current = editorState;
     }, []);
 
     const handleClose = useCallback(() => {
@@ -502,7 +531,7 @@ const PostUploadContent = React.memo(
                     setComposing(false);
                   }}
                   placeholder={
-                    tags.length === 0 ? "Add a tag... (Enter to add)" : ""
+                    tags.length === 0 ? "Add a tag... (Press Enter to add)" : ""
                   }
                   className="flex-grow bg-transparent outline-none text-xs sm:text-sm"
                 />
@@ -537,7 +566,7 @@ const PostUploadContent = React.memo(
                 </div>
               </div>
               {category && (
-                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-6000">
                   Selected category: {category}
                 </p>
               )}
@@ -589,8 +618,8 @@ const PostUpload = React.memo(({ refreshPosts }) => {
         throw new Error("Post not found");
       }
     } catch (error) {
-      console.error("Failed to fetch post:", error);
-      toast.error("Failed to load post data for editing");
+      console.error("Post fetch failed:", error);
+      toast.error("Post data fetch failed");
       navigate("/post");
     } finally {
       setIsLoading(false);

@@ -61,6 +61,11 @@ import {
 } from "react-share";
 import { usePromiseTracker } from "react-promise-tracker";
 import LoadingIndicator from "./components/LoadingIndicator";
+import {
+  HashtagNode,
+  $createHashtagNode,
+  $isHashtagNode,
+} from "@lexical/hashtag";
 
 const initialState = {
   post: null,
@@ -102,6 +107,7 @@ const editorConfig = {
     TableRowNode,
     AutoLinkNode,
     LinkNode,
+    HashtagNode,
   ],
   editable: false,
   editorState: (editor) => {
@@ -136,6 +142,22 @@ function Editor({ content }) {
         const parser = new DOMParser();
         const dom = parser.parseFromString(content, "text/html");
         const nodes = $generateNodesFromDOM(editor, dom);
+
+        // Handle hashtags
+        nodes.forEach((node) => {
+          if ($isTextNode(node)) {
+            const textContent = node.getTextContent();
+            const words = textContent.split(/\s+/);
+            const newNodes = words.map((word) => {
+              if (word.startsWith("#")) {
+                return $createHashtagNode(word.slice(1));
+              }
+              return $createTextNode(word);
+            });
+            node.replace($createParagraphNode().append(...newNodes));
+          }
+        });
+
         root.append(...nodes);
       }
     };

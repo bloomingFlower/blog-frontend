@@ -24,6 +24,7 @@ import backgroundImage from "@img/background2.webp";
 
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";
+import "./styles/PlaygroundEditorTheme.css";
 
 // Lazy load components
 const Home = lazy(() => import("./pages/Home"));
