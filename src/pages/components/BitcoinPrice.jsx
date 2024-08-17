@@ -46,17 +46,13 @@ function BitcoinPrice() {
       } else if (data.status === "waiting") {
         setConnectionStatus("Waiting for data...");
       } else if (data.status === "error") {
-        console.error("Error receiving data");
         setConnectionStatus("Error");
-        toast.error("Error receiving Bitcoin price updates");
       }
     };
 
     // Handle error event
     eventSource.onerror = (error) => {
-      console.error("SSE Error:", error);
       setConnectionStatus("Reconnecting...");
-      toast.error("Connection lost. Attempting to reconnect...");
     };
 
     // Cleanup on component unmount

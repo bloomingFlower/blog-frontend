@@ -10,7 +10,6 @@ import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
@@ -37,7 +36,6 @@ import { categoryOptions } from "../constants/categories";
 import PlaygroundEditorTheme from "../themes/PlaygroundEditorTheme";
 import { $getRoot, $createParagraphNode, $createTextNode } from "lexical";
 import { AuthContext } from "./components/AuthContext";
-import { CLEAR_EDITOR_COMMAND } from "lexical";
 
 const editorConfig = {
   namespace: "MyEditor",
@@ -64,13 +62,7 @@ const PostUploadContent = React.memo(
   ({ refreshPosts, editingPostId, editingPost }) => {
     const navigate = useNavigate();
     const [title, setTitle] = useState("");
-    const [editorState, setEditorState] = useState(() => {
-      return () => {
-        const root = $getRoot();
-        const paragraph = $createParagraphNode();
-        root.append(paragraph);
-      };
-    });
+    const [initialEditorState, setInitialEditorState] = useState(null);
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState("");
     const [category, setCategory] = useState("");
@@ -82,72 +74,13 @@ const PostUploadContent = React.memo(
     const fileInputRef = useRef(null);
     const [composing, setComposing] = useState(false);
     const [editor] = useLexicalComposerContext();
+    const titleInputRef = useRef(null);
 
     useEffect(() => {
-      if (editingPost && editingPost.content) {
-        try {
-          const parsedContent = JSON.parse(editingPost.content);
-
-          editor.update(() => {
-            const root = $getRoot();
-            root.clear();
-
-            if (typeof parsedContent === "string") {
-              const paragraph = $createParagraphNode();
-              paragraph.append($createTextNode(parsedContent));
-              root.append(paragraph);
-            } else if (parsedContent.root && parsedContent.root.children) {
-              parsedContent.root.children.forEach((node) => {
-                if (node.type === "paragraph") {
-                  const paragraph = $createParagraphNode();
-                  if (node.children) {
-                    node.children.forEach((child) => {
-                      if (child.type === "text") {
-                        paragraph.append($createTextNode(child.text));
-                      }
-                    });
-                  }
-                  root.append(paragraph);
-                }
-              });
-            }
-
-            console.log(
-              "새로운 root 내용 (업데이트 전):",
-              root.getTextContent()
-            );
-
-            // editor의 상태를 강제로 업데이트
-            editor.setEditorState(editor.getEditorState());
-          });
-
-          // editor의 상태 변경을 감지하여 editorState 업데이트 및 확인
-          const unregister = editor.registerUpdateListener(
-            ({ editorState }) => {
-              setEditorState(editorState);
-
-              // 상태 업데이트 후 내용 확인
-              editor.update(() => {
-                const root = $getRoot();
-                console.log("업데이트된 root 내용:", root.getTextContent());
-              });
-
-              unregister();
-            }
-          );
-
-          // 추가: 일정 시간 후 다시 한 번 내용 확인
-          setTimeout(() => {
-            editor.update(() => {
-              const root = $getRoot();
-              console.log("지연 후 root 내용:", root.getTextContent());
-            });
-          }, 1000);
-        } catch (error) {
-          console.error("Failed to parse fetched content:", error);
-        }
+      if (titleInputRef.current) {
+        titleInputRef.current.focus();
       }
-    }, [editingPost, editor]);
+    }, []);
 
     useEffect(() => {
       if (editingPost) {
@@ -167,15 +100,59 @@ const PostUploadContent = React.memo(
           setFileName(fileName);
           setFile(new File([], fileName));
         }
+        if (editingPost.content) {
+          try {
+            const parsedContent = JSON.parse(editingPost.content);
+            console.log("파싱된 내용:", parsedContent);
+            setInitialEditorState(parsedContent);
+          } catch (error) {
+            console.error("Failed to parse fetched content:", error);
+          }
+        }
       }
     }, [editingPost]);
+
+    useEffect(() => {
+      if (initialEditorState && editor) {
+        editor.update(() => {
+          const root = $getRoot();
+          root.clear();
+
+          if (typeof initialEditorState === "string") {
+            const paragraph = $createParagraphNode();
+            paragraph.append($createTextNode(initialEditorState));
+            root.append(paragraph);
+          } else if (
+            initialEditorState.root &&
+            initialEditorState.root.children
+          ) {
+            initialEditorState.root.children.forEach((node) => {
+              if (node.type === "paragraph") {
+                const paragraph = $createParagraphNode();
+                if (node.children) {
+                  node.children.forEach((child) => {
+                    if (child.type === "text") {
+                      paragraph.append($createTextNode(child.text));
+                    }
+                  });
+                }
+                root.append(paragraph);
+              }
+            });
+          }
+        });
+      }
+    }, [initialEditorState, editor]);
 
     const handleUpload = useCallback(
       async (e) => {
         e.preventDefault();
         if (isUploading) return;
 
-        if (!title.trim() || !editorState.toJSON().root.children.length) {
+        if (
+          !title.trim() ||
+          !editor.getEditorState().toJSON().root.children.length
+        ) {
           setUpdateMessage("Please enter both title and content.");
           return;
         }
@@ -186,7 +163,10 @@ const PostUploadContent = React.memo(
 
         const formData = new FormData();
         formData.append("title", title);
-        formData.append("content", JSON.stringify(editorState.toJSON()));
+        formData.append(
+          "content",
+          JSON.stringify(editor.getEditorState().toJSON())
+        );
         const tagValues = tags.map((tag) => tag.value).join(",");
         formData.append("tags", tagValues);
         formData.append("category", category || "Others");
@@ -246,16 +226,7 @@ const PostUploadContent = React.memo(
           setIsUploading(false);
         }
       },
-      [
-        title,
-        editorState,
-        tags,
-        category,
-        file,
-        editingPost,
-        navigate,
-        refreshPosts,
-      ]
+      [title, editor, tags, category, file, editingPost, navigate, refreshPosts]
     );
 
     const handleTagInputChange = useCallback((e) => {
@@ -349,11 +320,7 @@ const PostUploadContent = React.memo(
     };
 
     const handleEditorChange = useCallback((editorState) => {
-      editorState.read(() => {
-        const root = $getRoot();
-        const content = root.getTextContent();
-      });
-      setEditorState(editorState);
+      console.log("Editor state changed:", editorState);
     }, []);
 
     const editorConfig = useMemo(
@@ -457,6 +424,7 @@ const PostUploadContent = React.memo(
 
           <form id="post-form" onSubmit={handleUpload}>
             <input
+              ref={titleInputRef}
               className="w-full mb-3 sm:mb-4 p-2 text-sm sm:text-base border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none transition duration-300"
               type="text"
               value={title}
@@ -468,15 +436,7 @@ const PostUploadContent = React.memo(
               className="mb-3 sm:mb-4 border rounded overflow-y-auto transition-all duration-300 ease-in-out
                           h-[calc(100vh-24rem)] sm:h-[calc(100vh-28rem)] md:h-[calc(100vh-32rem)] lg:h-[calc(100vh-36rem)]"
             >
-              <LexicalComposer
-                initialConfig={{
-                  ...editorConfig,
-                  editorState: editorState,
-                  onError: (error) => {
-                    console.error("Lexical error:", error);
-                  },
-                }}
-              >
+              <LexicalComposer initialConfig={editorConfig}>
                 <RichTextPlugin
                   contentEditable={
                     <ContentEditable className="outline-none h-full p-2" />
@@ -484,7 +444,6 @@ const PostUploadContent = React.memo(
                   ErrorBoundary={LexicalErrorBoundary}
                 />
                 <HistoryPlugin />
-                <AutoFocusPlugin />
                 <ListPlugin />
                 <LinkPlugin />
                 <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
