@@ -62,7 +62,7 @@ const PostUploadContent = React.memo(
   ({ refreshPosts, editingPostId, editingPost }) => {
     const navigate = useNavigate();
     const [title, setTitle] = useState("");
-    const [initialEditorState, setInitialEditorState] = useState(null);
+    const [editorContent, setEditorContent] = useState(null);
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState("");
     const [category, setCategory] = useState("");
@@ -83,7 +83,7 @@ const PostUploadContent = React.memo(
     }, []);
 
     useEffect(() => {
-      if (editingPost) {
+      if (editingPost && editingPost.content) {
         setTitle(editingPost.title || "");
         setTags(
           editingPost.tags
@@ -100,33 +100,27 @@ const PostUploadContent = React.memo(
           setFileName(fileName);
           setFile(new File([], fileName));
         }
-        if (editingPost.content) {
-          try {
-            const parsedContent = JSON.parse(editingPost.content);
-            console.log("파싱된 내용:", parsedContent);
-            setInitialEditorState(parsedContent);
-          } catch (error) {
-            console.error("Failed to parse fetched content:", error);
-          }
+        try {
+          const parsedContent = JSON.parse(editingPost.content);
+          console.log("파싱된 내용:", parsedContent);
+          setEditorContent(parsedContent);
+        } catch (error) {
+          console.error("Failed to parse fetched content:", error);
         }
       }
     }, [editingPost]);
 
-    useEffect(() => {
-      if (initialEditorState && editor) {
-        editor.update(() => {
+    const initialConfig = useMemo(
+      () => ({
+        ...editorConfig,
+        editorState: (editor) => {
           const root = $getRoot();
-          root.clear();
-
-          if (typeof initialEditorState === "string") {
-            const paragraph = $createParagraphNode();
-            paragraph.append($createTextNode(initialEditorState));
-            root.append(paragraph);
-          } else if (
-            initialEditorState.root &&
-            initialEditorState.root.children
+          if (
+            editorContent &&
+            editorContent.root &&
+            editorContent.root.children
           ) {
-            initialEditorState.root.children.forEach((node) => {
+            editorContent.root.children.forEach((node) => {
               if (node.type === "paragraph") {
                 const paragraph = $createParagraphNode();
                 if (node.children) {
@@ -139,10 +133,15 @@ const PostUploadContent = React.memo(
                 root.append(paragraph);
               }
             });
+          } else {
+            const paragraph = $createParagraphNode();
+            paragraph.append($createTextNode(""));
+            root.append(paragraph);
           }
-        });
-      }
-    }, [initialEditorState, editor]);
+        },
+      }),
+      [editorContent]
+    );
 
     const handleUpload = useCallback(
       async (e) => {
@@ -323,30 +322,6 @@ const PostUploadContent = React.memo(
       console.log("Editor state changed:", editorState);
     }, []);
 
-    const editorConfig = useMemo(
-      () => ({
-        namespace: "MyEditor",
-        theme: PlaygroundEditorTheme,
-        onError(error) {
-          console.error("Lexical error:", error);
-        },
-        nodes: [
-          HeadingNode,
-          ListNode,
-          ListItemNode,
-          QuoteNode,
-          CodeNode,
-          CodeHighlightNode,
-          TableNode,
-          TableCellNode,
-          TableRowNode,
-          AutoLinkNode,
-          LinkNode,
-        ],
-      }),
-      []
-    );
-
     const handleClose = useCallback(() => {
       navigate("/post");
     }, [navigate]);
@@ -436,19 +411,21 @@ const PostUploadContent = React.memo(
               className="mb-3 sm:mb-4 border rounded overflow-y-auto transition-all duration-300 ease-in-out
                           h-[calc(100vh-24rem)] sm:h-[calc(100vh-28rem)] md:h-[calc(100vh-32rem)] lg:h-[calc(100vh-36rem)]"
             >
-              <LexicalComposer initialConfig={editorConfig}>
-                <RichTextPlugin
-                  contentEditable={
-                    <ContentEditable className="outline-none h-full p-2" />
-                  }
-                  ErrorBoundary={LexicalErrorBoundary}
-                />
-                <HistoryPlugin />
-                <ListPlugin />
-                <LinkPlugin />
-                <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-                <OnChangePlugin onChange={handleEditorChange} />
-              </LexicalComposer>
+              {editorContent && (
+                <LexicalComposer initialConfig={initialConfig}>
+                  <RichTextPlugin
+                    contentEditable={
+                      <ContentEditable className="outline-none h-full p-2" />
+                    }
+                    ErrorBoundary={LexicalErrorBoundary}
+                  />
+                  <HistoryPlugin />
+                  <ListPlugin />
+                  <LinkPlugin />
+                  <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+                  <OnChangePlugin onChange={handleEditorChange} />
+                </LexicalComposer>
+              )}
             </div>
 
             <div className="mb-3 sm:mb-4">
