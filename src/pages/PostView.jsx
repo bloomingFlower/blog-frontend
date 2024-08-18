@@ -316,7 +316,7 @@ function PostView() {
 
   if (state.isLoading || promiseInProgress) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-800">
+      <div className="flex justify-center items-center h-screen bg-transparent">
         <LoadingIndicator />
       </div>
     );
