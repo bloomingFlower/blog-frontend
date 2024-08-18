@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import { useSpring, animated, config } from "react-spring";
 
 function BitcoinPrice() {

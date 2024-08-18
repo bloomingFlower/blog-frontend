@@ -18,6 +18,70 @@ const sanitizeHTML = (html) => {
   return DOMPurify.sanitize(html);
 };
 
+const AnimatedCard = ({ item }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      className={`bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition-all duration-500 ease-out transform ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
+    >
+      <div className="p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition duration-300">
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
+          >
+            {item.title}
+          </a>
+        </h2>
+        <p className="text-sm sm:text-base text-gray-600 mb-4">
+          {item.points} points
+        </p>
+        {item.story_text && (
+          <div
+            className="text-sm text-gray-700 mb-4 overflow-hidden"
+            style={{ maxHeight: "100px" }}
+            dangerouslySetInnerHTML={{
+              __html: sanitizeHTML(item.story_text),
+            }}
+          />
+        )}
+        <div className="flex justify-between items-center text-xs sm:text-sm text-gray-500">
+          <span>Author: {item.author}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function RustNews() {
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,11 +113,14 @@ function RustNews() {
   useEffect(() => {
     if (newContentRef.current && news.length > 12) {
       const navHeight = 60; // nav bar height (mobile: 50px, desktop: 60px)
-      const yOffset = newContentRef.current.getBoundingClientRect().top + window.scrollY - navHeight;
+      const yOffset =
+        newContentRef.current.getBoundingClientRect().top +
+        window.scrollY -
+        navHeight;
 
       window.scrollTo({
         top: yOffset,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   }, [news]);
@@ -194,10 +261,11 @@ function RustNews() {
 
   return (
     <div
-      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${showEasterEgg
-        ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
-        : ""
-        }`}
+      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${
+        showEasterEgg
+          ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+          : ""
+      }`}
       style={
         showEasterEgg
           ? {}
@@ -230,39 +298,7 @@ function RustNews() {
         ) : news.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {news.map((item, index) => (
-              <div
-                key={item.id}
-                ref={index === news.length - 12 ? newContentRef : null}
-                className="bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105"
-              >
-                <div className="p-4 sm:p-6">
-                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition duration-300">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline"
-                    >
-                      {item.title}
-                    </a>
-                  </h2>
-                  <p className="text-sm sm:text-base text-gray-600 mb-4">
-                    {item.points} points
-                  </p>
-                  {item.story_text && (
-                    <div
-                      className="text-sm text-gray-700 mb-4 overflow-hidden"
-                      style={{ maxHeight: "100px" }}
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeHTML(item.story_text),
-                      }}
-                    />
-                  )}
-                  <div className="flex justify-between items-center text-xs sm:text-sm text-gray-500">
-                    <span>Author: {item.author}</span>
-                  </div>
-                </div>
-              </div>
+              <AnimatedCard key={item.id} item={item} />
             ))}
           </div>
         ) : (

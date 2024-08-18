@@ -48,6 +48,7 @@ const SearchResults = lazy(() => import("./pages/components/SearchResults"));
 const OAuthCallback = lazy(() => import("./pages/components/OAuthCallback"));
 const SystemStack = lazy(() => import("./pages/SystemStack"));
 const SinglePostPage = lazy(() => import("./pages/SinglePostPage"));
+const MobileRSSViewer = lazy(() => import("./pages/MobileRSSViewer"));
 
 const ActivityMonitor = lazy(() =>
   import("./pages/components/ActivityMonitor")
@@ -77,6 +78,7 @@ function AppContent() {
   const [profileImageFilter, setProfileImageFilter] = useState("");
   const [isNavVisible, setIsNavVisible] = useState(true);
   const lastScrollTop = useRef(0);
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -135,6 +137,7 @@ function AppContent() {
         postResponse.data.data.map((post) => ({ ...post, type: "post" }))
       );
       setIsSearchOpen(true);
+      setIsHamburgerOpen(false);
     } catch (error) {
       console.error("Failed to fetch search results:", error);
     }
@@ -150,6 +153,7 @@ function AppContent() {
 
   // Hamburger button click handler
   const handleHamburgerClick = () => {
+    setIsHamburgerOpen(!isHamburgerOpen);
     resetSearchState();
   };
 
@@ -344,7 +348,11 @@ function AppContent() {
               </div>
             </div>
             <Suspense fallback={<LoadingIndicator />}>
-              <HamburgerButton onClick={handleHamburgerClick} />
+              <HamburgerButton
+                onClick={handleHamburgerClick}
+                isOpen={isHamburgerOpen}
+                setIsOpen={setIsHamburgerOpen}
+              />
             </Suspense>
           </div>
         </nav>
@@ -380,6 +388,7 @@ function AppContent() {
             <Route path="/post/:postId" element={<SinglePostPage />} />
             <Route path="/post/new" element={<PostUpload />} />
             <Route path="/post/edit/:postId" element={<PostUpload />} />
+            <Route path="/mobile-rss-viewer" element={<MobileRSSViewer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

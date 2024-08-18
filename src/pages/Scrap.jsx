@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ApiServiceClient } from "../../protos/ApiServiceClientPb";
 import { GetPostsForUserRequest } from "../../protos/api_pb";
 import backgroundImage from "@img/background2.webp";
@@ -46,6 +46,81 @@ const NoBookmarksFound = () => (
     </p>
   </div>
 );
+
+const AnimatedCard = ({ post, isNewPost }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={cardRef}
+      className={`bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition-all duration-500 ease-out transform ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      } ${isNewPost(post.publishedat.seconds) ? "ring-2 ring-green-500" : ""}`}
+    >
+      <div className="p-4 sm:p-6">
+        <div className="flex justify-between items-start mb-2">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 hover:text-blue-600 transition duration-300">
+            <a
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              {post.title}
+            </a>
+          </h2>
+          <div className="flex space-x-1">
+            {isNewPost(post.publishedat.seconds) && (
+              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                New
+              </span>
+            )}
+            <FaBookmark className="text-yellow-500" />
+          </div>
+        </div>
+        <p
+          className="text-sm sm:text-base text-gray-600 mb-4"
+          dangerouslySetInnerHTML={{
+            __html: sanitizeHTML(truncateDescription(post.description)),
+          }}
+        />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs sm:text-sm text-gray-500">
+          <span className="mb-1 sm:mb-0 hidden sm:inline-flex items-center">
+            <FaRegCalendarAlt className="mr-1" />
+            {formatDate(post.publishedat.seconds)}
+          </span>
+          <span className="inline-flex items-center">
+            <FaRegClock className="mr-1" />
+            {formatDate(post.updatedat.seconds)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function Scrap() {
   const [posts, setPosts] = useState([]);
@@ -157,55 +232,7 @@ function Scrap() {
         ) : posts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
             {posts.map((post) => (
-              <div
-                key={post.id}
-                className={`bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-105 ${
-                  isNewPost(post.publishedat.seconds)
-                    ? "ring-2 ring-green-500"
-                    : ""
-                }`}
-              >
-                <div className="p-4 sm:p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800 hover:text-blue-600 transition duration-300">
-                      <a
-                        href={post.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:underline"
-                      >
-                        {post.title}
-                      </a>
-                    </h2>
-                    <div className="flex space-x-1">
-                      {isRecentPost(post.publishedat.seconds) && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          New
-                        </span>
-                      )}
-                      <FaBookmark className="text-yellow-500" />
-                    </div>
-                  </div>
-                  <p
-                    className="text-sm sm:text-base text-gray-600 mb-4"
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizeHTML(
-                        truncateDescription(post.description)
-                      ),
-                    }}
-                  />
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs sm:text-sm text-gray-500">
-                    <span className="mb-1 sm:mb-0 hidden sm:inline-flex items-center">
-                      <FaRegCalendarAlt className="mr-1" />
-                      {formatDate(post.publishedat.seconds)}
-                    </span>
-                    <span className="inline-flex items-center">
-                      <FaRegClock className="mr-1" />
-                      {formatDate(post.updatedat.seconds)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <AnimatedCard key={post.id} post={post} isNewPost={isNewPost} />
             ))}
           </div>
         ) : (

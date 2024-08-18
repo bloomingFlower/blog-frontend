@@ -84,7 +84,7 @@ const extractMainContent = (content, maxLength = 200) => {
   }
 };
 
-const PostItem = memo(
+const AnimatedCard = memo(
   ({
     post,
     isNew,
@@ -94,13 +94,42 @@ const PostItem = memo(
     readingTime,
     loadingPostId,
   }) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const cardRef = useRef(null);
+
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.unobserve(entry.target);
+          }
+        },
+        { threshold: 0.1 }
+      );
+
+      if (cardRef.current) {
+        observer.observe(cardRef.current);
+      }
+
+      return () => {
+        if (cardRef.current) {
+          observer.unobserve(cardRef.current);
+        }
+      };
+    }, []);
+
     return (
       <Link
         to={`/post/${post.id}`}
-        className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 flex flex-col h-80 sm:h-96 w-full
+        ref={cardRef}
+        className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-all duration-500 ease-out transform hover:scale-105 flex flex-col h-80 sm:h-96 w-full
         ${isNew ? "ring-2 ring-green-500" : ""}
         ${post.hidden ? "opacity-50 bg-gray-100" : ""}
-        ${loadingPostId === post.id ? "relative" : ""}`}
+        ${loadingPostId === post.id ? "relative" : ""}
+        ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+        }`}
         style={{ touchAction: "manipulation" }}
       >
         {loadingPostId === post.id && (
@@ -207,6 +236,57 @@ const PostItem = memo(
     );
   }
 );
+
+const RSSButton = React.memo(() => {
+  const navigate = useNavigate();
+
+  const handleRSSClick = useCallback(
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (window.innerWidth <= 768) {
+        // For mobile devices
+        navigate("/mobile-rss-viewer");
+      } else {
+        try {
+          const response = await api.get("/api/v1/rss", {
+            responseType: "text",
+            headers: {
+              Accept: "application/rss+xml, application/xml, text/xml",
+            },
+          });
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(response.data, "text/xml");
+
+          const xmlString = new XMLSerializer().serializeToString(xmlDoc);
+
+          const blob = new Blob([xmlString], {
+            type: "application/xml;charset=utf-8",
+          });
+          const url = window.URL.createObjectURL(blob);
+          window.open(url, "_blank");
+        } catch (error) {
+          toast.error("Fail to get RSS feeds. Try again later.");
+        }
+      }
+    },
+    [navigate]
+  );
+
+  return (
+    <button
+      onClick={handleRSSClick}
+      className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-2 py-1 rounded-full flex items-center transition-colors duration-300 touch-manipulation"
+      title="RSS Feed"
+      role="button"
+      style={{ touchAction: "manipulation" }}
+    >
+      <FaRss className="text-sm sm:mr-1" />
+      <span className="hidden sm:inline text-sm">RSS</span>
+    </button>
+  );
+});
 
 function Post() {
   const navigate = useNavigate();
@@ -544,42 +624,7 @@ function Post() {
     }
   }, [isLoggedIn]);
 
-  const handleRSSClick = useCallback(async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.get("/api/v1/rss", {
-        responseType: "text",
-        headers: {
-          Accept: "application/rss+xml, application/xml, text/xml",
-        },
-      });
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(response.data, "text/xml");
-
-      const xmlString = new XMLSerializer().serializeToString(xmlDoc);
-
-      const blob = new Blob([xmlString], {
-        type: "application/xml;charset=utf-8",
-      });
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank");
-    } catch (error) {
-      toast.error("Failed to fetch RSS feed. Please try again later.");
-    }
-  }, []);
-
-  const RSSButton = () => (
-    <button
-      onClick={handleRSSClick}
-      className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-2 py-1 rounded-full flex items-center transition-colors duration-300 touch-manipulation"
-      title="RSS Feed"
-      role="button"
-      style={{ touchAction: "manipulation" }}
-    >
-      <FaRss className="text-sm sm:mr-1" />
-      <span className="hidden sm:inline text-sm">RSS</span>
-    </button>
-  );
+  const memoizedRSSButton = useMemo(() => <RSSButton />, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -604,7 +649,7 @@ function Post() {
               <h1 className="text-xl sm:text-3xl font-bold text-white">
                 Go-Powered RESTful Post Management System
               </h1>
-              <RSSButton />
+              {memoizedRSSButton}
             </div>
             <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-center mb-2">
@@ -681,7 +726,7 @@ function Post() {
                   const readingTime = calculateReadingTime(post.content);
 
                   return (
-                    <PostItem
+                    <AnimatedCard
                       key={post.id}
                       post={post}
                       isNew={isNew}

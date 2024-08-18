@@ -3,8 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 import Logout from "./Logout";
 
-function HamburgerButton({ onClick }) {
-  const [isOpen, setIsOpen] = useState(false);
+function HamburgerButton({ onClick, isOpen, setIsOpen }) {
   const [clickTimes, setClickTimes] = useState([]);
   const navigate = useNavigate();
   const { isLoggedIn, setIsLoggedIn } = useContext(AuthContext);
