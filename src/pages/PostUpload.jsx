@@ -67,6 +67,12 @@ const editorConfig = {
     AutoLinkNode,
     LinkNode,
     HashtagNode,
+    {
+      replace: HashtagNode,
+      with: (node) => {
+        return new HashtagNode(node.getTextContent());
+      },
+    },
   ],
 };
 
@@ -158,6 +164,25 @@ const PostUploadContent = React.memo(
                   });
                 }
                 root.append(paragraph);
+              } else if (node.type === "heading") {
+                const HeadingClass =
+                  node.tag === "h1"
+                    ? HeadingNode
+                    : node.tag === "h2"
+                    ? HeadingNode
+                    : HeadingNode;
+                const heading = new HeadingClass(node.tag);
+                if (node.children) {
+                  node.children.forEach((child) => {
+                    if (child.type === "text") {
+                      const text = child.text;
+                      const textNode = $createTextNode(text);
+                      textNode.setFormat(child.format);
+                      heading.append(textNode);
+                    }
+                  });
+                }
+                root.append(heading);
               }
             });
           } else {
@@ -661,11 +686,13 @@ const PostUpload = React.memo(({ refreshPosts }) => {
 
   return (
     <LexicalComposer initialConfig={editorConfig}>
-      <PostUploadContent
-        editingPostId={postId}
-        refreshPosts={refreshPosts}
-        editingPost={editingPost}
-      />
+      <div className="editor-container">
+        <PostUploadContent
+          editingPostId={postId}
+          refreshPosts={refreshPosts}
+          editingPost={editingPost}
+        />
+      </div>
     </LexicalComposer>
   );
 });
