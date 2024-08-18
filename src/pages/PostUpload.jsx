@@ -213,12 +213,14 @@ const PostUploadContent = React.memo(
         setIsUploading(true);
 
         const formData = new FormData();
-        formData.append("title", title);
+        formData.append("title", title.trim());
 
-        // Convert editor content to JSON string
         const editorState = editorRef.current.toJSON();
-        console.log("editorState", editorState);
-        formData.append("content", JSON.stringify(editorState));
+        const cleanContent = JSON.stringify(editorState).replace(
+          /^\s*[\u200B\u200C\u200D\u200E\u200F\uFEFF]/,
+          ""
+        );
+        formData.append("content", cleanContent);
 
         const tagValues = tags.map((tag) => tag.value).join(",");
         formData.append("tags", tagValues);
@@ -279,7 +281,16 @@ const PostUploadContent = React.memo(
           setIsUploading(false);
         }
       },
-      [title, editingPost, navigate, refreshPosts, isUploading]
+      [
+        title,
+        editingPost,
+        navigate,
+        refreshPosts,
+        isUploading,
+        tags,
+        category,
+        file,
+      ]
     );
 
     const handleTagInputChange = useCallback((e) => {
@@ -325,9 +336,7 @@ const PostUploadContent = React.memo(
 
     const handleCategorySelect = useCallback((e, selectedCategory) => {
       e.preventDefault();
-      setCategory((prevCategory) =>
-        selectedCategory === prevCategory ? "" : selectedCategory
-      );
+      setCategory(selectedCategory);
     }, []);
 
     const truncateFileName = (fileName) => {
@@ -591,7 +600,7 @@ const PostUploadContent = React.memo(
                 </div>
               </div>
               {category && (
-                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-6000">
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
                   Selected category: {category}
                 </p>
               )}
