@@ -38,15 +38,14 @@ import {
   $getRoot,
   $createParagraphNode,
   $createTextNode,
-  $createRangeSelection,
-  $setSelection,
 } from "lexical";
 import { AuthContext } from "./components/AuthContext";
 import {
   HashtagNode,
-  $createHashtagNode,
   $isHashtagNode,
 } from "@lexical/hashtag";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
+import { $createListNode, $createListItemNode } from "@lexical/list";
 
 const editorConfig = {
   namespace: "MyEditor",
@@ -80,7 +79,6 @@ const PostUploadContent = React.memo(
   ({ refreshPosts, editingPostId, editingPost }) => {
     const navigate = useNavigate();
     const [title, setTitle] = useState("");
-    const [editorContent, setEditorContent] = useState(null);
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState("");
     const [category, setCategory] = useState("");
@@ -107,9 +105,9 @@ const PostUploadContent = React.memo(
         setTags(
           editingPost.tags
             ? editingPost.tags
-                .split(",")
-                .filter((tag) => tag.trim())
-                .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
+              .split(",")
+              .filter((tag) => tag.trim())
+              .map((tag) => ({ value: tag.trim(), label: tag.trim() }))
             : []
         );
         setCategory(editingPost.category || "");
@@ -134,57 +132,78 @@ const PostUploadContent = React.memo(
         ...editorConfig,
         editorState: (editor) => {
           const root = $getRoot();
-          if (
-            editorContent &&
-            editorContent.root &&
-            editorContent.root.children
-          ) {
-            editorContent.root.children.forEach((node) => {
-              if (node.type === "paragraph") {
-                const paragraph = $createParagraphNode();
-                if (node.children) {
-                  node.children.forEach((child) => {
-                    if (child.type === "text") {
-                      const text = child.text;
-                      const words = text.split(/\s+/);
-                      words.forEach((word, index) => {
-                        if (word.startsWith("#")) {
-                          const hashtagNode = $createHashtagNode(word.slice(1));
-                          paragraph.append(hashtagNode);
-                        } else {
-                          const textNode = $createTextNode(word);
-                          textNode.setFormat(child.format);
-                          paragraph.append(textNode);
-                        }
-                        if (index < words.length - 1) {
-                          paragraph.append($createTextNode(" "));
+          if (editingPost && editingPost.content) {
+            try {
+              const editorContent = JSON.parse(editingPost.content);
+              if (editorContent.root && editorContent.root.children) {
+                editorContent.root.children.forEach((node) => {
+                  if (node.type === "paragraph") {
+                    const paragraph = $createParagraphNode();
+                    if (node.children) {
+                      node.children.forEach((child) => {
+                        if (child.type === "text") {
+                          const text = child.text;
+                          const words = text.split(/\s+/);
+                          words.forEach((word, index) => {
+                            const textNode = $createTextNode(word);
+                            textNode.setFormat(child.format);
+                            paragraph.append(textNode);
+                            if (index < words.length - 1) {
+                              paragraph.append($createTextNode(" "));
+                            }
+                          });
                         }
                       });
                     }
-                  });
-                }
-                root.append(paragraph);
-              } else if (node.type === "heading") {
-                const HeadingClass =
-                  node.tag === "h1"
-                    ? HeadingNode
-                    : node.tag === "h2"
-                    ? HeadingNode
-                    : HeadingNode;
-                const heading = new HeadingClass(node.tag);
-                if (node.children) {
-                  node.children.forEach((child) => {
-                    if (child.type === "text") {
-                      const text = child.text;
-                      const textNode = $createTextNode(text);
-                      textNode.setFormat(child.format);
-                      heading.append(textNode);
+                    root.append(paragraph);
+                  } else if (node.type === "heading") {
+                    const HeadingClass =
+                      node.tag === "h1"
+                        ? HeadingNode
+                        : node.tag === "h2"
+                          ? HeadingNode
+                          : HeadingNode;
+                    const heading = new HeadingClass(node.tag);
+                    if (node.children) {
+                      node.children.forEach((child) => {
+                        if (child.type === "text") {
+                          const text = child.text;
+                          const textNode = $createTextNode(text);
+                          textNode.setFormat(child.format);
+                          heading.append(textNode);
+                        }
+                      });
                     }
-                  });
-                }
-                root.append(heading);
+                    root.append(heading);
+                  } else if (node.type === "list") {
+                    const listNode = $createListNode(node.listType);
+                    if (node.children) {
+                      node.children.forEach((listItem) => {
+                        const listItemNode = $createListItemNode();
+                        if (listItem.children) {
+                          listItem.children.forEach((child) => {
+                            if (child.type === "text") {
+                              const textNode = $createTextNode(child.text);
+                              textNode.setFormat(child.format);
+                              listItemNode.append(textNode);
+                            }
+                          });
+                        }
+                        listNode.append(listItemNode);
+                      });
+                    }
+                    root.append(listNode);
+                  }
+                });
+              } else {
+                throw new Error("Invalid editor content structure");
               }
-            });
+            } catch (error) {
+              console.error("Failed to parse or set editor content:", error);
+              const paragraph = $createParagraphNode();
+              paragraph.append($createTextNode(""));
+              root.append(paragraph);
+            }
           } else {
             const paragraph = $createParagraphNode();
             paragraph.append($createTextNode(""));
@@ -195,7 +214,7 @@ const PostUploadContent = React.memo(
           console.error("Lexical 에디터 오류:", error);
         },
       }),
-      [editorContent]
+      [editingPost]
     );
 
     const handleUpload = useCallback(
@@ -428,8 +447,8 @@ const PostUploadContent = React.memo(
                   isUploading
                     ? "Processing"
                     : editingPostId
-                    ? "Update"
-                    : "Upload"
+                      ? "Update"
+                      : "Upload"
                 }
               >
                 {isUploading ? (
@@ -474,21 +493,21 @@ const PostUploadContent = React.memo(
               className="mb-3 sm:mb-4 border rounded overflow-y-auto transition-all duration-300 ease-in-out
                           h-[calc(100vh-24rem)] sm:h-[calc(100vh-28rem)] md:h-[calc(100vh-32rem)] lg:h-[calc(100vh-36rem)]"
             >
-              {editorContent && (
-                <LexicalComposer initialConfig={initialConfig}>
-                  <RichTextPlugin
-                    contentEditable={
-                      <ContentEditable className="outline-none h-full p-2" />
-                    }
-                    ErrorBoundary={LexicalErrorBoundary}
-                  />
-                  <HistoryPlugin />
-                  <ListPlugin />
-                  <LinkPlugin />
-                  <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-                  <OnChangePlugin onChange={handleEditorChange} />
-                </LexicalComposer>
-              )}
+              <LexicalComposer initialConfig={initialConfig}>
+                <RichTextPlugin
+                  contentEditable={
+                    <ContentEditable className="outline-none h-full p-2" />
+                  }
+                  placeholder={<div className="editor-placeholder">Enter some text...</div>}
+                  ErrorBoundary={LexicalErrorBoundary}
+                />
+                <HistoryPlugin />
+                <ListPlugin />
+                <LinkPlugin />
+                <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+                <OnChangePlugin onChange={handleEditorChange} />
+                <TabIndentationPlugin />
+              </LexicalComposer>
             </div>
 
             <div className="mb-3 sm:mb-4">
@@ -568,6 +587,7 @@ const PostUploadContent = React.memo(
                     tags.length === 0 ? "Add a tag... (Press Enter to add)" : ""
                   }
                   className="flex-grow bg-transparent outline-none text-xs sm:text-sm"
+                  tabIndex="-1"
                 />
               </div>
             </div>
@@ -587,11 +607,10 @@ const PostUploadContent = React.memo(
                         key={option}
                         onClick={(e) => handleCategorySelect(e, option)}
                         type="button"
-                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${
-                          category === option
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${category === option
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                          }`}
                       >
                         {option}
                       </button>

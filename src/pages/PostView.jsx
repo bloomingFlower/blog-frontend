@@ -47,6 +47,7 @@ import {
   FaCalendarAlt,
   FaFolder,
   FaClock,
+  FaLink,
 } from "react-icons/fa";
 import { format } from "date-fns";
 import {
@@ -314,6 +315,15 @@ function PostView() {
     };
   }, [handleLinkClick]);
 
+  const copyLinkToClipboard = useCallback(() => {
+    navigator.clipboard.writeText(shareData.url).then(() => {
+      toast.success("Link copied to clipboard!");
+    }).catch((err) => {
+      console.error('Link copy failed:', err);
+      toast.error("Link copy failed.");
+    });
+  }, [shareData.url]);
+
   if (state.isLoading || promiseInProgress) {
     return (
       <div className="flex justify-center items-center h-screen bg-transparent">
@@ -440,6 +450,13 @@ function PostView() {
               >
                 <TelegramIcon size={32} round />
               </TelegramShareButton>
+              {/* 링크 복사 버튼을 추가합니다 */}
+              <button
+                onClick={copyLinkToClipboard}
+                className="bg-gray-200 hover:bg-gray-300 rounded-full p-2 transition duration-300"
+              >
+                <FaLink size={18} />
+              </button>
             </div>
             <div className="flex items-center space-x-2">
               {canEditOrDelete && (

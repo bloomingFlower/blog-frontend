@@ -268,9 +268,8 @@ function AppContent() {
       />
       <header>
         <nav
-          className={`fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50 shadow-sm transition-transform duration-300 ${
-            isNavVisible ? "translate-y-0" : "-translate-y-full"
-          }`}
+          className={`fixed top-0 left-0 right-0 flex items-center justify-between p-2 sm:p-3 bg-white text-black h-[50px] sm:h-[60px] font-serif z-50 shadow-sm transition-transform duration-300 ${isNavVisible ? "translate-y-0" : "-translate-y-full"
+            }`}
         >
           <Link to="/" className="text-lg sm:text-xl">
             Our Journey
@@ -377,7 +376,7 @@ function AppContent() {
             <Route path="/rust-news" element={<RustNews />} />
             <Route path="/bitcoin-price" element={<BitcoinPricePage />} />
             <Route path="/about" element={<About />} />
-            <Route path="/about-me" element={<AboutMe />} />
+            <Route path="/:language/about-me" element={<AboutMe />} />
             <Route path="/login" element={<Login />} />
             <Route path="/auth/github/callback" element={<OAuthCallback />} />
             <Route path="/auth/google/callback" element={<OAuthCallback />} />
