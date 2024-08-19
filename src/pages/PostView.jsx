@@ -67,6 +67,7 @@ import {
   $createHashtagNode,
   $isHashtagNode,
 } from "@lexical/hashtag";
+import { LexicalAutoEmbedPlugin, URL_MATCHER } from "@lexical/react/LexicalAutoEmbedPlugin";
 
 const initialState = {
   post: null,
@@ -166,7 +167,34 @@ function Editor({ content }) {
     editor.update(updateEditorState);
   }, [editor, content]);
 
-  return null;
+  const autoEmbedOptions = [
+    {
+      contentName: 'YouTube Video',
+      matcher: URL_MATCHER,
+      priority: 1,
+      component: ({ url }) => {
+        const videoId = url.split('v=')[1];
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        return <iframe src={embedUrl} width="560" height="315" frameBorder="0" allowFullScreen></iframe>;
+      },
+    },
+  ];
+
+  return (
+    <>
+      <RichTextPlugin
+        contentEditable={<ContentEditable className="outline-none" />}
+        placeholder={<div>No content...</div>}
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+      <HistoryPlugin />
+      <AutoFocusPlugin />
+      <ListPlugin />
+      <LinkPlugin />
+      <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+      <LexicalAutoEmbedPlugin options={autoEmbedOptions} />
+    </>
+  );
 }
 
 function PostView() {
@@ -374,16 +402,6 @@ function PostView() {
 
           <section className="mb-4 sm:mb-8 bg-gray-50 rounded-lg p-3 sm:p-6 shadow-inner">
             <LexicalComposer initialConfig={editorConfig}>
-              <RichTextPlugin
-                contentEditable={<ContentEditable className="outline-none" />}
-                placeholder={<div>No content...</div>}
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-              <HistoryPlugin />
-              <AutoFocusPlugin />
-              <ListPlugin />
-              <LinkPlugin />
-              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
               <Editor content={state.post?.content || ""} />
             </LexicalComposer>
           </section>

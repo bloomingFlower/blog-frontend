@@ -21,6 +21,10 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { TRANSFORMERS } from "@lexical/markdown";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { HashtagNode } from "@lexical/hashtag";
+import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
+import { LexicalAutoEmbedPlugin, URL_MATCHER } from "@lexical/react/LexicalAutoEmbedPlugin";
+import { $getRoot, $createParagraphNode, $createTextNode, $isTextNode, TextNode } from "lexical";
 import { api } from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
@@ -34,18 +38,7 @@ import {
 import { XMarkIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { categoryOptions } from "../constants/categories";
 import PlaygroundEditorTheme from "../themes/PlaygroundEditorTheme";
-import {
-  $getRoot,
-  $createParagraphNode,
-  $createTextNode,
-} from "lexical";
 import { AuthContext } from "./components/AuthContext";
-import {
-  HashtagNode,
-  $isHashtagNode,
-} from "@lexical/hashtag";
-import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin";
-import { $createListNode, $createListItemNode } from "@lexical/list";
 
 const editorConfig = {
   namespace: "MyEditor",
@@ -66,14 +59,31 @@ const editorConfig = {
     AutoLinkNode,
     LinkNode,
     HashtagNode,
-    {
-      replace: HashtagNode,
-      with: (node) => {
-        return new HashtagNode(node.getTextContent());
-      },
-    },
   ],
 };
+
+function HashtagPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (!editor.hasNodes([HashtagNode])) {
+      throw new Error('HashtagPlugin: HashtagNode not registered on editor');
+    }
+
+    return editor.registerNodeTransform(TextNode, (node) => {
+      if (!$isTextNode(node)) {
+        return;
+      }
+      const textContent = node.getTextContent();
+      if (textContent.startsWith('#') && textContent.length > 1) {
+        const hashtag = new HashtagNode(textContent);
+        node.replace(hashtag);
+      }
+    });
+  }, [editor]);
+
+  return null;
+}
 
 const PostUploadContent = React.memo(
   ({ refreshPosts, editingPostId, editingPost }) => {
@@ -422,6 +432,19 @@ const PostUploadContent = React.memo(
       };
     }, [handleClose]);
 
+    const autoEmbedOptions = [
+      {
+        contentName: 'YouTube Video',
+        matcher: URL_MATCHER,
+        priority: 1,
+        component: ({ url }) => {
+          const videoId = url.split('v=')[1];
+          const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+          return <iframe src={embedUrl} width="560" height="315" frameBorder="0" allowFullScreen></iframe>;
+        },
+      },
+    ];
+
     return (
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 mt-4 sm:mt-8">
         <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl p-4 sm:p-6">
@@ -507,6 +530,8 @@ const PostUploadContent = React.memo(
                 <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
                 <OnChangePlugin onChange={handleEditorChange} />
                 <TabIndentationPlugin />
+                <LexicalAutoEmbedPlugin options={autoEmbedOptions} />
+                <HashtagPlugin />
               </LexicalComposer>
             </div>
 
