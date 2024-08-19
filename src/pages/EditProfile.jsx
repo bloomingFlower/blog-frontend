@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { isEqual } from "lodash";
@@ -10,6 +10,7 @@ import { FaPhone } from "react-icons/fa";
 import { parsePhoneNumber, isValidPhoneNumber, getExampleNumber } from "libphonenumber-js/max";
 import examples from "libphonenumber-js/examples.mobile.json";
 import DeleteAccountButton from "./components/DeleteAccountButton";
+import { AuthContext } from "./components/AuthContext";
 
 const EditProfile = () => {
   const [firstName, setFirstName] = useState("");
@@ -25,6 +26,7 @@ const EditProfile = () => {
   const [showNoChangesModal, setShowNoChangesModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: "", message: "" });
   const [updatedUser, setUpdatedUser] = useState(null);
+  const { isLoggedIn, user: loggedInUser } = useContext(AuthContext);
 
   const countryCodes = [
     { code: "US", country: "US", dialCode: "+1" },
@@ -45,21 +47,34 @@ const EditProfile = () => {
   }, [countryCode]);
 
   useEffect(() => {
+    if (!isLoggedIn || !sessionStorage.getItem("user")) {
+      navigate("/login", { state: { from: "/edit-profile" } });
+      return;
+    }
+
     const fetchUser = async () => {
       try {
-        const user = JSON.parse(sessionStorage.getItem("user"));
-        setInitialUser(user); // Save the initial state
-        setUser(user);
-        setFirstName(user.first_name);
-        setLastName(user.last_name);
-        setEmail(user.email);
-        setPhone(user.phone);
+        const storedUser = JSON.parse(sessionStorage.getItem("user"));
+
+        if (loggedInUser && loggedInUser.id !== storedUser.id) {
+          toast.error("You don't have permission to edit this profile.");
+          navigate("/");
+          return;
+        }
+
+        setInitialUser(storedUser);
+        setUser(storedUser);
+        setFirstName(storedUser.first_name);
+        setLastName(storedUser.last_name);
+        setEmail(storedUser.email);
+        setPhone(storedUser.phone);
       } catch (error) {
-        console.error("Failed to fetch user:", error);
+        toast.error("Failed to load user data.");
+        navigate("/");
       }
     };
-    fetchUser().catch((error) => console.error(error));
-  }, []);
+    fetchUser();
+  }, [isLoggedIn, loggedInUser, navigate]);
 
   const handlePhoneChange = (e) => {
     const input = e.target.value.replace(/\D/g, "");

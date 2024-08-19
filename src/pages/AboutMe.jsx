@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
-import backgroundImage from "@img/background2.webp";
 import { FaGraduationCap, FaBriefcase, FaCode, FaProjectDiagram, FaCertificate, FaBook, FaPlane, FaUtensils, FaMicrochip, FaChartLine, FaEllipsisH, FaGithub, FaEnvelope, FaLinkedin, FaTwitter, FaBlog } from "react-icons/fa";
 import { SiCoursera, SiOrcid } from "react-icons/si";
 
