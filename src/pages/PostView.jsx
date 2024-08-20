@@ -68,6 +68,7 @@ import {
   $isHashtagNode,
 } from "@lexical/hashtag";
 import { LexicalAutoEmbedPlugin, URL_MATCHER } from "@lexical/react/LexicalAutoEmbedPlugin";
+import Comments from './components/Comments';
 
 const initialState = {
   post: null,
@@ -437,7 +438,11 @@ function PostView() {
             </section>
           )}
 
-          <section ref={commentSectionRef} className="mt-4 sm:mt-8"></section>
+          {state.post && postId && (
+            <section ref={commentSectionRef} className="mt-4 sm:mt-8">
+              <Comments postId={postId} />
+            </section>
+          )}
         </article>
 
         <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-8">
@@ -468,7 +473,6 @@ function PostView() {
               >
                 <TelegramIcon size={32} round />
               </TelegramShareButton>
-              {/* 링크 복사 버튼을 추가합니다 */}
               <button
                 onClick={copyLinkToClipboard}
                 className="bg-gray-200 hover:bg-gray-300 rounded-full p-2 transition duration-300"

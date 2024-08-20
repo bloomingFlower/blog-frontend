@@ -5,5 +5,5 @@ jest.mock('react-toastify/dist/ReactToastify.css', () => ({}));
 
 // JSDOM 환경 설정
 global.jsdom = {
-  url: "http://localhost/"
+  url: "http://127.0.0.1/"
 };

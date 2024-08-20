@@ -47,9 +47,8 @@ const AnimatedCard = ({ item }) => {
   return (
     <div
       ref={cardRef}
-      className={`bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition-all duration-500 ease-out transform ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-      }`}
+      className={`bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition-all duration-500 ease-out transform ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+        }`}
     >
       <div className="p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition duration-300">
@@ -93,20 +92,17 @@ function RustNews() {
     top: false,
     bottom: false,
   });
-  const [clickPattern, setClickPattern] = useState([]);
+  const [easterEggPattern, setEasterEggPattern] = useState([]);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const danceIntervalRef = useRef(null);
-  const [touchPattern, setTouchPattern] = useState([]);
 
   const backgrounds = [backgroundImage1, backgroundImage2];
 
   useEffect(() => {
     fetchNews();
     window.addEventListener("scroll", handleScroll);
-    window.addEventListener("touchstart", handleTouchStart);
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("touchstart", handleTouchStart);
     };
   }, []);
 
@@ -127,8 +123,7 @@ function RustNews() {
 
   useEffect(() => {
     if (!showEasterEgg) {
-      setClickPattern([]);
-      setTouchPattern([]);
+      setEasterEggPattern([]);
     }
   }, [showEasterEgg]);
 
@@ -143,23 +138,24 @@ function RustNews() {
     });
   };
 
-  const handleTouchStart = (event) => {
-    const touchY = event.touches[0].clientY;
-    const screenHeight = window.innerHeight;
-    const direction = touchY < screenHeight / 2 ? "top" : "bottom";
+  const handleScrollButtonClick = (direction) => {
+    const newPattern = [...easterEggPattern, direction].slice(-4);
+    setEasterEggPattern(newPattern);
 
-    const newPattern = [...touchPattern, direction].slice(-6);
-    setTouchPattern(newPattern);
-
-    if (newPattern.join("") === "topbottomtopbottom") {
+    if (newPattern.join('') === 'topbottomtopbottom') {
       activateEasterEgg();
+    }
+
+    if (direction === 'top') {
+      scrollToTop();
+    } else {
+      scrollToBottom();
     }
   };
 
   const activateEasterEgg = () => {
     setShowEasterEgg(true);
-    setClickPattern([]);
-    setTouchPattern([]);
+    setEasterEggPattern([]);
     startDanceScroll();
     setTimeout(() => {
       setShowEasterEgg(false);
@@ -176,21 +172,6 @@ function RustNews() {
       top: document.documentElement.scrollHeight,
       behavior: "smooth",
     });
-  };
-
-  const handleScrollButtonClick = (direction) => {
-    const newPattern = [...clickPattern, direction].slice(-6);
-    setClickPattern(newPattern);
-
-    if (newPattern.join("") === "topbottomtopbottom") {
-      activateEasterEgg();
-    }
-
-    if (direction === "top") {
-      scrollToTop();
-    } else {
-      scrollToBottom();
-    }
   };
 
   const startDanceScroll = () => {
@@ -261,11 +242,10 @@ function RustNews() {
 
   return (
     <div
-      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${
-        showEasterEgg
-          ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
-          : ""
-      }`}
+      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${showEasterEgg
+        ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+        : ""
+        }`}
       style={
         showEasterEgg
           ? {}
@@ -364,7 +344,7 @@ function RustNews() {
         </div>
 
         {showEasterEgg && (
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-lg shadow-lg text-center">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-4 rounded-lg shadow-lg text-center z-50">
             <p className="text-xl font-bold text-purple-600">
               Yay! You found an easter egg!
             </p>

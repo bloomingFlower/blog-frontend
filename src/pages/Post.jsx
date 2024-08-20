@@ -6,8 +6,6 @@ import React, {
   useRef,
 } from "react";
 import backgroundImage from "@img/background2.webp";
-import PostUpload from "./PostUpload";
-import PostView from "./PostView";
 import { api } from "./components/api";
 import { trackPromise } from "react-promise-tracker";
 import { toast } from "react-toastify";
@@ -127,9 +125,8 @@ const AnimatedCard = memo(
         ${isNew ? "ring-2 ring-green-500" : ""}
         ${post.hidden ? "opacity-50 bg-gray-100" : ""}
         ${loadingPostId === post.id ? "relative" : ""}
-        ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
+        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
         style={{ touchAction: "manipulation" }}
       >
         {loadingPostId === post.id && (
@@ -217,7 +214,7 @@ const AnimatedCard = memo(
           </p>
           <p>
             {post.created_at === "0001-01-01T00:00:00Z" ||
-            (post.updated_at && post.updated_at !== post.created_at)
+              (post.updated_at && post.updated_at !== post.created_at)
               ? `Updated ${new Date(post.updated_at).toLocaleDateString()}`
               : `Created ${new Date(post.created_at).toLocaleDateString()}`}
           </p>
@@ -332,9 +329,6 @@ function Post() {
     },
     [navigate]
   );
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-
-  useEffect(() => {}, [isUploadModalOpen]);
 
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -350,8 +344,7 @@ function Post() {
       try {
         const response = await trackPromise(
           api.get(
-            `/api/v1/posts?page=${pageNum}&category=${
-              category === "All" ? "" : category
+            `/api/v1/posts?page=${pageNum}&category=${category === "All" ? "" : category
             }`
           )
         );
@@ -359,8 +352,7 @@ function Post() {
         setLastPage(response.data.meta.last_page);
         setPage(pageNum);
       } catch (error) {
-        console.error(`Error fetching posts for page ${pageNum}:`, error);
-        toast.error("게시물을 가져오는 데 실패했습니다:", error);
+        toast.error("Failed to fetch posts:", error);
       } finally {
         setIsLoading(false);
       }
@@ -516,11 +508,10 @@ function Post() {
               key={pageNumber}
               onClick={() => handlePageChange(pageNumber)}
               disabled={isLoading}
-              className={`w-8 h-8 rounded-full ${
-                pageNumber === page
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`w-8 h-8 rounded-full ${pageNumber === page
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {pageNumber}
             </button>
@@ -637,13 +628,6 @@ function Post() {
             backgroundPosition: "center",
           }}
         >
-          {isUploadModalOpen && (
-            <PostUpload
-              setIsUploadModalOpen={setIsUploadModalOpen}
-              postId={editingPostId}
-              refreshPosts={refreshPosts}
-            />
-          )}
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-xl sm:text-3xl font-bold text-white">
@@ -673,11 +657,10 @@ function Post() {
                 <button
                   key={category}
                   onClick={() => handleCategorySelect(category)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${
-                    selectedCategory === category
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300 ${selectedCategory === category
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
                   style={{ touchAction: "manipulation" }}
                 >
                   {category}
