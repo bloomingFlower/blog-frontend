@@ -20,6 +20,7 @@ import {
   FaPaperclip,
   FaFolder,
   FaRss,
+  FaComment,
 } from "react-icons/fa";
 import { FaGolang } from "react-icons/fa6";
 import { ClipLoader } from "react-spinners";
@@ -211,6 +212,10 @@ const AnimatedCard = memo(
           <p className="flex items-center">
             <FaClock className="mr-1" />
             {readingTime} min read
+          </p>
+          <p className="flex items-center">
+            <FaComment className="mr-1" />
+            {post.comment_count} comments
           </p>
           <p>
             {post.created_at === "0001-01-01T00:00:00Z" ||
