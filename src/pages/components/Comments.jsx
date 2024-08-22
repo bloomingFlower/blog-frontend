@@ -3,14 +3,21 @@ import { AuthContext } from './AuthContext';
 import { api } from './api';
 import { FaReply, FaTrash, FaPlus } from 'react-icons/fa';
 import DefaultAvatar from './DefaultAvatar';
-import LoadingIndicator from './LoadingIndicator';
+import CommentLoadingIndicator from './CommentLoadingIndicator';
+import TextareaAutosize from 'react-textarea-autosize';
+import EmojiPicker from 'emoji-picker-react';
+import DOMPurify from 'dompurify';
 
 const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
     const { user } = useContext(AuthContext);
     const [showReplyForm, setShowReplyForm] = useState(false);
     const [replyContent, setReplyContent] = useState('');
-    const [newEmoji, setNewEmoji] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isVoting, setIsVoting] = useState(false);
+    const [replyError, setReplyError] = useState('');
+    const [isReplyFocused, setIsReplyFocused] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [isReplyBlurred, setIsReplyBlurred] = useState(false);
 
     const votes = (comment.votes || []).reduce((acc, vote) => {
         if (vote.emoji && vote.emoji !== '0') {
@@ -21,7 +28,7 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
 
     // Validate comment content
     const validateCommentContent = (content) => {
-        return content.length <= 3000;
+        return content.trim().length > 0 && content.length <= 3000;
     };
 
     const handleReplySubmit = (e) => {
@@ -30,6 +37,10 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
             onReply(comment.ID, replyContent);
             setReplyContent('');
             setShowReplyForm(false);
+            setReplyError('');
+        } else {
+            console.log('replyContent', replyContent);
+            setReplyError('Please enter your reply (maximum 3000 characters)');
         }
     };
 
@@ -51,24 +62,12 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
         user.id === comment.user_id &&
         (!comment.children || comment.children.length === 0);
 
-    // Validate emoji input
-    const validateEmojiInput = (input) => {
-        return input.length <= 20;
-    };
-
-    const handleEmojiSubmit = (e) => {
-        e.preventDefault();
-        if (newEmoji && validateEmojiInput(newEmoji)) {
-            onVote(postId, comment.ID, newEmoji);
-            setNewEmoji('');
-        }
-    };
-
-    const handleEmojiChange = (e) => {
-        const input = e.target.value;
-        if (validateEmojiInput(input)) {
-            setNewEmoji(input);
-        }
+    // Handle emoji click
+    const onEmojiClick = async (emojiObject) => {
+        setIsVoting(true);
+        await onVote(postId, comment.ID, emojiObject.emoji);
+        setIsVoting(false);
+        setShowEmojiPicker(false);
     };
 
     // Handle delete button click
@@ -87,6 +86,17 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
         setShowDeleteModal(false);
     };
 
+    const handleReplyBlur = () => {
+        if (replyContent.trim() === '') {
+            setIsReplyBlurred(true);
+            setShowReplyForm(false);
+            setIsReplyFocused(false);
+        }
+    };
+
+    // Sanitize comment content
+    const sanitizedContent = DOMPurify.sanitize(comment.content);
+
     return (
         <div className={`border-l-2 border-gray-200 pl-2 sm:pl-4 mb-2 sm:mb-4 ${depth > 0 ? 'ml-2 sm:ml-4' : ''}`}>
             <div className="flex items-start mb-2">
@@ -96,7 +106,7 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
                     <DefaultAvatar className="w-6 h-6 sm:w-8 sm:h-8 mr-2" />
                 )}
                 <div className="flex-grow">
-                    <p className={`font-semibold text-sm sm:text-base ${!comment.user_id ? 'italic text-gray-500' : ''}`}>{displayName}</p>
+                    <p className={`text-sm sm:text-base ${!comment.user_id ? 'italic text-gray-500' : ''}`}>{displayName}</p>
                     <p className="text-xs sm:text-sm text-gray-600">
                         {formatDate(comment.created_at)}
                         {comment.updated_at !== comment.created_at &&
@@ -106,69 +116,100 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
                 {canDelete && (
                     <button
                         onClick={handleDeleteClick}
-                        className="text-red-500 hover:text-red-600 text-sm sm:text-base"
+                        className="text-gray-500 hover:text-gray-700 text-sm sm:text-base ml-2"
                     >
-                        <FaTrash />
+                        <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                 )}
             </div>
-            <p className="mb-2 text-sm sm:text-base">{comment.content}</p>
-            <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
-                {Object.entries(votes).map(([emoji, count]) => (
+            <div className="flex items-start justify-between">
+                <div className="flex-grow">
+                    <p className="mb-2 text-sm sm:text-base" dangerouslySetInnerHTML={{ __html: sanitizedContent }}></p>
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-2">
+                        {Object.entries(votes).map(([emoji, count]) => (
+                            <button
+                                key={emoji}
+                                onClick={() => onVote(postId, comment.ID, emoji)}
+                                className="inline-flex items-center text-xs sm:text-sm border rounded overflow-hidden px-2 py-1 bg-gray-50 hover:bg-gray-100"
+                            >
+                                <span>{emoji}</span>
+                                <span className="ml-1">{count}</span>
+                            </button>
+                        ))}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                className="text-gray-500 hover:text-gray-700 text-sm sm:text-base flex items-center border rounded px-2 py-1 bg-gray-50 hover:bg-gray-100"
+                                disabled={isVoting}
+                            >
+                                {isVoting ? (
+                                    <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    <svg className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
+                                        <path fillRule="evenodd" d="M7 9a1 1 0 11-2 0 1 1 0 012 0zm8 0a1 1 0 11-2 0 1 1 0 012 0zm-6.646 4.646a.5.5 0 01.708 0l.646.647.646-.647a.5.5 0 01.708.708l-1 1a.5.5 0 01-.708 0l-1-1a.5.5 0 010-.708z" clipRule="evenodd" />
+                                    </svg>
+                                )}
+                            </button>
+                            {showEmojiPicker && (
+                                <div className="absolute top-full left-0 z-10 mt-1">
+                                    <EmojiPicker onEmojiClick={onEmojiClick} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                {depth === 0 && (
                     <button
-                        key={emoji}
-                        onClick={() => onVote(postId, comment.ID, emoji)}
-                        className="inline-flex items-center text-xs sm:text-sm bg-blue-100 hover:bg-blue-200 rounded overflow-hidden"
+                        onClick={() => setShowReplyForm(!showReplyForm)}
+                        className="text-gray-500 hover:text-gray-700 text-xs sm:text-sm flex items-center ml-2 mt-1"
                     >
-                        <span className="px-1 sm:px-2 py-0.5 sm:py-1">{emoji}</span>
-                        <span className="bg-blue-200 px-1 sm:px-2 py-0.5 sm:py-1 font-semibold">{count}</span>
+                        <FaReply className="mr-1" />
                     </button>
-                ))}
-                <form onSubmit={handleEmojiSubmit} className="inline-flex">
-                    <input
-                        type="text"
-                        value={newEmoji}
-                        onChange={handleEmojiChange}
-                        placeholder="Add vote"
-                        maxLength={20}
-                        className="w-20 text-xs sm:text-sm border rounded-l px-1 py-0.5"
-                    />
-                    <button
-                        type="submit"
-                        className="text-xs sm:text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-r px-2 sm:px-3 py-0.5 sm:py-1"
-                        disabled={!validateEmojiInput(newEmoji)}
-                    >
-                        <FaPlus />
-                    </button>
-                </form>
+                )}
             </div>
-            {depth === 0 && (
-                <button
-                    onClick={() => setShowReplyForm(!showReplyForm)}
-                    className="text-blue-500 hover:text-blue-600 text-xs sm:text-sm flex items-center mb-2"
-                >
-                    <FaReply className="mr-1" />
-                </button>
-            )}
             {showReplyForm && (
                 <form onSubmit={handleReplySubmit} className="mt-2">
-                    <textarea
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                        className="w-full p-2 border rounded text-sm sm:text-base"
-                        placeholder="Write your reply... (Max 3000 characters)"
-                        maxLength={3000}
-                    />
-                    <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs text-gray-500">{replyContent.length}/3000</span>
-                        <button
-                            type="submit"
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm"
-                            disabled={!validateCommentContent(replyContent)}
-                        >
-                            Submit Reply
-                        </button>
+                    <div className="relative">
+                        <TextareaAutosize
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            onFocus={() => {
+                                setIsReplyFocused(true);
+                                setIsReplyBlurred(false);
+                            }}
+                            onBlur={handleReplyBlur}
+                            className="w-full p-2 border-b-2 border-gray-300 focus:border-blue-500 outline-none transition-colors duration-300 text-sm sm:text-base resize-none"
+                            placeholder="Write your reply..."
+                            maxLength={3000}
+                            minRows={1}
+                        />
+                        {isReplyFocused && !isReplyBlurred && (
+                            <div className="flex justify-end items-center mt-2">
+                                <button
+                                    type="submit"
+                                    className="mr-2 text-blue-500 hover:text-blue-600 text-xs sm:text-sm"
+                                    disabled={!validateCommentContent(replyContent)}
+                                >
+                                    Reply
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setReplyContent('');
+                                        setIsReplyFocused(false);
+                                    }}
+                                    className="text-gray-500 hover:text-gray-700 text-xs sm:text-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
                     </div>
+                    {replyError && <p className="text-red-500 text-xs mt-1">{replyError}</p>}
                 </form>
             )}
             {comment.children && comment.children.map((reply) => (
@@ -221,6 +262,10 @@ const Comments = ({ postId }) => {
     const [newComment, setNewComment] = useState('');
     const { user } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [commentError, setCommentError] = useState('');
+    const [isCommentFocused, setIsCommentFocused] = useState(false);
+    const [isCommentBlurred, setIsCommentBlurred] = useState(false);
 
     // Use useCallback to memoize the fetchComments function
     const fetchComments = useCallback(async () => {
@@ -243,12 +288,13 @@ const Comments = ({ postId }) => {
 
     // Validate comment content
     const validateCommentContent = (content) => {
-        return content.length <= 3000;
+        return content.trim().length > 0 && content.length <= 3000;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateCommentContent(newComment)) {
+            setIsSubmitting(true);
             try {
                 const response = await api.post(`/api/v1/comments/${postId}`, {
                     content: newComment,
@@ -258,9 +304,14 @@ const Comments = ({ postId }) => {
                 setComments([...comments, { ...response.data, votes: [] }]);
                 setNewComment('');
                 fetchComments();
+                setCommentError('');
             } catch (error) {
                 console.error('Error posting comment:', error);
+            } finally {
+                setIsSubmitting(false);
             }
+        } else {
+            setCommentError('댓글 내용을 입력해주세요 (최대 3000자)');
         }
     };
 
@@ -297,30 +348,58 @@ const Comments = ({ postId }) => {
         }
     };
 
+    const handleCommentBlur = () => {
+        if (newComment.trim() === '') {
+            setIsCommentBlurred(true);
+            setIsCommentFocused(false);
+        }
+    };
+
     return (
         <div className="mt-4 sm:mt-8">
             <h2 className="text-lg sm:text-xl font-bold mb-4">Comments</h2>
             <form onSubmit={handleSubmit} className="mb-4 sm:mb-6">
-                <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="w-full p-2 border rounded text-sm sm:text-base"
-                    placeholder="Write a comment... (Max 3000 characters)"
-                    maxLength={3000}
-                />
-                <div className="flex justify-between items-center mt-2">
-                    <span className="text-xs text-gray-500">{newComment.length}/3000</span>
-                    <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded text-xs sm:text-sm" disabled={!validateCommentContent(newComment)}>
-                        Post Comment
-                    </button>
+                <div className="relative">
+                    <TextareaAutosize
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        onFocus={() => {
+                            setIsCommentFocused(true);
+                            setIsCommentBlurred(false);
+                        }}
+                        onBlur={handleCommentBlur}
+                        className="w-full p-2 border-b-2 border-gray-300 focus:border-blue-500 outline-none transition-colors duration-300 text-sm sm:text-base resize-none"
+                        placeholder="Write a comment..."
+                        maxLength={3000}
+                        minRows={1}
+                    />
+                    {isCommentFocused && !isCommentBlurred && (
+                        <div className="flex justify-end items-center mt-2">
+                            <button
+                                type="submit"
+                                className="mr-2 text-blue-500 hover:text-blue-600 text-xs sm:text-sm"
+                                disabled={!validateCommentContent(newComment) || isSubmitting}
+                            >
+                                {isSubmitting ? 'Submitting...' : 'Comment'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setNewComment('');
+                                    setIsCommentFocused(false);
+                                }}
+                                className="text-gray-500 hover:text-gray-700 text-xs sm:text-sm"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    )}
                 </div>
+                {commentError && <p className="text-red-500 text-xs mt-1">{commentError}</p>}
             </form>
-            {isLoading && (
-                <div className="flex justify-center items-center">
-                    <LoadingIndicator />
-                </div>
-            )}
-            {comments.length > 0 ? (
+            {isLoading ? (
+                <CommentLoadingIndicator />
+            ) : comments.length > 0 ? (
                 comments.map((comment) => (
                     <Comment
                         key={comment.ID || comment.id || `comment-${comment.created_at}`}
@@ -331,7 +410,7 @@ const Comments = ({ postId }) => {
                         postId={postId}
                     />
                 ))
-            ) : !isLoading && (
+            ) : (
                 <p className="text-sm sm:text-base">No comments yet.</p>
             )}
         </div>

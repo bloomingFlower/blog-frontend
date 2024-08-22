@@ -521,7 +521,7 @@ const PostUploadContent = React.memo(
                   contentEditable={
                     <ContentEditable className="outline-none h-full p-2" />
                   }
-                  placeholder={<div className="editor-placeholder">Enter some text...</div>}
+                  // placeholder={<div className="editor-placeholder">Enter some text...</div>}
                   ErrorBoundary={LexicalErrorBoundary}
                 />
                 <HistoryPlugin />
