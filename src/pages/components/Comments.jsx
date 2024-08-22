@@ -34,7 +34,8 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
     const handleReplySubmit = (e) => {
         e.preventDefault();
         if (validateCommentContent(replyContent)) {
-            onReply(comment.ID, replyContent);
+            const sanitizedReply = DOMPurify.sanitize(replyContent);
+            onReply(comment.ID, sanitizedReply);
             setReplyContent('');
             setShowReplyForm(false);
             setReplyError('');
@@ -288,7 +289,8 @@ const Comments = ({ postId }) => {
 
     // Validate comment content
     const validateCommentContent = (content) => {
-        return content.trim().length > 0 && content.length <= 3000;
+        const sanitizedContent = DOMPurify.sanitize(content, { ALLOWED_TAGS: [] });
+        return sanitizedContent.trim().length > 0 && content.length <= 3000;
     };
 
     const handleSubmit = async (e) => {
@@ -296,8 +298,9 @@ const Comments = ({ postId }) => {
         if (validateCommentContent(newComment)) {
             setIsSubmitting(true);
             try {
+                const sanitizedComment = DOMPurify.sanitize(newComment);
                 const response = await api.post(`/api/v1/comments/${postId}`, {
-                    content: newComment,
+                    content: sanitizedComment,
                     user_id: user ? user.id : null,
                     votes: []
                 });
