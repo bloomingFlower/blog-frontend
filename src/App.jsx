@@ -21,6 +21,7 @@ import LoadingIndicator from "./pages/components/LoadingIndicator";
 import { AuthProvider, AuthContext } from "./pages/components/AuthContext";
 import { api } from "./pages/components/api";
 import backgroundImage from "@img/background2.webp";
+import { HelmetProvider } from 'react-helmet-async';
 
 import "tailwindcss/tailwind.css";
 import "./styles/loading.css";
@@ -421,11 +422,13 @@ function AppContent() {
 // App component
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </HelmetProvider>
   );
 }
 

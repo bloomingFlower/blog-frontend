@@ -69,7 +69,7 @@ import {
 } from "@lexical/hashtag";
 import { LexicalAutoEmbedPlugin, URL_MATCHER } from "@lexical/react/LexicalAutoEmbedPlugin";
 import Comments from './components/Comments';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 const initialState = {
   post: null,
@@ -517,11 +517,13 @@ function PostView() {
       </div>
       <Helmet>
         <title>{state.post.title}</title>
+        <meta name="description" content={state.post.content.substring(0, 200)} />
         <meta property="og:title" content={state.post.title} />
         <meta property="og:description" content={state.post.content.substring(0, 200)} />
         <meta property="og:image" content={`${process.env.REACT_APP_API_URL}/api/v1/post/${postId}/og-image`} />
         <meta property="og:url" content={`${window.location.origin}/post/${postId}`} />
         <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
     </div>
   );
