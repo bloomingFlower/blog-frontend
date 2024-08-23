@@ -14,6 +14,12 @@ const DefaultTitle = () => (
         <meta name="apple-mobile-web-app-title" content={manifest.short_name} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+        <meta property="og:title" content={manifest.name} />
+        <meta property="og:description" content={manifest.description} />
+        <meta property="og:image" content="https://blog.yourrubber.duckdns.org/ogimg.webp" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://blog.yourrubber.duckdns.org" />
     </Helmet>
 );
 
