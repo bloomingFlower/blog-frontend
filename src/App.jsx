@@ -233,7 +233,6 @@ function AppContent() {
     setRemainingTime(newTime);
   }, []);
 
-  // 사용자 이니셜을 생성하는 함수
   const getUserInitials = (name) => {
     if (!name) return "";
     const names = name.split(" ");
