@@ -95,7 +95,8 @@ function Home() {
           >
             Hello, my name is Jaeyoung Yun. I am a computer engineer.
             <br />
-            Welcome to my website where I showcase my latest work and share about my life.
+            Welcome to Our Journey where I share my work and life.
+            Currently, I'm the only writer, but I envision this becoming a collaborative space.
           </motion.p>
           <motion.div
             className="flex flex-row justify-center gap-2 w-full"
