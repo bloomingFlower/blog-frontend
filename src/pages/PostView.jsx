@@ -70,6 +70,7 @@ import {
 import { LexicalAutoEmbedPlugin, URL_MATCHER } from "@lexical/react/LexicalAutoEmbedPlugin";
 import Comments from './components/Comments';
 import { Helmet } from 'react-helmet-async';
+import manifest from '../../manifest.json';
 
 const initialState = {
   post: null,
@@ -354,6 +355,16 @@ function PostView() {
     });
   }, [shareData.url]);
 
+  useEffect(() => {
+    if (state.post) {
+      document.title = `${state.post.title} - ${manifest.short_name}`;
+    }
+
+    return () => {
+      document.title = manifest.name;
+    };
+  }, [state.post]);
+
   if (state.isLoading || promiseInProgress) {
     return (
       <div className="flex justify-center items-center h-screen bg-transparent">
@@ -515,16 +526,19 @@ function PostView() {
           </div>
         </div>
       </div>
-      <Helmet>
-        <title>{state.post.title}</title>
-        <meta name="description" content={state.post.content.substring(0, 200)} />
-        <meta property="og:title" content={state.post.title} />
-        <meta property="og:description" content={state.post.content.substring(0, 200)} />
-        <meta property="og:image" content={`${process.env.REACT_APP_API_URL}/api/v1/post/${postId}/og-image`} />
-        <meta property="og:url" content={`${window.location.origin}/post/${postId}`} />
-        <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Helmet>
+      {state.post && (
+        <Helmet>
+          <title>{`${state.post.title} - ${manifest.short_name}`}</title>
+          <meta name="description" content={state.post.content.substring(0, 200)} />
+          <meta property="og:title" content={`${state.post.title} - ${manifest.short_name}`} />
+          <meta property="og:description" content={state.post.content.substring(0, 200)} />
+          <meta property="og:image" content={`${process.env.REACT_APP_API_URL}/api/v1/post/${postId}/og-image`} />
+          <meta property="og:url" content={`${window.location.origin}/post/${postId}`} />
+          <meta property="og:type" content="article" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="theme-color" content={manifest.theme_color} />
+        </Helmet>
+      )}
     </div>
   );
 }

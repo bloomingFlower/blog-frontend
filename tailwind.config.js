@@ -48,11 +48,61 @@ module.exports = {
         120: "30rem",
         128: "32rem",
       },
+      backgroundColor: {
+        'primary': '#4F46E5',
+        'secondary': '#10B981',
+        'tertiary': '#F59E0B',
+      },
+      textColor: {
+        'primary': '#4F46E5',
+        'secondary': '#10B981',
+        'tertiary': '#F59E0B',
+      },
     },
   },
   variants: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    function ({ addComponents }) {
+      addComponents({
+        '.btn-primary, .btn-secondary, .btn-tertiary': {
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0.5rem 1rem',
+          borderRadius: '0.375rem',
+          fontWeight: '600',
+          transition: 'background-color 0.2s',
+          minWidth: '120px',
+          textAlign: 'center',
+          '@screen sm': {
+            padding: '0.75rem 1.5rem',
+          },
+        },
+        '.btn-primary': {
+          backgroundColor: '#4F46E5',
+          color: '#ffffff',
+          '&:hover': {
+            backgroundColor: '#4338CA',
+          },
+        },
+        '.btn-secondary': {
+          backgroundColor: '#10B981',
+          color: '#ffffff',
+          '&:hover': {
+            backgroundColor: '#059669',
+          },
+        },
+        '.btn-tertiary': {
+          backgroundColor: '#F59E0B',
+          color: '#ffffff',
+          '&:hover': {
+            backgroundColor: '#D97706',
+          },
+        },
+      })
+    },
+  ],
   mode: "jit",
 };
