@@ -29,11 +29,11 @@ function WelcomeMessage() {
   return (
     <h1
       ref={messageRef}
-      className="flex flex-wrap text-2xl overflow-hidden h-20 items-center justify-center"
+      className="flex flex-wrap text-lg sm:text-xl md:text-2xl overflow-hidden h-16 sm:h-20 items-center justify-center"
     >
       <div className="break-words text-center w-full">
         {message}
-        <span className="inline-block w-0.5 h-8 bg-black animate-blink duration-200 ml-1 align-middle"></span>
+        <span className="inline-block w-0.5 h-6 sm:h-8 bg-black animate-blink duration-200 ml-1 align-middle"></span>
       </div>
     </h1>
   );

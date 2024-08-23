@@ -26,7 +26,7 @@ const itemVariants = {
 
 function Home() {
   const [username, setUsername] = useState("");
-  const { toggleHamburger } = useContext(HamburgerContext); // Use the context
+  const { isHamburgerOpen, toggleHamburger } = useContext(HamburgerContext); // Use the context
 
   useEffect(() => {
     const storedUsername = sessionStorage.getItem("username");
@@ -34,6 +34,13 @@ function Home() {
       setUsername(storedUsername);
     }
   }, []);
+
+  // Function to close the hamburger menu
+  const closeHamburgerMenu = () => {
+    if (isHamburgerOpen) {
+      toggleHamburger();
+    }
+  };
 
   return (
     <motion.div
@@ -46,12 +53,12 @@ function Home() {
       initial="hidden"
       animate="visible"
     >
-      <div className="max-w-4xl w-full bg-white bg-opacity-80 p-6 sm:p-8 rounded-lg shadow-2xl">
+      <div className="max-w-4xl w-full bg-white bg-opacity-80 p-4 sm:p-6 rounded-lg shadow-2xl">
         <motion.div variants={itemVariants}>
           <WelcomeMessage username={username} />
         </motion.div>
         <motion.p
-          className="text-base sm:text-lg md:text-xl mb-6 text-gray-800"
+          className="text-sm sm:text-base md:text-lg mb-4 text-gray-800"
           variants={itemVariants}
         >
           Hello, my name is Jaeyoung Yun. I am a computer engineer.
@@ -59,13 +66,13 @@ function Home() {
           Welcome to my website where I showcase my latest work and share about my life.
         </motion.p>
         <motion.div
-          className="flex flex-nowrap justify-center gap-2 sm:gap-4 w-full overflow-x-auto px-2"
+          className="flex flex-row justify-center gap-2 w-full"
           variants={itemVariants}
         >
-          <Link to="/post" className="btn-primary whitespace-nowrap">Our Blog</Link>
-          <Link to="/system-stack" className="btn-secondary whitespace-nowrap">System Stack</Link>
-          <button onClick={toggleHamburger} className="btn-tertiary whitespace-nowrap">
-            Menu
+          <Link to="/post" className="btn-primary text-xs sm:text-sm" onClick={closeHamburgerMenu}>Our Blog</Link>
+          <Link to="/system-stack" className="btn-secondary text-xs sm:text-sm" onClick={closeHamburgerMenu}>System Stack</Link>
+          <button onClick={toggleHamburger} className="btn-tertiary text-xs sm:text-sm">
+            More Menu
           </button>
         </motion.div>
       </div>
