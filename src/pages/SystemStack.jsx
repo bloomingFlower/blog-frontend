@@ -3,19 +3,19 @@ import backgroundImage from "@img/background2.webp";
 
 // TechStackSection component modified
 const TechStackSection = ({ title, description, items }) => (
-  <div className="mb-8">
-    <h2 className="text-2xl font-semibold text-gray-800 mb-2">{title}</h2>
-    <p className="text-gray-600 mb-3">{description}</p>
-    <ul className="list-disc list-inside text-gray-700">
+  <div className="mb-4 md:mb-6">
+    <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-800 mb-1 md:mb-2">{title}</h2>
+    <p className="text-xs md:text-sm lg:text-base text-gray-600 mb-1 md:mb-2">{description}</p>
+    <ul className="list-disc list-inside text-xs md:text-sm lg:text-base text-gray-700">
       {items.map((item, index) => (
-        <li key={index}>{item}</li>
+        <li key={index} className="mb-1">{item}</li>
       ))}
     </ul>
   </div>
 );
 
 const OverviewImage = ({ src, alt }) => (
-  <div className="mb-8 text-center">
+  <div className="mb-4 md:mb-6 text-center">
     {src ? (
       <img
         src={src}
@@ -23,8 +23,8 @@ const OverviewImage = ({ src, alt }) => (
         className="max-w-full h-auto rounded-lg shadow-md"
       />
     ) : (
-      <div className="bg-gray-200 p-8 rounded-lg shadow-md">
-        <p className="text-gray-600">Overview image coming soon.</p>
+      <div className="bg-gray-200 p-3 md:p-4 lg:p-6 rounded-lg shadow-md">
+        <p className="text-xs md:text-sm lg:text-base text-gray-600">Overview image coming soon.</p>
       </div>
     )}
   </div>
@@ -98,13 +98,13 @@ export const SystemStack = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat px-4 py-8 sm:px-6 lg:px-8"
+      className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat px-2 py-3 sm:px-3 md:px-4 lg:px-6"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="w-full max-w-4xl bg-white bg-opacity-90 rounded-lg shadow-xl overflow-hidden mb-16">
-        <div className="p-6 sm:p-8">
+      <div className="w-full max-w-4xl bg-white bg-opacity-90 rounded-lg shadow-xl overflow-hidden mb-6 md:mb-8 lg:mb-12">
+        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
           <h1
-            className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center cursor-pointer hover:text-gray-600 transition-colors duration-300"
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 mb-4 md:mb-6 text-center cursor-pointer hover:text-gray-600 transition-colors duration-300"
             onClick={() => window.location.reload()}
           >
             Website Tech Stack

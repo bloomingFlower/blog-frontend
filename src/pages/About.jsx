@@ -8,9 +8,13 @@ import { useMediaQuery } from 'react-responsive';
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 2rem;
+  padding: 2rem 1rem;
   color: #1d1d1f;
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  @media (min-width: 768px) {
+    padding: 4rem 2rem;
+  }
 `;
 
 const Header = styled.h1`
@@ -21,16 +25,21 @@ const Header = styled.h1`
   color: #ffffff;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   @media (max-width: 768px) {
-    font-size: 36px;
+    font-size: 32px;
   }
 `;
 
 const Section = styled(motion.section)`
-  margin-bottom: 6rem;
+  margin-bottom: 3rem;
   background-color: rgba(255, 255, 255, 0.9);
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: 768px) {
+    margin-bottom: 6rem;
+    padding: 2rem;
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -39,7 +48,8 @@ const SectionTitle = styled.h2`
   margin-bottom: 1.5rem;
   color: #1d1d1f;
   @media (max-width: 768px) {
-    font-size: 28px;
+    font-size: 24px;
+    margin-bottom: 1rem;
   }
 `;
 
@@ -49,7 +59,8 @@ const Paragraph = styled.p`
   margin-bottom: 1.5rem;
   color: #333;
   @media (max-width: 768px) {
-    font-size: 16px;
+    font-size: 14px;
+    margin-bottom: 1rem;
   }
 `;
 
@@ -65,7 +76,8 @@ const ListItem = styled.li`
   align-items: center;
   color: #333;
   @media (max-width: 768px) {
-    font-size: 16px;
+    font-size: 14px;
+    margin-bottom: 0.75rem;
   }
 
   &:before {
@@ -124,20 +136,24 @@ const slideAnimation = keyframes`
 
 const SlideContainer = styled.div`
   overflow: hidden;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
   background: rgba(255, 255, 255, 0.1);
-  padding: 20px 0;
-  @media (max-width: 768px) {
-    padding: 10px 0;
+  padding: 10px 0;
+
+  @media (min-width: 768px) {
+    margin-bottom: 4rem;
+    padding: 20px 0;
   }
 `;
 
 const SlideTrack = styled.div`
   display: flex;
-  animation: ${slideAnimation} 30s linear infinite;
-  @media (max-width: 768px) {
-    animation-duration: 15s;
+  animation: ${slideAnimation} 15s linear infinite;
+
+  @media (min-width: 768px) {
+    animation-duration: 30s;
   }
+
   &:hover {
     animation-play-state: paused;
   }
@@ -145,11 +161,13 @@ const SlideTrack = styled.div`
 
 const SlideItem = styled.div`
   flex: 0 0 auto;
-  width: 200px;
-  margin-right: 20px;
+  width: 150px;
+  margin-right: 10px;
   text-align: center;
-  @media (max-width: 768px) {
-    width: 150px;
+
+  @media (min-width: 768px) {
+    width: 200px;
+    margin-right: 20px;
   }
 `;
 
@@ -177,7 +195,8 @@ const WelcomeText = styled.h1`
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   line-height: 1.4;
   @media (max-width: 768px) {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
   }
 `;
 
@@ -200,9 +219,9 @@ const About = () => {
   return (
     <div style={{
       backgroundImage: `url(${backgroundImage})`,
-      backgroundAttachment: isMobile ? 'scroll' : 'fixed',
+      backgroundAttachment: 'scroll',
       backgroundSize: 'cover',
-      minHeight: '200vh',
+      minHeight: '100vh',
     }}>
       <Container ref={containerRef}>
         <WelcomeText>
