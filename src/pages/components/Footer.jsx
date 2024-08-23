@@ -99,14 +99,14 @@ function Footer({ isSuperMode, toggleSuperMode }) {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className={`${isSuperMode
-        ? bgColor + " text-white"
-        : "bg-white text-gray-600"
+          ? bgColor + " text-white"
+          : "bg-white text-gray-600"
         } border-t border-gray-200 transition-all duration-300 rounded-t-2xl shadow-lg fixed bottom-0 left-0 right-0 z-50 ${isVisible ? 'translate-y-0' : 'translate-y-full'
-        }`}
+        } py-2 md:py-1`}
       style={{ paddingBottom: '0.5rem' }}
     >
       <div className="container mx-auto px-4 pb-safe">
-        <div className="flex justify-center items-center" style={{ minHeight: '2.5rem' }}>
+        <div className="flex justify-center items-center min-h-[2.5rem] md:min-h-[2rem]">
           <span
             onClick={handleClick}
             className={`transition-all duration-1000 ${clickCount > 0 ? "text-red-500 scale-110 rotate-180" : ""

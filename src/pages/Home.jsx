@@ -71,7 +71,6 @@ function Home() {
       className="flex flex-col items-center justify-center min-h-screen text-center bg-center bg-cover bg-no-repeat px-4 sm:px-6 lg:px-8"
       style={{
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${backgroundImage})`,
-        fontFamily: "PlayfairDisplay, serif",
         paddingBottom: `${FOOTER_HEIGHT}px`,
       }}
       variants={containerVariants}
