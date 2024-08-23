@@ -59,8 +59,8 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
     };
 
     const canDelete = user && user.id &&
-        comment.user_id &&
-        user.id === comment.user_id &&
+        (user.id === comment.user_id ||
+            (user.first_name === "bloomingFlower" && user.id === 6)) &&
         (!comment.children || comment.children.length === 0);
 
     // Handle emoji click
@@ -184,7 +184,7 @@ const Comment = ({ comment, onReply, onVote, onDelete, postId, depth = 0 }) => {
                             }}
                             onBlur={handleReplyBlur}
                             className="w-full p-2 border-b-2 border-gray-300 focus:border-blue-500 outline-none transition-colors duration-300 text-sm sm:text-base resize-none"
-                            placeholder="Write your reply..."
+                            placeholder="Share your anything with us!"
                             maxLength={3000}
                             minRows={1}
                         />
@@ -314,7 +314,7 @@ const Comments = ({ postId }) => {
                 setIsSubmitting(false);
             }
         } else {
-            setCommentError('댓글 내용을 입력해주세요 (최대 3000자)');
+            setCommentError('Please enter your comment (maximum 3000 characters)');
         }
     };
 
@@ -372,7 +372,7 @@ const Comments = ({ postId }) => {
                         }}
                         onBlur={handleCommentBlur}
                         className="w-full p-2 border-b-2 border-gray-300 focus:border-blue-500 outline-none transition-colors duration-300 text-sm sm:text-base resize-none"
-                        placeholder="Write a comment..."
+                        placeholder="Share your anything with us!"
                         maxLength={3000}
                         minRows={1}
                     />

@@ -18,7 +18,7 @@ const sanitizeHTML = (html) => {
   return DOMPurify.sanitize(html);
 };
 
-const AnimatedCard = ({ item }) => {
+const AnimatedCard = React.forwardRef(({ item, index }, ref) => {
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef(null);
 
@@ -46,7 +46,10 @@ const AnimatedCard = ({ item }) => {
 
   return (
     <div
-      ref={cardRef}
+      ref={(node) => {
+        cardRef.current = node;
+        if (ref) ref.current = node;
+      }}
       className={`bg-white bg-opacity-90 rounded-lg shadow-lg overflow-hidden transition-all duration-500 ease-out transform ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         }`}
     >
@@ -79,7 +82,7 @@ const AnimatedCard = ({ item }) => {
       </div>
     </div>
   );
-};
+});
 
 function RustNews() {
   const [news, setNews] = useState([]);
@@ -87,7 +90,6 @@ function RustNews() {
   const [hasMore, setHasMore] = useState(true);
   const [pagingState, setPagingState] = useState(null);
   const [backgroundIndex, setBackgroundIndex] = useState(0);
-  const newContentRef = useRef(null);
   const [showScrollButtons, setShowScrollButtons] = useState({
     top: false,
     bottom: false,
@@ -95,11 +97,14 @@ function RustNews() {
   const [easterEggPattern, setEasterEggPattern] = useState([]);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const danceIntervalRef = useRef(null);
+  const [newItemsCount, setNewItemsCount] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const firstNewItemRef = useRef(null);
 
   const backgrounds = [backgroundImage1, backgroundImage2];
 
   useEffect(() => {
-    fetchNews();
+    fetchNews(false);
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -107,10 +112,10 @@ function RustNews() {
   }, []);
 
   useEffect(() => {
-    if (newContentRef.current && news.length > 12) {
+    if (firstNewItemRef.current && newItemsCount > 0 && isLoadingMore) {
       const navHeight = 60; // nav bar height (mobile: 50px, desktop: 60px)
       const yOffset =
-        newContentRef.current.getBoundingClientRect().top +
+        firstNewItemRef.current.getBoundingClientRect().top +
         window.scrollY -
         navHeight;
 
@@ -118,8 +123,12 @@ function RustNews() {
         top: yOffset,
         behavior: "smooth",
       });
+
+      // Reset states after scrolling
+      setNewItemsCount(0);
+      setIsLoadingMore(false);
     }
-  }, [news]);
+  }, [newItemsCount, isLoadingMore]);
 
   useEffect(() => {
     if (!showEasterEgg) {
@@ -198,7 +207,8 @@ function RustNews() {
     return () => stopDanceScroll();
   }, []);
 
-  const fetchNews = async () => {
+  const fetchNews = async (loadMore = false) => {
+    setIsLoading(true);
     try {
       const response = await api2.get("/api/v2/hnstories", {
         params: {
@@ -209,21 +219,25 @@ function RustNews() {
 
       if (response.data.data.length > 0) {
         setNews((prevNews) => [...prevNews, ...response.data.data]);
+        if (loadMore) {
+          setNewItemsCount(response.data.data.length);
+        }
         setHasMore(!!response.data.next_paging_state);
         setPagingState(response.data.next_paging_state);
       } else {
         setHasMore(false);
       }
-      setIsLoading(false);
     } catch (error) {
       logger.error("Failed to fetch Rust news:", error);
+    } finally {
       setIsLoading(false);
     }
   };
 
   const loadMore = () => {
     if (!isLoading && hasMore) {
-      fetchNews();
+      setIsLoadingMore(true);
+      fetchNews(true);
       setBackgroundIndex((prevIndex) => (prevIndex + 1) % backgrounds.length);
     }
   };
@@ -242,14 +256,18 @@ function RustNews() {
 
   return (
     <div
-      className={`min-h-screen bg-cover py-8 px-4 sm:px-6 lg:px-8 pb-20 transition-all duration-500 ease-in-out ${showEasterEgg
+      className={`min-h-screen bg-cover bg-center bg-no-repeat py-8 px-4 sm:px-6 lg:px-8 pb-24 transition-all duration-500 ease-in-out ${showEasterEgg
         ? "bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
         : ""
         }`}
       style={
         showEasterEgg
           ? {}
-          : { backgroundImage: `url(${backgrounds[backgroundIndex]})` }
+          : {
+            backgroundImage: `url(${backgrounds[backgroundIndex]})`,
+            backgroundAttachment: 'fixed',
+            backgroundSize: 'cover'
+          }
       }
     >
       <div className="max-w-7xl mx-auto">
@@ -278,7 +296,11 @@ function RustNews() {
         ) : news.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {news.map((item, index) => (
-              <AnimatedCard key={item.id} item={item} />
+              <AnimatedCard
+                key={item.id}
+                item={item}
+                ref={index === news.length - newItemsCount ? firstNewItemRef : null}
+              />
             ))}
           </div>
         ) : (
@@ -321,7 +343,7 @@ function RustNews() {
             </button>
           </div>
         )}
-        <div className="fixed bottom-10 right-4 sm:right-8 flex flex-col space-y-2 z-50">
+        <div className="fixed bottom-20 right-4 sm:right-8 flex flex-col space-y-2 z-50">
           {showScrollButtons.top && (
             <button
               onClick={() => handleScrollButtonClick("top")}
