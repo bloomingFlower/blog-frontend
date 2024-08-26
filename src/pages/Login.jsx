@@ -16,6 +16,9 @@ import { FaUser, FaLock, FaGithub, FaEnvelope } from "react-icons/fa";
 import { usePromiseTracker } from "react-promise-tracker";
 import CryptoJS from 'crypto-js';
 import GoogleLogo from '../static/img/google-logo.svg';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
+import DataHandling from './components/DataHandling';
 
 const Modal = ({ isOpen, onClose, title, content }) => {
   if (!isOpen) return null;
@@ -26,7 +29,7 @@ const Modal = ({ isOpen, onClose, title, content }) => {
         <div className="mt-3">
           <h3 className="text-2xl font-bold mb-4 text-gray-900">{title}</h3>
           <div className="mt-2 px-7 py-3 max-h-96 overflow-y-auto">
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            {content}
           </div>
           <div className="items-center px-4 py-3">
             <button
@@ -62,6 +65,7 @@ const Login = () => {
   const { promiseInProgress } = usePromiseTracker();
   const [showCountdown, setShowCountdown] = useState(true);
   const [isCountdownActive, setIsCountdownActive] = useState(true);
+  const [isTimeoutEnabled, setIsTimeoutEnabled] = useState(false);
 
   const encryptionKey = process.env.REACT_APP_ENCRYPTION_KEY || 'fallback-key';
 
@@ -103,7 +107,7 @@ const Login = () => {
 
   useEffect(() => {
     let timer;
-    if (!isLoggedIn && !isInputActive && isCountdownActive) {
+    if (!isLoggedIn && !isInputActive && isCountdownActive && isTimeoutEnabled) {
       timer = setInterval(() => {
         setCountdown((prevCount) => {
           if (prevCount === 1) {
@@ -116,7 +120,7 @@ const Login = () => {
     }
 
     return () => clearInterval(timer);
-  }, [isLoggedIn, isInputActive, isCountdownActive]);
+  }, [isLoggedIn, isInputActive, isCountdownActive, isTimeoutEnabled]);
 
   useEffect(() => {
     if (shouldNavigate.current) {
@@ -339,79 +343,13 @@ const Login = () => {
 
   // Modal related state
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: "", content: "" });
+  const [modalContent, setModalContent] = useState({ title: "", content: null });
 
   // Open modal function
-  const openModal = (title, content) => {
-    setModalContent({ title, content });
+  const openModal = (title, ContentComponent) => {
+    setModalContent({ title, content: <ContentComponent /> });
     setModalOpen(true);
   };
-
-  // Content for each link
-  const privacyContent = `
-    <p class="mb-4 text-gray-600">Last updated: 2024-08-13</p>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">1. Information We Collect</h2>
-    <p class="mb-4 text-gray-700">We collect information you provide directly to us when you:</p>
-    <ul class="list-disc list-inside mb-4 text-gray-700">
-        <li>Create an account</li>
-        <li>Use our services</li>
-        <li>Communicate with us</li>
-    </ul>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. How We Use Your Information</h2>
-    <p class="mb-4 text-gray-700">We use the information we collect to:</p>
-    <ul class="list-disc list-inside mb-4 text-gray-700">
-        <li>Provide, maintain, and improve our services</li>
-        <li>Communicate with you about our services</li>
-        <li>Protect against fraud and abuse</li>
-    </ul>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">3. Data Retention</h2>
-    <p class="mb-4 text-gray-700">We retain your information for as long as necessary to provide our services and comply with our legal obligations.</p>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">4. Your Rights</h2>
-    <p class="mb-4 text-gray-700">You have the right to access, correct, or delete your personal information. Contact us to exercise these rights.</p>
-  `;
-
-  const termsContent = `
-    <p class="mb-4 text-gray-600">Last updated: 2024-08-13</p>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">1. Acceptance of Terms</h2>
-    <p class="mb-4 text-gray-700">By accessing or using our services, you agree to be bound by these Terms of Service.</p>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. User Responsibilities</h2>
-    <p class="mb-4 text-gray-700">You are responsible for:</p>
-    <ul class="list-disc list-inside mb-4 text-gray-700">
-        <li>Maintaining the confidentiality of your account</li>
-        <li>All activities that occur under your account</li>
-        <li>Complying with all applicable laws and regulations</li>
-    </ul>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">3. Intellectual Property</h2>
-    <p class="mb-4 text-gray-700">Our services and their contents are protected by copyright, trademark, and other laws.</p>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">4. Termination</h2>
-    <p class="mb-4 text-gray-700">We may terminate or suspend your account and access to our services at our sole discretion, without notice, for conduct that we believe violates these Terms of Service or is harmful to other users, us, or third parties, or for any other reason.</p>
-  `;
-
-  const dataHandlingContent = `
-    <p class="mb-4 text-gray-600">Last updated: 2024-08-13</p>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Email Login</h2>
-    <p class="mb-4 text-gray-700">When you sign up with email, we collect:</p>
-    <ul class="list-disc list-inside mb-4 text-gray-700">
-        <li>Your email address</li>
-        <li>A securely hashed version of your password</li>
-    </ul>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Google Login</h2>
-    <p class="mb-4 text-gray-700">When you sign in with Google, we may access:</p>
-    <ul class="list-disc list-inside mb-4 text-gray-700">
-        <li>Your name</li>
-        <li>Your email address</li>
-        <li>Your Google profile picture (if available)</li>
-    </ul>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">GitHub Login</h2>
-    <p class="mb-4 text-gray-700">When you sign in with GitHub, we may access:</p>
-    <ul class="list-disc list-inside mb-4 text-gray-700">
-        <li>Your GitHub username</li>
-        <li>Your email address associated with your GitHub account</li>
-        <li>Your GitHub profile picture (if available)</li>
-    </ul>
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Data Storage and Security</h2>
-    <p class="mb-4 text-gray-700">We store all user data securely in encrypted databases. We never share your personal information with third parties without your explicit consent, except as required by law.</p>
-  `;
 
   // 사용자 이니셜을 생성하는 함수
   const getUserInitials = (name) => {
@@ -470,7 +408,7 @@ const Login = () => {
                 <h2 className="mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
                   Sign in
                 </h2>
-                {!isInputActive && showCountdown && (
+                {isTimeoutEnabled && !isInputActive && showCountdown && (
                   <p className="mt-2 text-center text-sm text-gray-600">
                     Auto-redirecting to home page in {countdown} seconds.
                   </p>
@@ -625,20 +563,20 @@ const Login = () => {
                 <div className="mt-4 text-center text-xs text-gray-600">
                   <p>
                     By signing in, you agree to our{' '}
-                    <button onClick={() => openModal("Terms of Service", termsContent)} className="text-indigo-600 hover:text-indigo-500">
+                    <a href="/terms-of-service" className="text-indigo-600 hover:text-indigo-500">
                       Terms of Service
-                    </button>{' '}
+                    </a>{' '}
                     and{' '}
-                    <button onClick={() => openModal("Privacy Policy", privacyContent)} className="text-indigo-600 hover:text-indigo-500">
+                    <a href="/privacy-policy" className="text-indigo-600 hover:text-indigo-500">
                       Privacy Policy
-                    </button>
+                    </a>
                     .
                   </p>
                   <p className="mt-2">
                     Learn more about how we handle your data for{' '}
-                    <button onClick={() => openModal("Data Handling", dataHandlingContent)} className="text-indigo-600 hover:text-indigo-500">
+                    <a href="/data-handling" className="text-indigo-600 hover:text-indigo-500">
                       each login method
-                    </button>
+                    </a>
                     .
                   </p>
                 </div>

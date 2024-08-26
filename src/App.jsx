@@ -51,6 +51,9 @@ const OAuthCallback = lazy(() => import("./pages/components/OAuthCallback"));
 const SystemStack = lazy(() => import("./pages/SystemStack"));
 const SinglePostPage = lazy(() => import("./pages/SinglePostPage"));
 const MobileRSSViewer = lazy(() => import("./pages/MobileRSSViewer"));
+const DataHandling = lazy(() => import("./pages/components/DataHandling"));
+const PrivacyPolicy = lazy(() => import("./pages/components/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/components/TermsOfService"));
 
 const ActivityMonitor = lazy(() =>
   import("./pages/components/ActivityMonitor")
@@ -399,6 +402,9 @@ function AppContent() {
                 <Route path="/post/new" element={<PostUpload />} />
                 <Route path="/post/edit/:postId" element={<PostUpload />} />
                 <Route path="/mobile-rss-viewer" element={<MobileRSSViewer />} />
+                <Route path="/data-handling" element={<DataHandling />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
