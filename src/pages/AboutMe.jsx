@@ -130,6 +130,25 @@ const AnimatedSection = memo(({ children, delay = 0 }) => {
   );
 });
 
+const AnimatedItem = memo(({ children, delay = 0 }) => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-500 ease-out transform ${
+        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+});
+
 // Section component
 function Section({
   ID,
@@ -153,73 +172,148 @@ function Section({
     ? items.filter((item) => item.isPublic !== false)
     : items;
 
+  const processLinks = (text) => {
+    if (typeof text !== "string") return text;
+
+    const linkRegex = /\[\[(.*?)\]\]/g;
+    const parts = text.split(linkRegex);
+
+    return parts.map((part, index) => {
+      if (index % 2 === 1) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline text-sm italic"
+          >
+            {language === "ko" ? "링크" : "link"}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
+  const processedIcon = processLinks(icon);
+
+  const renderDescription = (description) => {
+    const lines = description.split("\n");
+    let currentList = [];
+    let result = [];
+
+    lines.forEach((line, index) => {
+      if (line.startsWith("- ")) {
+        if (currentList.length > 0) {
+          result.push(
+            <ul key={`list-${index}`} className="list-disc pl-5 mt-2">
+              {currentList}
+            </ul>
+          );
+          currentList = [];
+        }
+        currentList.push(
+          <li key={`item-${index}`} className="mb-2 text-sm">
+            {processLinks(line.slice(2))}
+          </li>
+        );
+      } else if (line.startsWith("-- ")) {
+        currentList.push(
+          <li key={`subitem-${index}`} className="ml-4 mt-1 text-sm">
+            <span className="mr-2">•</span>
+            {processLinks(line.slice(3))}
+          </li>
+        );
+      } else {
+        if (currentList.length > 0) {
+          result.push(
+            <ul key={`list-${index}`} className="list-disc pl-5 mt-2">
+              {currentList}
+            </ul>
+          );
+          currentList = [];
+        }
+        result.push(
+          <p key={`text-${index}`} className="mt-1 text-sm">
+            {processLinks(line)}
+          </p>
+        );
+      }
+    });
+
+    if (currentList.length > 0) {
+      result.push(
+        <ul key="final-list" className="list-disc pl-5 mt-2">
+          {currentList}
+        </ul>
+      );
+    }
+
+    return result;
+  };
+
   return (
     <AnimatedSection>
       <div id={title.replace(/\s+/g, "-").toLowerCase()} className="mb-8">
         <h2 className="text-xl font-semibold mb-3 flex items-center text-blue-800">
           {title}
-          <span className="ml-2 text-sm text-gray-500">{icon}</span>
+          <span className="ml-2 text-sm text-gray-500">{processedIcon}</span>
           {/* {isLoggedIn && !isPreviewMode && (
             <span className="ml-2 text-sm text-gray-500">(ID: {ID})</span>
           )} */}
         </h2>
         <div className="text-gray-700">
           {displayItems.length > 0 ? (
-            <ul className="list-disc pl-5 mt-2">
+            <ul className="list-none pl-0 mt-2">
               {displayItems.map((item, index) => (
-                <li key={index} className="mb-2">
-                  <strong>{item.title}</strong>
-                  {item.institution && ` - ${item.institution}`}
-                  {item.company && ` - ${item.company}`}
-                  {item.year && ` (${item.year})`}
-                  {item.period && ` (${item.period})`}
-                  {item.description && (
-                    <div className="mt-1 px-2 sm:px-4">
-                      {item.description.split("- ").map(
-                        (desc, index) =>
-                          desc.trim() && (
-                            <p
-                              key={index}
-                              className={`text-sm sm:text-base ${
-                                index > 0 ? "ml-4 flex items-start" : ""
-                              }`}
-                            >
-                              {index > 0 && <span className="mr-2">•</span>}
-                              {desc.trim()}
-                            </p>
-                          )
-                      )}
-                    </div>
-                  )}
-                  {isLoggedIn && !isPreviewMode && (
-                    <div className="mt-1 mb-2">
-                      <button
-                        onClick={() => handleEditSectionItem(item.ID)}
-                        className="mr-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                      >
-                        <FaEdit className="inline mr-1" />{" "}
-                        {language === "ko" ? "수정" : "Edit"}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSectionItem(item.ID)}
-                        className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-                      >
-                        <FaTrash className="inline mr-1" />{" "}
-                        {language === "ko" ? "삭제" : "Delete"}
-                      </button>
-                    </div>
-                  )}
-                  {editingSectionItems[item.ID] && !isPreviewMode && (
-                    <SectionItemForm
-                      item={item}
-                      onSubmit={(updatedItem) =>
-                        handleUpdateSectionItem(updatedItem)
-                      }
-                      onCancel={() => handleCancelEditSectionItem(item.ID)}
-                      language={language}
-                    />
-                  )}
-                </li>
+                <AnimatedItem key={index} delay={index * 100}>
+                  <li className="mb-4">
+                    <strong>{item.title}</strong>
+                    {item.institution && ` - ${item.institution}`}
+                    {item.company && (
+                      <>
+                        {" - "}
+                        {processLinks(item.company)}
+                      </>
+                    )}
+                    {item.year && ` (${item.year})`}
+                    {item.period && ` (${item.period})`}
+                    {item.description && (
+                      <div className="mt-1 px-2 sm:px-4">
+                        {renderDescription(item.description)}
+                      </div>
+                    )}
+                    {isLoggedIn && !isPreviewMode && (
+                      <div className="mt-1 mb-2">
+                        <button
+                          onClick={() => handleEditSectionItem(item.ID)}
+                          className="mr-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                        >
+                          <FaEdit className="inline mr-1" />{" "}
+                          {language === "ko" ? "수정" : "Edit"}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSectionItem(item.ID)}
+                          className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                        >
+                          <FaTrash className="inline mr-1" />{" "}
+                          {language === "ko" ? "삭제" : "Delete"}
+                        </button>
+                      </div>
+                    )}
+                    {editingSectionItems[item.ID] && !isPreviewMode && (
+                      <SectionItemForm
+                        item={item}
+                        onSubmit={(updatedItem) =>
+                          handleUpdateSectionItem(updatedItem)
+                        }
+                        onCancel={() => handleCancelEditSectionItem(item.ID)}
+                        language={language}
+                      />
+                    )}
+                  </li>
+                </AnimatedItem>
               ))}
             </ul>
           ) : (
@@ -754,7 +848,7 @@ function AboutMe() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-4 sm:py-12 sm:px-6 lg:px-8">
       <Helmet>
-        <title>{displayInfo?.name}</title>
+        <title>About Me | {displayInfo?.name}</title>
         <meta name="description" content={displayInfo?.description} />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
