@@ -156,8 +156,8 @@ function Section({
     <AnimatedSection>
       <div id={title.replace(/\s+/g, "-").toLowerCase()} className="mb-8">
         <h2 className="text-xl font-semibold mb-3 flex items-center text-gray-800">
-          <span className="mr-2 text-gray-600">{getIconComponent(icon)}</span>
           {title}
+          <span className="ml-2 text-sm text-gray-500">({icon})</span>
           {isLoggedIn && !isPreviewMode && (
             <span className="ml-2 text-sm text-gray-500">(ID: {ID})</span>
           )}
