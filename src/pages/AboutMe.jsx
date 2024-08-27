@@ -120,8 +120,9 @@ const AnimatedSection = memo(({ children, delay = 0 }) => {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-500 ease-out transform ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
+      className={`transition-all duration-500 ease-out transform ${
+        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
@@ -157,10 +158,10 @@ function Section({
       <div id={title.replace(/\s+/g, "-").toLowerCase()} className="mb-8">
         <h2 className="text-xl font-semibold mb-3 flex items-center text-gray-800">
           {title}
-          <span className="ml-2 text-sm text-gray-500">({icon})</span>
-          {isLoggedIn && !isPreviewMode && (
+          <span className="ml-2 text-sm text-gray-500">{icon}</span>
+          {/* {isLoggedIn && !isPreviewMode && (
             <span className="ml-2 text-sm text-gray-500">(ID: {ID})</span>
-          )}
+          )} */}
         </h2>
         <div className="text-gray-700">
           {displayItems.length > 0 ? (
