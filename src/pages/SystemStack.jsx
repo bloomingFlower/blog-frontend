@@ -53,7 +53,7 @@ export const SystemStack = () => {
     },
     {
       title: "Frontend",
-      description: "Cross-platform mobile application development",
+      description: "Responsive web application development",
       items: ["React Application"],
     },
     {
