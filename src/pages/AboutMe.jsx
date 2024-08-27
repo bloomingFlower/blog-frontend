@@ -174,7 +174,22 @@ function Section({
                   {item.year && ` (${item.year})`}
                   {item.period && ` (${item.period})`}
                   {item.description && (
-                    <p className="mt-1">{item.description}</p>
+                    <div className="mt-1 px-2 sm:px-4">
+                      {item.description.split("- ").map(
+                        (desc, index) =>
+                          desc.trim() && (
+                            <p
+                              key={index}
+                              className={`text-sm sm:text-base ${
+                                index > 0 ? "ml-4 flex items-start" : ""
+                              }`}
+                            >
+                              {index > 0 && <span className="mr-2">•</span>}
+                              {desc.trim()}
+                            </p>
+                          )
+                      )}
+                    </div>
                   )}
                   {isLoggedIn && !isPreviewMode && (
                     <div className="mt-1 mb-2">
