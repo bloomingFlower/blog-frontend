@@ -54,7 +54,7 @@ export const SystemStack = () => {
     {
       title: "Frontend",
       description: "Cross-platform mobile application development",
-      items: ["React Native"],
+      items: ["React Application"],
     },
     {
       title: "Backend",

@@ -120,9 +120,8 @@ const AnimatedSection = memo(({ children, delay = 0 }) => {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-500 ease-out transform ${
-        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-      }`}
+      className={`transition-all duration-500 ease-out transform ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+        }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
