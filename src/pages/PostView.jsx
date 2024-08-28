@@ -55,9 +55,11 @@ import {
   TwitterShareButton,
   LinkedinShareButton,
   TelegramShareButton,
+  LineShareButton,
   FacebookIcon,
   LinkedinIcon,
   TelegramIcon,
+  LineIcon,
 } from "react-share";
 import { FaXTwitter } from 'react-icons/fa6';
 import { usePromiseTracker } from "react-promise-tracker";
@@ -485,6 +487,12 @@ function PostView() {
               >
                 <TelegramIcon size={32} round />
               </TelegramShareButton>
+              <LineShareButton
+                url={shareData.url}
+                title={`${shareData.message} ${shareData.title}`}
+              >
+                <LineIcon size={32} round />
+              </LineShareButton>
               <button
                 onClick={copyLinkToClipboard}
                 className="bg-gray-200 hover:bg-gray-300 rounded-full p-2 transition duration-300"
