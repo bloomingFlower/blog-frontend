@@ -5,6 +5,8 @@ import WelcomeMessage from "./components/WelcomeMessage";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { HamburgerContext } from "../App"; // Import the context
+// Add import for email icon
+import { FaEnvelope } from "react-icons/fa";
 
 // Framer Motion variants for animations
 const containerVariants = {
@@ -92,7 +94,15 @@ function Home() {
             className="text-sm sm:text-base md:text-lg mb-4 text-gray-800"
             variants={itemVariants}
           >
-            Hello, my name is Jaeyoung Yun. I am a computer engineer.
+            Hello, my name is{" "}
+            <a
+              href="mailto:yourrubber@duck.com"
+              className="text-blue-700 hover:text-blue-900 transition-colors duration-300 inline-flex items-center font-medium"
+            >
+              Jaeyoung Yun
+              <FaEnvelope className="ml-1 text-xs" />
+            </a>
+            . I am a computer engineer.
             <br />
             Welcome to Our Journey where I share my work and life.
             Currently, I'm the only writer, but I envision this becoming a collaborative space.
