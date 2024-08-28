@@ -556,7 +556,6 @@ const Login = () => {
                       <img src={GoogleLogo} alt="Google logo" className="w-5 h-5 mr-2" />
                       Continue with Google
                       <span className="ml-2 text-xs text-gray-500 hover:text-gray-700 cursor-help" title="We access your name and email from Google. Click for more info.">ⓘ</span>
-                      <span className="absolute top-0 right-0 -mt-2 -mr-2 px-2 py-1 bg-yellow-400 text-xs font-bold rounded-full">Testing...</span>
                     </button>
                   </div>
                 </div>

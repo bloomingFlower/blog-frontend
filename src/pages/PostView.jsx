@@ -56,10 +56,10 @@ import {
   LinkedinShareButton,
   TelegramShareButton,
   FacebookIcon,
-  TwitterIcon,
   LinkedinIcon,
   TelegramIcon,
 } from "react-share";
+import { FaXTwitter } from 'react-icons/fa6';
 import { usePromiseTracker } from "react-promise-tracker";
 import LoadingIndicator from "./components/LoadingIndicator";
 import {
@@ -470,7 +470,7 @@ function PostView() {
                 url={shareData.url}
                 title={`${shareData.message} ${shareData.title}`}
               >
-                <TwitterIcon size={32} round />
+                <FaXTwitter size={32} className="text-white bg-black rounded-full p-1.5" />
               </TwitterShareButton>
               <LinkedinShareButton
                 url={shareData.url}
