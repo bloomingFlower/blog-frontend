@@ -188,7 +188,7 @@ function Section({
             rel="noopener noreferrer"
             className="text-blue-600 hover:underline text-sm italic"
           >
-            {language === "ko" ? "링크" : "link"}
+            {language === "ko" ? "link" : "link"}
           </a>
         );
       }
