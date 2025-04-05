@@ -40,6 +40,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          logout: true
+          ecr: false
 
       - name: Cache Docker layers
         uses: actions/cache@v4
